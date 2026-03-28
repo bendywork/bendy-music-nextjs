@@ -1,33 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dashboardService } from '@/lib/dashboard';
-import path from 'path';
-import { writeFileSync } from 'fs';
+import { STORE_KEYS, getStoredValue, readJsonFile, setStoredValue } from '@/lib/server/data-store';
 
-export async function GET(request: NextRequest) {
+const DEFAULT_DASHBOARD_DATA = {
+  proxyRequestCount: 0,
+  systemUptime: 0,
+  recentRequests: [],
+  serviceStatus: [
+    { name: 'kuwo', displayName: 'Kuwo', errorCount: 0, status: 'Normal' },
+    { name: 'qq', displayName: 'QQ Music', errorCount: 0, status: 'Normal' },
+    { name: 'Netease', displayName: 'Netease Music', errorCount: 0, status: 'Normal' },
+  ],
+  lastSyncTime: 0,
+};
+
+export async function GET() {
   try {
-    // 返回内存中的实时数据
-    const dashboardData = dashboardService.getData();
-    return NextResponse.json(dashboardData);
+    const liveData = dashboardService.getData();
+    const stored = await setStoredValue(STORE_KEYS.DASHBOARD, liveData);
+    return NextResponse.json(stored);
   } catch (error) {
-    console.error('获取仪表盘数据失败:', error);
-    return NextResponse.json(
-      { error: '获取仪表盘数据失败' },
-      { status: 500 }
-    );
+    console.warn('Failed to read live dashboard data, fallback to stored data:', error);
+
+    try {
+      const fallback = await getStoredValue(
+        STORE_KEYS.DASHBOARD,
+        () => readJsonFile('data/dashboard.json', DEFAULT_DASHBOARD_DATA),
+      );
+      return NextResponse.json(fallback);
+    } catch (fallbackError) {
+      console.error('Failed to read dashboard data:', fallbackError);
+      return NextResponse.json(
+        { error: 'Failed to read dashboard data' },
+        { status: 500 },
+      );
+    }
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const dashboardData = await request.json();
-    const dashboardJsonPath = path.join(process.cwd(), 'data', 'dashboard.json');
-    writeFileSync(dashboardJsonPath, JSON.stringify(dashboardData, null, 2), 'utf8');
-    return NextResponse.json({ message: '仪表盘数据保存成功' });
+    const stored = await setStoredValue(STORE_KEYS.DASHBOARD, dashboardData);
+
+    return NextResponse.json({
+      message: 'Dashboard data saved',
+      data: stored,
+    });
   } catch (error) {
-    console.error('保存 dashboard.json 失败:', error);
+    console.error('Failed to save dashboard data:', error);
     return NextResponse.json(
-      { error: '保存仪表盘数据失败' },
-      { status: 500 }
+      { error: 'Failed to save dashboard data' },
+      { status: 500 },
     );
   }
 }

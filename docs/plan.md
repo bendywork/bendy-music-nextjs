@@ -17,3 +17,12 @@
 - [ ] 新增 Vitest 并补齐核心安全模块单元测试（覆盖率 >= 80%）
 - [ ] 补充 Dockerfile 与 docker-compose.yml 一键开发环境
 - [ ] 落地 i18n 文案抽离（i18next）
+
+## 2026-03-28 (v0.1.3) Storage Refactor Plan
+- [x] Replace file-based JSON persistence with PostgreSQL-backed storage API.
+- [x] Remove MySQL runtime dependency and switch to `pg`.
+- [x] Keep Redis cache layer and support Upstash-compatible Redis URL.
+- [x] Add document save endpoints (README + API doc config) backed by PostgreSQL.
+- [x] Add repository sync for doc updates via global repo auth config.
+- [x] Remove dashboard-side direct GitHub repo writes for non-doc configs.
+- [x] Update env examples and README for PostgreSQL/Redis/Upstash/repo-sync config.

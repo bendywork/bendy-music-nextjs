@@ -1,64 +1,60 @@
-import mysql from 'mysql2/promise';
-import { RedisClientType, createClient } from 'redis';
+import { Pool, QueryResultRow } from 'pg';
+import { createClient } from 'redis';
 
-// MySQL连接配置
-const mysqlConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'ddmusic_proxy',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
+let pool: Pool | null = null;
+type RedisClient = ReturnType<typeof createClient>;
+let redisClient: RedisClient | null = null;
+
+const getDatabaseUrl = (): string => {
+  const databaseUrl = process.env.DATABASE_URL?.trim();
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is required');
+  }
+  return databaseUrl;
 };
 
-// 创建MySQL连接池
-const pool = mysql.createPool(mysqlConfig);
+const getRedisUrl = (): string | null => {
+  return process.env.REDIS_URL?.trim() ?? process.env.UPSTASH_REDIS_URL?.trim() ?? null;
+};
 
-// Redis客户端
-let redisClient: RedisClientType | null = null;
+export const getPostgresPool = (): Pool => {
+  if (!pool) {
+    pool = new Pool({
+      connectionString: getDatabaseUrl(),
+    });
+  }
 
-// 初始化Redis连接
-export const initRedis = async () => {
+  return pool;
+};
+
+export const query = async <T extends QueryResultRow>(
+  sql: string,
+  values: unknown[] = [],
+): Promise<T[]> => {
+  const result = await getPostgresPool().query<T>(sql, values);
+  return result.rows;
+};
+
+export const initRedis = async (): Promise<RedisClient | null> => {
   if (redisClient) {
     return redisClient;
   }
 
-  redisClient = createClient({
-    url: `redis://${process.env.REDIS_PASSWORD ? `:${process.env.REDIS_PASSWORD}@` : ''}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}/${process.env.REDIS_DB || 0}`,
+  const redisUrl = getRedisUrl();
+  if (!redisUrl) {
+    return null;
+  }
+
+  const client = createClient({ url: redisUrl });
+  client.on('error', (error) => {
+    console.error('Redis Client Error:', error);
   });
 
-  redisClient.on('error', (err) => {
-    console.error('Redis Client Error:', err);
-  });
-
-  await redisClient.connect();
+  await client.connect();
+  redisClient = client;
   return redisClient;
 };
 
-// 获取Redis客户端
-export const getRedisClient = () => {
-  if (!redisClient) {
-    throw new Error('Redis client not initialized');
-  }
+export const getRedisClient = (): RedisClient | null => {
   return redisClient;
 };
-
-// 获取MySQL连接
-export const getMysqlConnection = async () => {
-  return await pool.getConnection();
-};
-
-// 执行SQL查询
-export const query = async (sql: string, values?: any[]) => {
-  const connection = await getMysqlConnection();
-  try {
-    const [rows] = await connection.execute(sql, values);
-    return rows;
-  } finally {
-    connection.release();
-  }
-};
-
-export default pool;

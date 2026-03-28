@@ -116,7 +116,15 @@ class DashboardService {
 
   async syncToFile() {
     try {
-      const response = await fetch('/api/data/dashboard', {
+      const baseUrl = process.env.APP_BASE_URL?.replace(/\/$/, '')
+        || process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
+        || process.env.GITHUB_OAUTH_BASE_URL?.replace(/\/$/, '');
+
+      if (!baseUrl) {
+        return;
+      }
+
+      const response = await fetch(`${baseUrl}/api/data/dashboard`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

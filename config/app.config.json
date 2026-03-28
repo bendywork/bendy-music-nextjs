@@ -9,9 +9,24 @@
         "yokeay"
       ],
       "scopes": [
-        "read:user",
-        "repo"
+        "read:user"
       ]
+    }
+  },
+  "repoSync": {
+    "docs": {
+      "enabled": true,
+      "branch": "main",
+      "readmePath": "README.md",
+      "apiDocPath": "doc/doc-prop.json",
+      "auth": {
+        "tokenEnvName": "GITHUB_REPO_TOKEN"
+      },
+      "commit": {
+        "messagePrefix": "docs",
+        "authorName": "ddmusic-bot",
+        "authorEmail": "bot@ddmusic.local"
+      }
     }
   }
 }

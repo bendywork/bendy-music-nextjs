@@ -238,3 +238,35 @@
   - push：未执行（未配置远程 origin）
 - 风险与回滚：文档与仓库初始化为低风险操作，可直接回退对应提交。
 - 备注：远程仓库地址配置后可按 `feat/* -> dev -> main` 策略进入标准发布流。
+
+## [v0.1.3] - 2026-03-28
+- 迭代类型：feat（数据存储与文档同步改造）
+- 需求来源：移除基于 GitHub repo 的业务数据读写，统一改为 PostgreSQL + Redis，并在文档管理中支持按全局 auth 配置提交到仓库。
+- 变更摘要：完成 API 数据层 PostgreSQL 化、Redis 缓存接入（兼容 Upstash URL）、文档管理服务端化并新增 README/API 文档自动 commit 能力。
+- 具体修改：
+  - 修改文件：`src/lib/server/data-store.ts`、`src/lib/db.ts`、`src/app/api/data/api/route.ts`、`src/app/api/data/provider/route.ts`、`src/app/api/data/dashboard/route.ts`、`src/app/api/sys/route.ts`
+  - 修改方式：重构数据读写实现，统一通过 PostgreSQL 表 `app_data_store` 存储，并通过 Redis 做读缓存。
+  - 关键实现：首次读取自动从原 `data/*.json` / `sys.json` 回填到 PostgreSQL，实现平滑迁移。
+  - 修改文件：`src/app/api/data/docs/readme/route.ts`、`src/app/api/data/docs/api/route.ts`、`src/lib/server/repo-sync.ts`、`src/lib/server/global-config.ts`、`config/app.config.json`
+  - 修改方式：新增文档管理 API 与仓库同步服务，补充全局 repo auth 配置。
+  - 关键实现：文档保存先入 PostgreSQL，再按 `repoSync.docs.auth.tokenEnvName` 对应环境变量令牌提交到 GitHub 仓库指定分支。
+  - 修改文件：`src/app/dashboard/page.tsx`、`src/lib/github.ts`
+  - 修改方式：移除前端直连 GitHub repo 的配置读写流程，统一改为调用后端 API。
+  - 关键实现：README 与 API 文档保存返回 commit 结果，provider/api/sys 配置仅通过后端数据接口更新。
+  - 修改文件：`.env.example`、`.env.development.example`、`.env.staging.example`、`.env.production.example`、`README.md`、`db/migrations/20260328_postgres_store.sql`、`docs/plan.md`、`config/release.config.json`、`package.json`
+  - 修改方式：更新部署与变量说明，新增 PostgreSQL 迁移 SQL，递增版本号至 `v0.1.3`。
+  - 关键实现：补充 Upstash 兼容配置示例（`rediss://`）及 docs repo sync 环境变量。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，27 warning）。
+  - test：已执行 `npm test`，失败（仓库未定义 `test` script）。
+  - build：已执行 `npm run build`，通过（含 1 条 Turbopack NFT tracing warning）。
+  - audit：已执行 `npm audit`，存在 2 条 moderate 漏洞（无 high/critical）。
+- 发布动作：
+  - 分支：未执行
+  - commit：未执行
+  - tag：未执行
+  - push：未执行
+- 风险与回滚：
+  - 风险：部署环境需提供 `DATABASE_URL` 与 Redis 连接，否则新数据接口不可用；文档 commit 依赖 `GITHUB_REPO_TOKEN`（或自定义 token env）配置。
+  - 回滚：可回退本迭代文件并恢复原本地 JSON 路由实现。
+- 备注：`GITHUB_OAUTH_SCOPES` 默认已调整为 `read:user`，repo 写入权限从 OAuth 用户 token 转为全局仓库 token 配置。

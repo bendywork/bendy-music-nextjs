@@ -1,6 +1,6 @@
 {
   "name": "ddmusic-nextjs",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,13 +10,12 @@
   },
   "dependencies": {
     "@prisma/client": "^7.3.0",
-    "@types/redis": "^4.0.10",
     "axios": "^1.13.2",
     "linkify-it": "^5.0.0",
     "markdown-it": "^14.1.0",
     "mdurl": "^2.0.0",
-    "mysql2": "^3.16.1",
     "next": "^16.2.1",
+    "pg": "^8.16.3",
     "prisma": "^7.3.0",
     "punycode": "^2.3.1",
     "react": "19.2.3",
@@ -28,6 +27,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20",
+    "@types/pg": "^8.15.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
