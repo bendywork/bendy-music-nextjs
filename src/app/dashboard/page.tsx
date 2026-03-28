@@ -10,9 +10,7 @@ export default function DashboardPage() {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [readmeContent, setReadmeContent] = useState('');
-  const [readmeSha, setReadmeSha] = useState('');
   const [docPropContent, setDocPropContent] = useState('');
-  const [docPropSha, setDocPropSha] = useState('');
   const [activeDocTab, setActiveDocTab] = useState('readme'); // readme 鎴?api
   const [providers, setProviders] = useState<any[]>([]);
   const [editingProvider, setEditingProvider] = useState<any>(null);
@@ -225,41 +223,25 @@ export default function DashboardPage() {
   const loadDocuments = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
-      // 鍔犺浇README.md
-      try {
-        const readme = await githubService.readFile('README.md');
-        setReadmeContent(readme.content);
-        setReadmeSha(readme.sha);
-      } catch (readmeErr) {
-        console.warn('璇诲彇README.md澶辫触:', readmeErr);
-        setReadmeContent('# ddmusic-nextjs\n\n鍩轰簬Next.js鐨勯煶涔愯仛鍚圓PI浠ｇ悊鏈嶅姟');
-        setReadmeSha('');
+      const [readmeResponse, apiDocResponse] = await Promise.all([
+        fetch('/api/data/docs/readme', { cache: 'no-store' }),
+        fetch('/api/data/docs/api', { cache: 'no-store' }),
+      ]);
+
+      if (readmeResponse.ok) {
+        const readmePayload = await readmeResponse.json();
+        setReadmeContent(readmePayload.content || '# ddmusic-nextjs\n');
+      } else {
+        setReadmeContent('# ddmusic-nextjs\n');
       }
-      
-      // 鍔犺浇doc-prop.json
-      try {
-        const docProp = await githubService.readFile('doc/doc-prop.json');
-        setDocPropContent(docProp.content);
-        setDocPropSha(docProp.sha);
-      } catch (docPropErr) {
-        console.warn('璇诲彇doc-prop.json澶辫触:', docPropErr);
-        // 浣跨敤榛樿閰嶇疆
-        const defaultConfig = {
-          "api": {
-            "toplists": {
-              "netease": {
-                "enabled": true,
-                "description": "鑾峰彇缃戞槗浜戦煶涔愭帓琛屾鍒楄〃",
-                "endpoint": "GET /api?provider=tunehub&source=netease&type=toplists",
-                "params": []
-              }
-            }
-          }
-        };
-        setDocPropContent(JSON.stringify(defaultConfig, null, 2));
-        setDocPropSha('');
+
+      if (apiDocResponse.ok) {
+        const apiDocPayload = await apiDocResponse.json();
+        setDocPropContent(apiDocPayload.content || '{\n  "api": {}\n}\n');
+      } else {
+        setDocPropContent('{\n  "api": {}\n}\n');
       }
     } catch (err) {
       setError('Failed to load documents');
@@ -272,19 +254,25 @@ export default function DashboardPage() {
     setLoading(true);
     setError('');
     setSuccess('');
-    
+
     try {
-      await githubService.writeFile('README.md', readmeContent, 'Update README.md', readmeSha);
-      setSuccess('README.md 淇濆瓨鎴愬姛');
-      // 閲嶆柊鍔犺浇浠ヨ幏鍙栨渶鏂扮殑sha
-      try {
-        const readme = await githubService.readFile('README.md');
-        setReadmeSha(readme.sha);
-      } catch (readmeErr) {
-        console.warn('閲嶆柊璇诲彇README.md澶辫触:', readmeErr);
+      const response = await fetch('/api/data/docs/readme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: readmeContent }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || 'Failed to save README.md');
       }
+
+      const syncSuffix = payload.repoSync?.message ? ` (${payload.repoSync.message})` : '';
+      setSuccess(`README.md 保存成功${syncSuffix}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '淇濆瓨README.md澶辫触');
+      setError(err instanceof Error ? err.message : '保存 README.md 失败');
     } finally {
       setLoading(false);
     }
@@ -294,19 +282,25 @@ export default function DashboardPage() {
     setLoading(true);
     setError('');
     setSuccess('');
-    
+
     try {
-      await githubService.writeFile('doc/doc-prop.json', docPropContent, 'Update doc-prop.json', docPropSha);
-      setSuccess('doc-prop.json 淇濆瓨鎴愬姛');
-      // 閲嶆柊鍔犺浇浠ヨ幏鍙栨渶鏂扮殑sha
-      try {
-        const docProp = await githubService.readFile('doc/doc-prop.json');
-        setDocPropSha(docProp.sha);
-      } catch (docPropErr) {
-        console.warn('閲嶆柊璇诲彇doc-prop.json澶辫触:', docPropErr);
+      const response = await fetch('/api/data/docs/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: docPropContent }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || 'Failed to save API document config');
       }
+
+      const syncSuffix = payload.repoSync?.message ? ` (${payload.repoSync.message})` : '';
+      setSuccess(`API 文档配置保存成功${syncSuffix}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '淇濆瓨doc-prop.json澶辫触');
+      setError(err instanceof Error ? err.message : '保存 API 文档配置失败');
     } finally {
       setLoading(false);
     }
@@ -317,9 +311,7 @@ export default function DashboardPage() {
     githubService.logout();
     setIsLoggedIn(false);
     setReadmeContent('');
-    setReadmeSha('');
     setDocPropContent('');
-    setDocPropSha('');
     setProviders([]);
     setSysConfig({
       project: {
@@ -410,111 +402,24 @@ export default function DashboardPage() {
 
   // 淇濆瓨鏈嶅姟鍟嗛厤缃?
   const saveProviderConfig = async () => {
-    console.log('寮€濮嬩繚瀛樻湇鍔″晢閰嶇疆...');
-    console.log('褰撳墠providers鐘舵€?', providers);
     try {
-      // 鏋勫缓鏈嶅姟鍟嗛厤缃唴瀹?
-      const providerConfig = {
-        providers
-      };
-
-      console.log('鏋勫缓鐨勬湇鍔″晢閰嶇疆:', providerConfig);
-
-      // 浣跨敤API绔偣淇濆瓨provider.json鏂囦欢
-      console.log('姝ｅ湪淇濆瓨鍒版湰鍦皃rovider.json鏂囦欢...');
       const response = await fetch('/api/data/provider', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(providerConfig)
+        body: JSON.stringify({ providers }),
       });
 
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鐘舵€?', response.status);
-      
-      // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-      const responseText = await response.text();
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鍐呭:', responseText);
-
       if (!response.ok) {
-        throw new Error(`淇濆瓨鏈嶅姟鍟嗛厤缃け璐? ${responseText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`保存服务商配置失败: ${errorData.error || '未知错误'}`);
       }
 
-      // 鍚屾椂鏇存柊GitHub浠撳簱涓殑provider.json鏂囦欢
-      try {
-        const token = localStorage.getItem('github_token');
-        if (token) {
-          // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-          let repoOwner = 'yokeay';
-          let repoName = 'ddmusic-nextjs';
-          
-          // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-          const githubPath = sysConfig.project.github;
-          if (githubPath) {
-            const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-            if (match) {
-              repoOwner = match[1];
-              repoName = match[2];
-            }
-          }
-
-          // 鏋勫缓GitHub API URL
-          const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/provider.json`;
-
-          // 棣栧厛鑾峰彇褰撳墠provider.json鐨剆ha鍊?
-          let providerJsonSha = '';
-          try {
-            const providerJsonResponse = await fetch(apiUrl, {
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (providerJsonResponse.ok) {
-              const providerJsonData = await providerJsonResponse.json();
-              providerJsonSha = providerJsonData.sha;
-            }
-          } catch (err) {
-            console.warn('鑾峰彇GitHub浠撳簱涓璸rovider.json鐨剆ha鍊煎け璐?', err);
-          }
-
-          // 淇濆瓨provider.json鏂囦欢鍒癎itHub浠撳簱
-          const githubResponse = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: 'Update provider.json',
-              content: btoa(unescape(encodeURIComponent(JSON.stringify(providerConfig, null, 2)))),
-              sha: providerJsonSha
-            })
-          });
-
-          if (!githubResponse.ok) {
-            const errorData = await githubResponse.json();
-            console.warn('淇濆瓨provider.json鍒癎itHub浠撳簱澶辫触:', errorData);
-            // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-            setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-            // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-          } else {
-            console.log('provider.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-            // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-            setSuccess('鏈嶅姟鍟嗛厤缃繚瀛樻垚鍔燂紝宸插悓姝ュ埌GitHub浠撳簱');
-          }
-        }
-      } catch (githubErr) {
-        console.warn('鏇存柊GitHub浠撳簱涓殑provider.json澶辫触:', githubErr);
-        // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-      }
-
-      console.log('Provider config saved');
       return true;
     } catch (err) {
-      console.error('淇濆瓨鏈嶅姟鍟嗛厤缃け璐?', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鏈嶅姟鍟嗛厤缃け璐ワ紝璇锋鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('保存服务商配置失败:', err);
+      setError(err instanceof Error ? err.message : '保存服务商配置失败，请检查服务端权限');
       return false;
     }
   };
@@ -522,104 +427,16 @@ export default function DashboardPage() {
   // 淇濆瓨鍒皊ys.json鐨勫嚱鏁帮紙淇濇寔鍚戝悗鍏煎锛?
   const saveToSysJson = async () => {
     try {
-      // 淇濆瓨绯荤粺閰嶇疆
       const sysSaved = await saveSysConfig();
-      // 淇濆瓨鎺ュ彛閰嶇疆
       const apiSaved = await saveApiConfig();
-      // 淇濆瓨鏈嶅姟鍟嗛厤缃?
       const providerSaved = await saveProviderConfig();
 
       if (sysSaved && apiSaved && providerSaved) {
-        // 淇濆瓨鎴愬姛鍚庯紝鍚屾椂鏇存柊GitHub浠撳簱涓殑sys.json鏂囦欢
-        try {
-          const token = localStorage.getItem('github_token');
-          if (token) {
-            // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-            let repoOwner = 'yokeay';
-            let repoName = 'ddmusic-nextjs';
-            
-            // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-            const githubPath = sysConfig.project.github;
-            if (githubPath) {
-              const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-              if (match) {
-                repoOwner = match[1];
-                repoName = match[2];
-              }
-            }
-
-            // 鏋勫缓GitHub API URL
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/sys.json`;
-
-            // 棣栧厛鑾峰彇褰撳墠sys.json鐨剆ha鍊?
-            let sysJsonSha = '';
-            try {
-              const sysJsonResponse = await fetch(apiUrl, {
-                headers: {
-                  'Authorization': `token ${token}`,
-                  'Accept': 'application/vnd.github.v3+json'
-                }
-              });
-              if (sysJsonResponse.ok) {
-                const sysJsonData = await sysJsonResponse.json();
-                sysJsonSha = sysJsonData.sha;
-              }
-            } catch (err) {
-              console.warn('鑾峰彇GitHub浠撳簱涓璼ys.json鐨剆ha鍊煎け璐?', err);
-            }
-
-            // 鏋勫缓sys.json鍐呭
-            const newSysConfig = {
-              apiManagement: {
-                apis: []
-              },
-              providerManagement: {
-                providers
-              },
-              configuration: {
-                githubProjectPath: sysConfig.project.github,
-                apiTimeout: parseInt(sysConfig.api.timeout) * 1000,
-                maxConcurrentRequests: parseInt(sysConfig.api.maxConcurrentRequests)
-              }
-            };
-
-            // 淇濆瓨sys.json鏂囦欢鍒癎itHub浠撳簱
-            const githubResponse = await fetch(apiUrl, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                message: 'Update sys.json',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(newSysConfig, null, 2)))),
-                sha: sysJsonSha
-              })
-            });
-
-            if (!githubResponse.ok) {
-              const errorData = await githubResponse.json();
-              console.warn('淇濆瓨sys.json鍒癎itHub浠撳簱澶辫触:', errorData);
-              // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-              setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-              // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-            } else {
-              console.log('sys.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-              // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-              setSuccess('閰嶇疆淇濆瓨鎴愬姛锛屽凡鍚屾鍒癎itHub浠撳簱');
-            }
-          }
-        } catch (githubErr) {
-          console.warn('鏇存柊GitHub浠撳簱涓殑sys.json澶辫触:', githubErr);
-          // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-        }
-
-        setSuccess('閰嶇疆淇濆瓨鎴愬姛');
+        setSuccess('配置保存成功');
       }
     } catch (err) {
-      console.error('淇濆瓨閰嶇疆澶辫触:', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨閰嶇疆澶辫触锛岃妫€鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('保存配置失败:', err);
+      setError(err instanceof Error ? err.message : '保存配置失败，请检查服务端权限');
     }
   };
 
@@ -644,343 +461,97 @@ export default function DashboardPage() {
 
   const handleSaveProvider = async () => {
     if (!editingProvider) return;
-    
+
     if (!editingProvider.name || !editingProvider.code) {
-      setError('鏈嶅姟鍟嗗悕绉板拰浠ｇ爜涓嶈兘涓虹┖');
+      setError('服务商名称和代码不能为空');
       return;
     }
 
-    const updatedProviders = providers.map(p => 
+    const updatedProviders = providers.map((p) =>
       p.id === editingProvider.id ? editingProvider : p
     );
 
-    if (!providers.some(p => p.id === editingProvider.id)) {
+    if (!providers.some((p) => p.id === editingProvider.id)) {
       updatedProviders.push(editingProvider);
     }
 
     setProviders(updatedProviders);
     setEditingProvider(null);
-    
-    try {
-      // 淇濆瓨鏈嶅姟鍟嗛厤缃?
-      const providerConfig = {
-        providers: updatedProviders
-      };
 
-      // 鍏堜繚瀛樺埌鏈湴
-      console.log('姝ｅ湪淇濆瓨鍒版湰鍦皃rovider.json鏂囦欢...');
+    try {
       const response = await fetch('/api/data/provider', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(providerConfig)
+        body: JSON.stringify({ providers: updatedProviders }),
       });
 
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鐘舵€?', response.status);
-      
-      // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-      const responseText = await response.text();
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鍐呭:', responseText);
-
       if (!response.ok) {
-        throw new Error(`淇濆瓨鏈嶅姟鍟嗛厤缃け璐? ${responseText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '保存服务商失败');
       }
 
-      // 鍚屾椂鏇存柊GitHub浠撳簱涓殑provider.json鏂囦欢
-      try {
-        const token = localStorage.getItem('github_token');
-        if (token) {
-          // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-          let repoOwner = 'yokeay';
-          let repoName = 'ddmusic-nextjs';
-          
-          // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-          const githubPath = sysConfig.project.github;
-          if (githubPath) {
-            const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-            if (match) {
-              repoOwner = match[1];
-              repoName = match[2];
-            }
-          }
-
-          // 鏋勫缓GitHub API URL
-          const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/provider.json`;
-
-          // 棣栧厛鑾峰彇褰撳墠provider.json鐨剆ha鍊?
-          let providerJsonSha = '';
-          try {
-            const providerJsonResponse = await fetch(apiUrl, {
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (providerJsonResponse.ok) {
-              const providerJsonData = await providerJsonResponse.json();
-              providerJsonSha = providerJsonData.sha;
-            }
-          } catch (err) {
-            console.warn('鑾峰彇GitHub浠撳簱涓璸rovider.json鐨剆ha鍊煎け璐?', err);
-          }
-
-          // 淇濆瓨provider.json鏂囦欢鍒癎itHub浠撳簱
-          const githubResponse = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: 'Update provider.json',
-              content: btoa(unescape(encodeURIComponent(JSON.stringify(providerConfig, null, 2)))),
-              sha: providerJsonSha
-            })
-          });
-
-          if (!githubResponse.ok) {
-            const errorData = await githubResponse.json();
-            console.warn('淇濆瓨provider.json鍒癎itHub浠撳簱澶辫触:', errorData);
-            // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-            setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-            // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-          } else {
-            console.log('provider.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-            // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-            setSuccess('鏈嶅姟鍟嗕繚瀛樻垚鍔燂紝宸插悓姝ュ埌GitHub浠撳簱');
-          }
-        }
-      } catch (githubErr) {
-        console.warn('鏇存柊GitHub浠撳簱涓殑provider.json澶辫触:', githubErr);
-        // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-      }
-
-      console.log('Provider config saved');
+      setSuccess('服务商保存成功');
     } catch (err) {
-      console.error('淇濆瓨鏈嶅姟鍟嗗け璐?', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鏈嶅姟鍟嗗け璐ワ紝璇锋鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('保存服务商失败:', err);
+      setError(err instanceof Error ? err.message : '保存服务商失败，请检查服务端权限');
     }
   };
 
   const handleDeleteProvider = async (providerId: string) => {
-    if (confirm('纭畾瑕佸垹闄よ繖涓湇鍔″晢鍚楋紵')) {
-      const updatedProviders = providers.filter(p => p.id !== providerId);
+    if (confirm('Are you sure you want to delete this provider?')) {
+      const updatedProviders = providers.filter((p) => p.id !== providerId);
       setProviders(updatedProviders);
-      
-      try {
-        // 淇濆瓨鏈嶅姟鍟嗛厤缃?
-        const providerConfig = {
-          providers: updatedProviders
-        };
 
-        // 鍏堜繚瀛樺埌鏈湴
-        console.log('姝ｅ湪淇濆瓨鍒版湰鍦皃rovider.json鏂囦欢...');
+      try {
         const response = await fetch('/api/data/provider', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(providerConfig)
+          body: JSON.stringify({ providers: updatedProviders }),
         });
 
-        console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鐘舵€?', response.status);
-        
-        // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-        const responseText = await response.text();
-        console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鍐呭:', responseText);
-
         if (!response.ok) {
-          throw new Error(`淇濆瓨鏈嶅姟鍟嗛厤缃け璐? ${responseText}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || '删除服务商失败');
         }
 
-        // 鍚屾椂鏇存柊GitHub浠撳簱涓殑provider.json鏂囦欢
-        try {
-          const token = localStorage.getItem('github_token');
-          if (token) {
-            // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-            let repoOwner = 'yokeay';
-            let repoName = 'ddmusic-nextjs';
-            
-            // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-            const githubPath = sysConfig.project.github;
-            if (githubPath) {
-              const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-              if (match) {
-                repoOwner = match[1];
-                repoName = match[2];
-              }
-            }
-
-            // 鏋勫缓GitHub API URL
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/provider.json`;
-
-            // 棣栧厛鑾峰彇褰撳墠provider.json鐨剆ha鍊?
-            let providerJsonSha = '';
-            try {
-              const providerJsonResponse = await fetch(apiUrl, {
-                headers: {
-                  'Authorization': `token ${token}`,
-                  'Accept': 'application/vnd.github.v3+json'
-                }
-              });
-              if (providerJsonResponse.ok) {
-                const providerJsonData = await providerJsonResponse.json();
-                providerJsonSha = providerJsonData.sha;
-              }
-            } catch (err) {
-              console.warn('鑾峰彇GitHub浠撳簱涓璸rovider.json鐨剆ha鍊煎け璐?', err);
-            }
-
-            // 淇濆瓨provider.json鏂囦欢鍒癎itHub浠撳簱
-            const githubResponse = await fetch(apiUrl, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                message: 'Update provider.json',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(providerConfig, null, 2)))),
-                sha: providerJsonSha
-              })
-            });
-
-            if (!githubResponse.ok) {
-              const errorData = await githubResponse.json();
-              console.warn('淇濆瓨provider.json鍒癎itHub浠撳簱澶辫触:', errorData);
-              // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-              setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-              // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-            } else {
-              console.log('provider.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-              // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-              setSuccess('鏈嶅姟鍟嗗垹闄ゆ垚鍔燂紝宸插悓姝ュ埌GitHub浠撳簱');
-            }
-          }
-        } catch (githubErr) {
-          console.warn('鏇存柊GitHub浠撳簱涓殑provider.json澶辫触:', githubErr);
-          // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-        }
-
-        console.log('Provider config saved');
+        setSuccess('服务商删除成功');
       } catch (err) {
-        console.error('淇濆瓨鏈嶅姟鍟嗗け璐?', err);
-        setError(err instanceof Error ? err.message : '淇濆瓨鏈嶅姟鍟嗗け璐ワ紝璇锋鏌ユ湇鍔″櫒鏉冮檺');
+        console.error('删除服务商失败:', err);
+        setError(err instanceof Error ? err.message : '删除服务商失败，请检查服务端权限');
       }
     }
   };
 
   const handleToggleProviderStatus = async (providerId: string) => {
-    const updatedProviders = providers.map(p => 
-      p.id === providerId 
+    const updatedProviders = providers.map((p) =>
+      p.id === providerId
         ? { ...p, status: p.status === 'enabled' ? 'disabled' : 'enabled' }
         : p
     );
     setProviders(updatedProviders);
-    
-    try {
-      // 淇濆瓨鏈嶅姟鍟嗛厤缃?
-      const providerConfig = {
-        providers: updatedProviders
-      };
 
-      // 鍏堜繚瀛樺埌鏈湴
-      console.log('姝ｅ湪淇濆瓨鍒版湰鍦皃rovider.json鏂囦欢...');
+    try {
       const response = await fetch('/api/data/provider', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(providerConfig)
+        body: JSON.stringify({ providers: updatedProviders }),
       });
 
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鐘舵€?', response.status);
-      
-      // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-      const responseText = await response.text();
-      console.log('淇濆瓨鏈嶅姟鍟嗛厤缃殑鍝嶅簲鍐呭:', responseText);
-
       if (!response.ok) {
-        throw new Error(`淇濆瓨鏈嶅姟鍟嗛厤缃け璐? ${responseText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '更新服务商状态失败');
       }
 
-      // 鍚屾椂鏇存柊GitHub浠撳簱涓殑provider.json鏂囦欢
-      try {
-        const token = localStorage.getItem('github_token');
-        if (token) {
-          // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-          let repoOwner = 'yokeay';
-          let repoName = 'ddmusic-nextjs';
-          
-          // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-          const githubPath = sysConfig.project.github;
-          if (githubPath) {
-            const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-            if (match) {
-              repoOwner = match[1];
-              repoName = match[2];
-            }
-          }
-
-          // 鏋勫缓GitHub API URL
-          const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/provider.json`;
-
-          // 棣栧厛鑾峰彇褰撳墠provider.json鐨剆ha鍊?
-          let providerJsonSha = '';
-          try {
-            const providerJsonResponse = await fetch(apiUrl, {
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (providerJsonResponse.ok) {
-              const providerJsonData = await providerJsonResponse.json();
-              providerJsonSha = providerJsonData.sha;
-            }
-          } catch (err) {
-            console.warn('鑾峰彇GitHub浠撳簱涓璸rovider.json鐨剆ha鍊煎け璐?', err);
-          }
-
-          // 淇濆瓨provider.json鏂囦欢鍒癎itHub浠撳簱
-          const githubResponse = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: 'Update provider.json',
-              content: btoa(unescape(encodeURIComponent(JSON.stringify(providerConfig, null, 2)))),
-              sha: providerJsonSha
-            })
-          });
-
-          if (!githubResponse.ok) {
-            const errorData = await githubResponse.json();
-            console.warn('淇濆瓨provider.json鍒癎itHub浠撳簱澶辫触:', errorData);
-            // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-            setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-            // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-          } else {
-            console.log('provider.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-            // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-            setSuccess('鏈嶅姟鍟嗙姸鎬佹洿鏂版垚鍔燂紝宸插悓姝ュ埌GitHub浠撳簱');
-          }
-        }
-      } catch (githubErr) {
-        console.warn('鏇存柊GitHub浠撳簱涓殑provider.json澶辫触:', githubErr);
-        // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-      }
-
-      console.log('Provider config saved');
+      setSuccess('服务商状态更新成功');
     } catch (err) {
-      console.error('淇濆瓨鏈嶅姟鍟嗙姸鎬佸け璐?', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鏈嶅姟鍟嗙姸鎬佸け璐ワ紝璇锋鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('更新服务商状态失败:', err);
+      setError(err instanceof Error ? err.message : '更新服务商状态失败，请检查服务端权限');
     }
   };
 
@@ -1007,343 +578,97 @@ export default function DashboardPage() {
 
   const handleSaveApi = async () => {
     if (!editingApi) return;
-    
+
     if (!editingApi.name || !editingApi.path || !editingApi.method) {
-      setError('鎺ュ彛鍚嶇О銆佽矾寰勫拰鏂规硶涓嶈兘涓虹┖');
+      setError('接口名称、路径和方法不能为空');
       return;
     }
 
-    const updatedApis = apis.map(p => 
+    const updatedApis = apis.map((p) =>
       p.id === editingApi.id ? editingApi : p
     );
 
-    if (!apis.some(p => p.id === editingApi.id)) {
+    if (!apis.some((p) => p.id === editingApi.id)) {
       updatedApis.push(editingApi);
     }
 
     setApis(updatedApis);
     setEditingApi(null);
-    
-    try {
-      // 淇濆瓨鎺ュ彛閰嶇疆
-      const apiConfig = {
-        apis: updatedApis
-      };
 
-      // 鍏堜繚瀛樺埌鏈湴
-      console.log('姝ｅ湪淇濆瓨鍒版湰鍦癮pi.json鏂囦欢...');
+    try {
       const response = await fetch('/api/data/api', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(apiConfig)
+        body: JSON.stringify({ apis: updatedApis }),
       });
 
-      console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴旂姸鎬?', response.status);
-      
-      // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-      const responseText = await response.text();
-      console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴斿唴瀹?', responseText);
-
       if (!response.ok) {
-        throw new Error(`淇濆瓨鎺ュ彛閰嶇疆澶辫触: ${responseText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '保存接口失败');
       }
 
-      // 鍚屾椂鏇存柊GitHub浠撳簱涓殑api.json鏂囦欢
-      try {
-        const token = localStorage.getItem('github_token');
-        if (token) {
-          // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-          let repoOwner = 'yokeay';
-          let repoName = 'ddmusic-nextjs';
-          
-          // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-          const githubPath = sysConfig.project.github;
-          if (githubPath) {
-            const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-            if (match) {
-              repoOwner = match[1];
-              repoName = match[2];
-            }
-          }
-
-          // 鏋勫缓GitHub API URL
-          const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/api.json`;
-
-          // 棣栧厛鑾峰彇褰撳墠api.json鐨剆ha鍊?
-          let apiJsonSha = '';
-          try {
-            const apiJsonResponse = await fetch(apiUrl, {
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (apiJsonResponse.ok) {
-              const apiJsonData = await apiJsonResponse.json();
-              apiJsonSha = apiJsonData.sha;
-            }
-          } catch (err) {
-            console.warn('鑾峰彇GitHub浠撳簱涓璦pi.json鐨剆ha鍊煎け璐?', err);
-          }
-
-          // 淇濆瓨api.json鏂囦欢鍒癎itHub浠撳簱
-          const githubResponse = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: 'Update api.json',
-              content: btoa(unescape(encodeURIComponent(JSON.stringify(apiConfig, null, 2)))),
-              sha: apiJsonSha
-            })
-          });
-
-          if (!githubResponse.ok) {
-            const errorData = await githubResponse.json();
-            console.warn('淇濆瓨api.json鍒癎itHub浠撳簱澶辫触:', errorData);
-            // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-            setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-            // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-          } else {
-            console.log('api.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-            // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-            setSuccess('鎺ュ彛淇濆瓨鎴愬姛锛屽凡鍚屾鍒癎itHub浠撳簱');
-          }
-        }
-      } catch (githubErr) {
-        console.warn('鏇存柊GitHub浠撳簱涓殑api.json澶辫触:', githubErr);
-        // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-      }
-
-      console.log('鎺ュ彛閰嶇疆淇濆瓨鎴愬姛');
+      setSuccess('接口保存成功');
     } catch (err) {
-      console.error('淇濆瓨鎺ュ彛澶辫触:', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鎺ュ彛澶辫触锛岃妫€鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('保存接口失败:', err);
+      setError(err instanceof Error ? err.message : '保存接口失败，请检查服务端权限');
     }
   };
 
   const handleDeleteApi = async (apiId: string) => {
     if (confirm('Are you sure you want to delete this API?')) {
-      const updatedApis = apis.filter(p => p.id !== apiId);
+      const updatedApis = apis.filter((p) => p.id !== apiId);
       setApis(updatedApis);
-      
-      try {
-        // 淇濆瓨鎺ュ彛閰嶇疆
-        const apiConfig = {
-          apis: updatedApis
-        };
 
-        // 鍏堜繚瀛樺埌鏈湴
-        console.log('姝ｅ湪淇濆瓨鍒版湰鍦癮pi.json鏂囦欢...');
+      try {
         const response = await fetch('/api/data/api', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(apiConfig)
+          body: JSON.stringify({ apis: updatedApis }),
         });
 
-        console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴旂姸鎬?', response.status);
-        
-        // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-        const responseText = await response.text();
-        console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴斿唴瀹?', responseText);
-
         if (!response.ok) {
-          throw new Error(`淇濆瓨鎺ュ彛閰嶇疆澶辫触: ${responseText}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || '删除接口失败');
         }
 
-        // 鍚屾椂鏇存柊GitHub浠撳簱涓殑api.json鏂囦欢
-        try {
-          const token = localStorage.getItem('github_token');
-          if (token) {
-            // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-            let repoOwner = 'yokeay';
-            let repoName = 'ddmusic-nextjs';
-            
-            // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-            const githubPath = sysConfig.project.github;
-            if (githubPath) {
-              const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-              if (match) {
-                repoOwner = match[1];
-                repoName = match[2];
-              }
-            }
-
-            // 鏋勫缓GitHub API URL
-            const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/api.json`;
-
-            // 棣栧厛鑾峰彇褰撳墠api.json鐨剆ha鍊?
-            let apiJsonSha = '';
-            try {
-              const apiJsonResponse = await fetch(apiUrl, {
-                headers: {
-                  'Authorization': `token ${token}`,
-                  'Accept': 'application/vnd.github.v3+json'
-                }
-              });
-              if (apiJsonResponse.ok) {
-                const apiJsonData = await apiJsonResponse.json();
-                apiJsonSha = apiJsonData.sha;
-              }
-            } catch (err) {
-              console.warn('鑾峰彇GitHub浠撳簱涓璦pi.json鐨剆ha鍊煎け璐?', err);
-            }
-
-            // 淇濆瓨api.json鏂囦欢鍒癎itHub浠撳簱
-            const githubResponse = await fetch(apiUrl, {
-              method: 'PUT',
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                message: 'Update api.json',
-                content: btoa(unescape(encodeURIComponent(JSON.stringify(apiConfig, null, 2)))),
-                sha: apiJsonSha
-              })
-            });
-
-            if (!githubResponse.ok) {
-              const errorData = await githubResponse.json();
-              console.warn('淇濆瓨api.json鍒癎itHub浠撳簱澶辫触:', errorData);
-              // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-              setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-              // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-            } else {
-              console.log('api.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-              // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-              setSuccess('鎺ュ彛鍒犻櫎鎴愬姛锛屽凡鍚屾鍒癎itHub浠撳簱');
-            }
-          }
-        } catch (githubErr) {
-          console.warn('鏇存柊GitHub浠撳簱涓殑api.json澶辫触:', githubErr);
-          // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-        }
-
-        console.log('鎺ュ彛閰嶇疆淇濆瓨鎴愬姛');
+        setSuccess('接口删除成功');
       } catch (err) {
-        console.error('淇濆瓨鎺ュ彛澶辫触:', err);
-        setError(err instanceof Error ? err.message : '淇濆瓨鎺ュ彛澶辫触锛岃妫€鏌ユ湇鍔″櫒鏉冮檺');
+        console.error('删除接口失败:', err);
+        setError(err instanceof Error ? err.message : '删除接口失败，请检查服务端权限');
       }
     }
   };
 
   const handleToggleApiStatus = async (apiId: string) => {
-    const updatedApis = apis.map(p => 
-      p.id === apiId 
+    const updatedApis = apis.map((p) =>
+      p.id === apiId
         ? { ...p, status: p.status === 'enabled' ? 'disabled' : 'enabled' }
         : p
     );
     setApis(updatedApis);
-    
-    try {
-      // 淇濆瓨鎺ュ彛閰嶇疆
-      const apiConfig = {
-        apis: updatedApis
-      };
 
-      // 鍏堜繚瀛樺埌鏈湴
-      console.log('姝ｅ湪淇濆瓨鍒版湰鍦癮pi.json鏂囦欢...');
+    try {
       const response = await fetch('/api/data/api', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(apiConfig)
+        body: JSON.stringify({ apis: updatedApis }),
       });
 
-      console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴旂姸鎬?', response.status);
-      
-      // 鑾峰彇瀹屾暣鐨勫搷搴斿唴瀹?
-      const responseText = await response.text();
-      console.log('淇濆瓨鎺ュ彛閰嶇疆鐨勫搷搴斿唴瀹?', responseText);
-
       if (!response.ok) {
-        throw new Error(`淇濆瓨鎺ュ彛閰嶇疆澶辫触: ${responseText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || '更新接口状态失败');
       }
 
-      // 鍚屾椂鏇存柊GitHub浠撳簱涓殑api.json鏂囦欢
-      try {
-        const token = localStorage.getItem('github_token');
-        if (token) {
-          // 浠庨厤缃腑鎻愬彇GitHub椤圭洰璺緞
-          let repoOwner = 'yokeay';
-          let repoName = 'ddmusic-nextjs';
-          
-          // 灏濊瘯浠庨厤缃殑GitHub璺緞涓彁鍙杘wner鍜宺epo
-          const githubPath = sysConfig.project.github;
-          if (githubPath) {
-            const match = githubPath.match(/github\.com\/(.*?)\/(.*?)(?:\/|$)/);
-            if (match) {
-              repoOwner = match[1];
-              repoName = match[2];
-            }
-          }
-
-          // 鏋勫缓GitHub API URL
-          const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data/api.json`;
-
-          // 棣栧厛鑾峰彇褰撳墠api.json鐨剆ha鍊?
-          let apiJsonSha = '';
-          try {
-            const apiJsonResponse = await fetch(apiUrl, {
-              headers: {
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            if (apiJsonResponse.ok) {
-              const apiJsonData = await apiJsonResponse.json();
-              apiJsonSha = apiJsonData.sha;
-            }
-          } catch (err) {
-            console.warn('鑾峰彇GitHub浠撳簱涓璦pi.json鐨剆ha鍊煎け璐?', err);
-          }
-
-          // 淇濆瓨api.json鏂囦欢鍒癎itHub浠撳簱
-          const githubResponse = await fetch(apiUrl, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `token ${token}`,
-              'Accept': 'application/vnd.github.v3+json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              message: 'Update api.json',
-              content: btoa(unescape(encodeURIComponent(JSON.stringify(apiConfig, null, 2)))),
-              sha: apiJsonSha
-            })
-          });
-
-          if (!githubResponse.ok) {
-            const errorData = await githubResponse.json();
-            console.warn('淇濆瓨api.json鍒癎itHub浠撳簱澶辫触:', errorData);
-            // 鏄剧ず璀﹀憡娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾澶辫触
-            setError(`GitHub鍚屾澶辫触: ${errorData.message || '鏈煡閿欒'}`);
-            // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-          } else {
-            console.log('api.json淇濆瓨鍒癎itHub浠撳簱鎴愬姛');
-            // 鏄剧ず鎴愬姛娑堟伅锛屽憡璇夌敤鎴稧itHub鍚屾鎴愬姛
-            setSuccess('鎺ュ彛鐘舵€佹洿鏂版垚鍔燂紝宸插悓姝ュ埌GitHub浠撳簱');
-          }
-        }
-      } catch (githubErr) {
-        console.warn('鏇存柊GitHub浠撳簱涓殑api.json澶辫触:', githubErr);
-        // 涓嶆姏鍑洪敊璇紝鍥犱负鏈湴淇濆瓨宸茬粡鎴愬姛
-      }
-
-      console.log('鎺ュ彛閰嶇疆淇濆瓨鎴愬姛');
+      setSuccess('接口状态更新成功');
     } catch (err) {
-      console.error('淇濆瓨鎺ュ彛鐘舵€佸け璐?', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鎺ュ彛鐘舵€佸け璐ワ紝璇锋鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('更新接口状态失败:', err);
+      setError(err instanceof Error ? err.message : '更新接口状态失败，请检查服务端权限');
     }
   };
 
@@ -2263,5 +1588,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 

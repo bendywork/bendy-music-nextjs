@@ -1,302 +1,303 @@
-# ddmusic-nextjs
+﻿# ddmusic-nextjs
 
-基于 Next.js 的音乐聚合 API 代理服务，为多平台音乐资源提供统一的访问接口。
+鍩轰簬 Next.js 鐨勯煶涔愯仛鍚?API 浠ｇ悊鏈嶅姟锛屼负澶氬钩鍙伴煶涔愯祫婧愭彁渚涚粺涓€鐨勮闂帴鍙ｃ€?
 
-## 🎯 项目简介
+## 馃幆 椤圭洰绠€浠?
 
-ddmusic-nextjs 是一个现代化的音乐聚合 API 代理服务，旨在解决不同音乐平台 API 访问的复杂性，为开发者提供统一、简洁的音乐资源访问接口。
+ddmusic-nextjs 鏄竴涓幇浠ｅ寲鐨勯煶涔愯仛鍚?API 浠ｇ悊鏈嶅姟锛屾棬鍦ㄨВ鍐充笉鍚岄煶涔愬钩鍙?API 璁块棶鐨勫鏉傛€э紝涓哄紑鍙戣€呮彁渚涚粺涓€銆佺畝娲佺殑闊充箰璧勬簮璁块棶鎺ュ彛銆?
 
-### 核心价值
-- **统一接口**：屏蔽不同音乐平台 API 的差异，提供标准化的访问方式
-- **多平台支持**：集成网易云音乐、QQ 音乐、酷我音乐等多个平台
-- **高效代理**：优化请求流程，提高访问速度和稳定性
-- **管理系统**：提供直观的后台管理界面，方便配置和监控
+### 鏍稿績浠峰€?
+- **缁熶竴鎺ュ彛**锛氬睆钄戒笉鍚岄煶涔愬钩鍙?API 鐨勫樊寮傦紝鎻愪緵鏍囧噯鍖栫殑璁块棶鏂瑰紡
+- **澶氬钩鍙版敮鎸?*锛氶泦鎴愮綉鏄撲簯闊充箰銆丵Q 闊充箰銆侀叿鎴戦煶涔愮瓑澶氫釜骞冲彴
+- **楂樻晥浠ｇ悊**锛氫紭鍖栬姹傛祦绋嬶紝鎻愰珮璁块棶閫熷害鍜岀ǔ瀹氭€?
+- **绠＄悊绯荤粺**锛氭彁渚涚洿瑙傜殑鍚庡彴绠＄悊鐣岄潰锛屾柟渚块厤缃拰鐩戞帶
 
-## ✨ 功能特点
+## 鉁?鍔熻兘鐗圭偣
 
-### 🔐 安全认证
-- GitHub Personal Access Token 认证
-- 安全的 token 存储和管理
+### 馃攼 瀹夊叏璁よ瘉
+- GitHub Personal Access Token 璁よ瘉
+- 瀹夊叏鐨?token 瀛樺偍鍜岀鐞?
 
-### 🎵 音乐平台集成
-- **网易云音乐**：支持音乐搜索、播放、歌单等功能
-- **QQ 音乐**：提供丰富的音乐资源访问
-- **酷我音乐**：集成第三方音乐平台资源
+### 馃幍 闊充箰骞冲彴闆嗘垚
+- **缃戞槗浜戦煶涔?*锛氭敮鎸侀煶涔愭悳绱€佹挱鏀俱€佹瓕鍗曠瓑鍔熻兘
+- **QQ 闊充箰**锛氭彁渚涗赴瀵岀殑闊充箰璧勬簮璁块棶
+- **閰锋垜闊充箰**锛氶泦鎴愮涓夋柟闊充箰骞冲彴璧勬簮
 
-### 🚀 高性能 API 代理
-- 基于 Next.js API 路由的高性能代理服务
-- 智能请求处理和错误重试机制
-- 支持多种音乐平台的 API 格式转换
+### 馃殌 楂樻€ц兘 API 浠ｇ悊
+- 鍩轰簬 Next.js API 璺敱鐨勯珮鎬ц兘浠ｇ悊鏈嶅姟
+- 鏅鸿兘璇锋眰澶勭悊鍜岄敊璇噸璇曟満鍒?
+- 鏀寔澶氱闊充箰骞冲彴鐨?API 鏍煎紡杞崲
 
-### 📊 管理后台
-- **系统仪表盘**：实时监控系统状态和请求统计
-- **接口管理**：统一管理所有 API 接口
-- **文档管理**：内置 Markdown 编辑器，方便管理 API 文档
-- **配置管理**：灵活的系统配置参数调整
+### 馃搳 绠＄悊鍚庡彴
+- **绯荤粺浠〃鐩?*锛氬疄鏃剁洃鎺х郴缁熺姸鎬佸拰璇锋眰缁熻
+- **鎺ュ彛绠＄悊**锛氱粺涓€绠＄悊鎵€鏈?API 鎺ュ彛
+- **鏂囨。绠＄悊**锛氬唴缃?Markdown 缂栬緫鍣紝鏂逛究绠＄悊 API 鏂囨。
+- **閰嶇疆绠＄悊**锛氱伒娲荤殑绯荤粺閰嶇疆鍙傛暟璋冩暣
 
-### 📚 完整的 API 文档
-- 详细的接口说明和使用示例
-- 支持文档在线编辑和更新
-- 多格式文档输出（HTML、Markdown）
+### 馃摎 瀹屾暣鐨?API 鏂囨。
+- 璇︾粏鐨勬帴鍙ｈ鏄庡拰浣跨敤绀轰緥
+- 鏀寔鏂囨。鍦ㄧ嚎缂栬緫鍜屾洿鏂?
+- 澶氭牸寮忔枃妗ｈ緭鍑猴紙HTML銆丮arkdown锛?
 
-## 🛠️ 技术栈
+## 馃洜锔?鎶€鏈爤
 
-| 类别 | 技术 | 版本 | 用途 |
+| 绫诲埆 | 鎶€鏈?| 鐗堟湰 | 鐢ㄩ€?|
 |------|------|------|------|
-| 前端框架 | Next.js | 16.1.4 | 服务端渲染、API路由 |
-| 前端库 | React | 19.2.3 |  UI组件开发 |
-| 样式框架 | Tailwind CSS | 4.0 | 响应式样式设计 |
-| 数据库 ORM | Prisma | 7.3.0 | 数据库访问和模型管理 |
-| 数据库 | MySQL | - | 持久化存储 |
-| 缓存 | Redis | 5.10.0 | 缓存和会话管理 |
-| HTTP 客户端 | Axios | 1.13.2 | API 请求处理 |
-| 认证 | GitHub PAT | - | 安全认证 |
-| 编辑器 | react-markdown-editor-lite | 1.4.2 | Markdown 文档编辑 |
-| 开发工具 | TypeScript | 5.0 | 类型安全 |
-| 开发工具 | ESLint | 9.0 | 代码质量检查 |
+| 鍓嶇妗嗘灦 | Next.js | 16.1.4 | 鏈嶅姟绔覆鏌撱€丄PI璺敱 |
+| 鍓嶇搴?| React | 19.2.3 |  UI缁勪欢寮€鍙?|
+| 鏍峰紡妗嗘灦 | Tailwind CSS | 4.0 | 鍝嶅簲寮忔牱寮忚璁?|
+| 鏁版嵁搴?ORM | Prisma | 7.3.0 | 鏁版嵁搴撹闂拰妯″瀷绠＄悊 |
+| 鏁版嵁搴?| PostgreSQL | - | 鎸佷箙鍖栧瓨鍌?|
+| 缂撳瓨 | Redis | 5.10.0 | 缂撳瓨鍜屼細璇濈鐞?|
+| HTTP 瀹㈡埛绔?| Axios | 1.13.2 | API 璇锋眰澶勭悊 |
+| 璁よ瘉 | GitHub OAuth + Repo Token | - | 瀹夊叏璁よ瘉 |
+| 缂栬緫鍣?| react-markdown-editor-lite | 1.4.2 | Markdown 鏂囨。缂栬緫 |
+| 寮€鍙戝伐鍏?| TypeScript | 5.0 | 绫诲瀷瀹夊叏 |
+| 寮€鍙戝伐鍏?| ESLint | 9.0 | 浠ｇ爜璐ㄩ噺妫€鏌?|
 
-## 📁 项目结构
+## 馃搧 椤圭洰缁撴瀯
 
 ```
 ddmusic-nextjs/
-├── doc/                    # API文档
-│   ├── API文档.md
-│   ├── TuneHub API Documentation.html
-│   ├── doc-prop.json
-│   └── 目录结构说明.md
-├── public/                 # 静态资源
-│   ├── next.svg
-│   └── vercel.svg
-├── src/                    # 源代码
-│   ├── app/                # Next.js 应用路由
-│   │   ├── api/            # API 路由
-│   │   ├── dashboard/      # 管理后台
-│   │   ├── login/          # 登录页面
-│   │   └── page.tsx        # 首页
-│   ├── components/         # 组件
-│   │   └── MarkdownEditor.tsx
-│   ├── config/             # 配置文件
-│   │   └── tunehub.ts
-│   ├── lib/                # 服务和工具
-│   │   ├── db.ts
-│   │   ├── github.ts
-│   │   └── http.ts
-│   └── modules/            # 功能模块
-│       └── music/          # 音乐服务模块
-│           ├── services/   # 音乐平台服务
-│           └── types/      # 类型定义
-├── .gitignore
-├── README.md
-├── eslint.config.mjs
-├── next.config.ts
-├── package.json
-├── postcss.config.mjs
-└── tsconfig.json
+鈹溾攢鈹€ doc/                    # API鏂囨。
+鈹?  鈹溾攢鈹€ API鏂囨。.md
+鈹?  鈹溾攢鈹€ TuneHub API Documentation.html
+鈹?  鈹溾攢鈹€ doc-prop.json
+鈹?  鈹斺攢鈹€ 鐩綍缁撴瀯璇存槑.md
+鈹溾攢鈹€ public/                 # 闈欐€佽祫婧?
+鈹?  鈹溾攢鈹€ next.svg
+鈹?  鈹斺攢鈹€ vercel.svg
+鈹溾攢鈹€ src/                    # 婧愪唬鐮?
+鈹?  鈹溾攢鈹€ app/                # Next.js 搴旂敤璺敱
+鈹?  鈹?  鈹溾攢鈹€ api/            # API 璺敱
+鈹?  鈹?  鈹溾攢鈹€ dashboard/      # 绠＄悊鍚庡彴
+鈹?  鈹?  鈹溾攢鈹€ login/          # 鐧诲綍椤甸潰
+鈹?  鈹?  鈹斺攢鈹€ page.tsx        # 棣栭〉
+鈹?  鈹溾攢鈹€ components/         # 缁勪欢
+鈹?  鈹?  鈹斺攢鈹€ MarkdownEditor.tsx
+鈹?  鈹溾攢鈹€ config/             # 閰嶇疆鏂囦欢
+鈹?  鈹?  鈹斺攢鈹€ tunehub.ts
+鈹?  鈹溾攢鈹€ lib/                # 鏈嶅姟鍜屽伐鍏?
+鈹?  鈹?  鈹溾攢鈹€ db.ts
+鈹?  鈹?  鈹溾攢鈹€ github.ts
+鈹?  鈹?  鈹斺攢鈹€ http.ts
+鈹?  鈹斺攢鈹€ modules/            # 鍔熻兘妯″潡
+鈹?      鈹斺攢鈹€ music/          # 闊充箰鏈嶅姟妯″潡
+鈹?          鈹溾攢鈹€ services/   # 闊充箰骞冲彴鏈嶅姟
+鈹?          鈹斺攢鈹€ types/      # 绫诲瀷瀹氫箟
+鈹溾攢鈹€ .gitignore
+鈹溾攢鈹€ README.md
+鈹溾攢鈹€ eslint.config.mjs
+鈹溾攢鈹€ next.config.ts
+鈹溾攢鈹€ package.json
+鈹溾攢鈹€ postcss.config.mjs
+鈹斺攢鈹€ tsconfig.json
 ```
 
-## 🚀 快速开始
+## 馃殌 蹇€熷紑濮?
 
-### 环境要求
-- Node.js 18.0 或更高版本
-- npm 9.0 或更高版本
-- MySQL 数据库
-- Redis 服务
+### 鐜瑕佹眰
+- Node.js 18.0 鎴栨洿楂樼増鏈?
+- npm 9.0 鎴栨洿楂樼増鏈?
+- PostgreSQL 鏁版嵁搴?
+- Redis 鏈嶅姟
 
-### 安装步骤
+### 瀹夎姝ラ
 
-1. **克隆项目**
+1. **鍏嬮殕椤圭洰**
    ```bash
    git clone https://github.com/yokeay/ddmusic-nextjs.git
    cd ddmusic-nextjs
    ```
 
-2. **安装依赖**
+2. **瀹夎渚濊禆**
    ```bash
    npm install
    ```
 
-3. **配置环境变量**
-   创建 `.env.local` 文件，添加以下配置：
+3. **閰嶇疆鐜鍙橀噺**
+   鍒涘缓 `.env.local` 鏂囦欢锛屾坊鍔犱互涓嬮厤缃細
    ```env
-   # 数据库连接
-   DATABASE_URL="mysql://username:password@localhost:3306/ddmusic"
+   # 鏁版嵁搴撹繛鎺?
+   DATABASE_URL="postgresql://username:password@localhost:5432/ddmusic"
    
-   # Redis 连接
+   # Redis 杩炴帴
    REDIS_URL="redis://localhost:6379"
+   REDIS_KEY_PREFIX="bendywork_ddmusic_nextjs_"
    
-   # GitHub 仓库配置
+   # GitHub 浠撳簱閰嶇疆
    GITHUB_REPO="yokeay/ddmusic-nextjs"
    ```
 
-4. **数据库迁移**
+4. **鏁版嵁搴撹縼绉?*
    ```bash
-   npx prisma migrate dev
+   psql "$DATABASE_URL" -f db/migrations/20260328_postgres_store.sql
    ```
 
-5. **启动开发服务器**
+5. **鍚姩寮€鍙戞湇鍔″櫒**
    ```bash
    npm run dev
    ```
 
-6. **访问应用**
-   - 首页: `http://localhost:3000`
-   - 登录页: `http://localhost:3000/login`
-   - 管理后台: `http://localhost:3000/dashboard`
+6. **璁块棶搴旂敤**
+   - 棣栭〉: `http://localhost:3000`
+   - 鐧诲綍椤? `http://localhost:3000/login`
+   - 绠＄悊鍚庡彴: `http://localhost:3000/dashboard`
 
-## 🔧 核心功能
+## 馃敡 鏍稿績鍔熻兘
 
-### 音乐服务集成
+### 闊充箰鏈嶅姟闆嗘垚
 
-系统集成了多个音乐平台的服务，通过统一的接口提供音乐资源访问：
+绯荤粺闆嗘垚浜嗗涓煶涔愬钩鍙扮殑鏈嶅姟锛岄€氳繃缁熶竴鐨勬帴鍙ｆ彁渚涢煶涔愯祫婧愯闂細
 
-#### 网易云音乐
+#### 缃戞槗浜戦煶涔?
 ```typescript
-// 示例：获取网易云音乐排行榜
+// 绀轰緥锛氳幏鍙栫綉鏄撲簯闊充箰鎺掕姒?
 GET /api?provider=tunehub&source=netease&type=toplists
 ```
 
-#### QQ音乐
+#### QQ闊充箰
 ```typescript
-// 示例：获取QQ音乐推荐
+// 绀轰緥锛氳幏鍙朡Q闊充箰鎺ㄨ崘
 GET /api?provider=tunehub&source=qq&type=recommend
 ```
 
-#### 酷我音乐
+#### 閰锋垜闊充箰
 ```typescript
-// 示例：搜索酷我音乐
-GET /api?provider=tunehub&source=kuwo&type=search&keyword=周杰伦
+// 绀轰緥锛氭悳绱㈤叿鎴戦煶涔?
+GET /api?provider=tunehub&source=kuwo&type=search&keyword=鍛ㄦ澃浼?
 ```
 
-### 管理后台功能
+### 绠＄悊鍚庡彴鍔熻兘
 
-1. **系统仪表盘**
-   - 实时监控代理请求数
-   - 服务商状态管理
-   - 系统运行时间统计
+1. **绯荤粺浠〃鐩?*
+   - 瀹炴椂鐩戞帶浠ｇ悊璇锋眰鏁?
+   - 鏈嶅姟鍟嗙姸鎬佺鐞?
+   - 绯荤粺杩愯鏃堕棿缁熻
 
-2. **接口管理**
-   - 统一管理所有 API 接口
-   - 接口状态监控
-   - 接口配置调整
+2. **鎺ュ彛绠＄悊**
+   - 缁熶竴绠＄悊鎵€鏈?API 鎺ュ彛
+   - 鎺ュ彛鐘舵€佺洃鎺?
+   - 鎺ュ彛閰嶇疆璋冩暣
 
-3. **文档管理**
-   - 内置 Markdown 编辑器
-   - 支持在线编辑和保存
-   - 自动同步到 GitHub 仓库
+3. **鏂囨。绠＄悊**
+   - 鍐呯疆 Markdown 缂栬緫鍣?
+   - 鏀寔鍦ㄧ嚎缂栬緫鍜屼繚瀛?
+   - 鑷姩鍚屾鍒?GitHub 浠撳簱
 
-4. **配置管理**
-   - 系统参数调整
-   - 平台服务配置
-   - API 超时设置
+4. **閰嶇疆绠＄悊**
+   - 绯荤粺鍙傛暟璋冩暣
+   - 骞冲彴鏈嶅姟閰嶇疆
+   - API 瓒呮椂璁剧疆
 
-## 📖 API 文档
+## 馃摉 API 鏂囨。
 
-### 基础接口
+### 鍩虹鎺ュ彛
 
-| 接口 | 方法 | 描述 |
+| 鎺ュ彛 | 鏂规硶 | 鎻忚堪 |
 |------|------|------|
-| `/api` | GET | 统一音乐 API 入口 |
-| `/api/proxy/[...path]` | ALL | 通用代理接口 |
+| `/api` | GET | 缁熶竴闊充箰 API 鍏ュ彛 |
+| `/api/proxy/[...path]` | ALL | 閫氱敤浠ｇ悊鎺ュ彛 |
 
-### 音乐平台接口
+### 闊充箰骞冲彴鎺ュ彛
 
-#### 网易云音乐
-- `GET /api?provider=tunehub&source=netease&type=toplists` - 获取排行榜
-- `GET /api?provider=tunehub&source=netease&type=search&keyword=xxx` - 搜索音乐
+#### 缃戞槗浜戦煶涔?
+- `GET /api?provider=tunehub&source=netease&type=toplists` - 鑾峰彇鎺掕姒?
+- `GET /api?provider=tunehub&source=netease&type=search&keyword=xxx` - 鎼滅储闊充箰
 
-#### QQ音乐
-- `GET /api?provider=tunehub&source=qq&type=song&id=xxx` - 获取歌曲详情
-- `GET /api?provider=tunehub&source=qq&type=album&id=xxx` - 获取专辑
+#### QQ闊充箰
+- `GET /api?provider=tunehub&source=qq&type=song&id=xxx` - 鑾峰彇姝屾洸璇︽儏
+- `GET /api?provider=tunehub&source=qq&type=album&id=xxx` - 鑾峰彇涓撹緫
 
-#### 酷我音乐
-- `GET /api?provider=tunehub&source=kuwo&type=artist&id=xxx` - 获取歌手信息
-- `GET /api?provider=tunehub&source=kuwo&type=playlist&id=xxx` - 获取歌单
+#### 閰锋垜闊充箰
+- `GET /api?provider=tunehub&source=kuwo&type=artist&id=xxx` - 鑾峰彇姝屾墜淇℃伅
+- `GET /api?provider=tunehub&source=kuwo&type=playlist&id=xxx` - 鑾峰彇姝屽崟
 
-### 管理接口
+### 绠＄悊鎺ュ彛
 
-| 接口 | 方法 | 描述 |
+| 鎺ュ彛 | 鏂规硶 | 鎻忚堪 |
 |------|------|------|
-| `/api/auth/login` | POST | GitHub 认证登录 |
-| `/api/docs/save` | POST | 保存文档内容 |
-| `/api/config/update` | POST | 更新系统配置 |
+| `/api/auth/login` | POST | GitHub 璁よ瘉鐧诲綍 |
+| `/api/docs/save` | POST | 淇濆瓨鏂囨。鍐呭 |
+| `/api/config/update` | POST | 鏇存柊绯荤粺閰嶇疆 |
 
-## 📦 部署指南
+## 馃摝 閮ㄧ讲鎸囧崡
 
-### Vercel 部署
+### Vercel 閮ㄧ讲
 
-1. **准备工作**
-   - 确保项目已推送到 GitHub
-   - 配置好环境变量
+1. **鍑嗗宸ヤ綔**
+   - 纭繚椤圭洰宸叉帹閫佸埌 GitHub
+   - 閰嶇疆濂界幆澧冨彉閲?
 
-2. **部署步骤**
-   - 访问 [Vercel](https://vercel.com/new)
-   - 导入 GitHub 仓库
-   - 配置环境变量
-   - 点击 "Deploy"
+2. **閮ㄧ讲姝ラ**
+   - 璁块棶 [Vercel](https://vercel.com/new)
+   - 瀵煎叆 GitHub 浠撳簱
+   - 閰嶇疆鐜鍙橀噺
+   - 鐐瑰嚮 "Deploy"
 
-3. **环境变量配置**
+3. **鐜鍙橀噺閰嶇疆**
    ```
-   DATABASE_URL=mysql://username:password@hostname:3306/database
+   DATABASE_URL=postgresql://username:password@hostname:5432/database
    REDIS_URL=redis://hostname:6379
+   REDIS_KEY_PREFIX=bendywork_ddmusic_nextjs_
    GITHUB_REPO=username/repository
    ```
 
-### 自建服务器部署
+### 鑷缓鏈嶅姟鍣ㄩ儴缃?
 
-1. **构建项目**
+1. **鏋勫缓椤圭洰**
    ```bash
    npm run build
    ```
 
-2. **启动服务**
+2. **鍚姩鏈嶅姟**
    ```bash
    npm start
    ```
 
-3. **使用 PM2 管理进程**
+3. **浣跨敤 PM2 绠＄悊杩涚▼**
    ```bash
    pm2 start npm --name "ddmusic-nextjs" -- start
    ```
 
-## 🤝 贡献指南
+## 馃 璐＄尞鎸囧崡
 
-### 开发流程
+### 寮€鍙戞祦绋?
 
-1. **Fork 仓库**
-2. **创建分支**
+1. **Fork 浠撳簱**
+2. **鍒涘缓鍒嗘敮**
    ```bash
    git checkout -b feature/your-feature
    ```
-3. **提交代码**
+3. **鎻愪氦浠ｇ爜**
    ```bash
    git commit -m "Add your feature"
    ```
-4. **推送到远程**
+4. **鎺ㄩ€佸埌杩滅▼**
    ```bash
    git push origin feature/your-feature
    ```
-5. **创建 Pull Request**
+5. **鍒涘缓 Pull Request**
 
-### 代码规范
+### 浠ｇ爜瑙勮寖
 
-- 使用 TypeScript 类型定义
-- 遵循 ESLint 规范
-- 使用 Tailwind CSS 进行样式开发
-- 保持代码简洁明了
+- 浣跨敤 TypeScript 绫诲瀷瀹氫箟
+- 閬靛惊 ESLint 瑙勮寖
+- 浣跨敤 Tailwind CSS 杩涜鏍峰紡寮€鍙?
+- 淇濇寔浠ｇ爜绠€娲佹槑浜?
 
-## 📄 许可证
+## 馃搫 璁稿彲璇?
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+鏈」鐩噰鐢?MIT 璁稿彲璇?- 鏌ョ湅 [LICENSE](LICENSE) 鏂囦欢浜嗚В璇︽儏
 
-## 📞 联系我们
+## 馃摓 鑱旂郴鎴戜滑
 
-- **项目地址**：[https://github.com/yokeay/ddmusic-nextjs](https://github.com/yokeay/ddmusic-nextjs)
-- **问题反馈**：[Issues](https://github.com/yokeay/ddmusic-nextjs/issues)
+- **椤圭洰鍦板潃**锛歔https://github.com/yokeay/ddmusic-nextjs](https://github.com/yokeay/ddmusic-nextjs)
+- **闂鍙嶉**锛歔Issues](https://github.com/yokeay/ddmusic-nextjs/issues)
 
 ---
 
-**享受音乐，享受开发！** 🎵✨
-## OAuth Admin Login Setup
+**浜彈闊充箰锛屼韩鍙楀紑鍙戯紒** 馃幍鉁?## OAuth Admin Login Setup
 
 This project now uses **GitHub OAuth** for admin login.
 
@@ -345,21 +346,22 @@ Required for login to work:
 
 Recommended optional variables:
 
-- `GITHUB_OAUTH_SCOPES=read:user,repo`
+- `GITHUB_OAUTH_SCOPES=read:user`
 - `GITHUB_OAUTH_BASE_URL=https://ddmusic.polofox.com`
 
 Data-layer variables (configure when enabling DB/Redis):
 
-- `DB_HOST`
-- `DB_PORT`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
-- `REDIS_HOST`
-- `REDIS_PORT`
-- `REDIS_PASSWORD`
-- `REDIS_DB`
-- `TUNEHUB_API_KEY`
+- `DATABASE_URL=postgresql://...`
+- `REDIS_URL=redis://...` (or Upstash `rediss://...`)
+- `UPSTASH_REDIS_URL=rediss://...` (optional fallback)
+- `REDIS_KEY_PREFIX=bendywork_ddmusic_nextjs_`
+- `REDIS_CACHE_TTL_SECONDS=60`
+- `GITHUB_REPO=<owner/repo>`
+- `DOCS_REPO_SYNC_ENABLED=true`
+- `DOCS_REPO_SYNC_BRANCH=main`
+- `DOCS_REPO_TOKEN_ENV=GITHUB_REPO_TOKEN`
+- `GITHUB_REPO_TOKEN=<token with repo contents write permission>`
+- `TUNEHUB_API_KEY=<optional>`
 
 ### 3) Example values for your current domain
 
@@ -375,3 +377,8 @@ Data-layer variables (configure when enabling DB/Redis):
 - GitHub authorizes and returns to `/api/auth/github/callback`
 - If your GitHub username is in `GITHUB_ADMIN_USERS`, you enter `/dashboard`
 - If not in allowlist, you are rejected with `unauthorized_admin`
+
+
+
+
+

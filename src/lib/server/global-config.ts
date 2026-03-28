@@ -21,6 +21,22 @@ export interface AppConfig {
       scopes: string[];
     };
   };
+  repoSync: {
+    docs: {
+      enabled: boolean;
+      branch: string;
+      readmePath: string;
+      apiDocPath: string;
+      auth: {
+        tokenEnvName: string;
+      };
+      commit: {
+        messagePrefix: string;
+        authorName: string;
+        authorEmail: string;
+      };
+    };
+  };
 }
 
 export interface GitHubAuthRuntimeConfig {
@@ -48,7 +64,23 @@ const DEFAULT_APP_CONFIG: AppConfig = {
   auth: {
     github: {
       admins: ['yokeay'],
-      scopes: ['read:user', 'repo'],
+      scopes: ['read:user'],
+    },
+  },
+  repoSync: {
+    docs: {
+      enabled: true,
+      branch: 'main',
+      readmePath: 'README.md',
+      apiDocPath: 'doc/doc-prop.json',
+      auth: {
+        tokenEnvName: 'GITHUB_REPO_TOKEN',
+      },
+      commit: {
+        messagePrefix: 'docs',
+        authorName: 'ddmusic-bot',
+        authorEmail: 'bot@ddmusic.local',
+      },
     },
   },
 };
@@ -65,6 +97,23 @@ const parseCsv = (value?: string): string[] => {
     .split(',')
     .map((item) => item.trim())
     .filter((item) => item.length > 0);
+};
+
+const parseBoolean = (value?: string): boolean | null => {
+  if (value === undefined) {
+    return null;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+
+  return null;
 };
 
 const readJsonWithFallback = <T>(filePath: string, fallback: T): T => {
@@ -86,18 +135,84 @@ export const getReleaseConfig = (): ReleaseConfig => {
 };
 
 export const getAppConfig = (): AppConfig => {
-  const fileConfig = readJsonWithFallback(APP_CONFIG_PATH, DEFAULT_APP_CONFIG);
+  const fileConfig = readJsonWithFallback<Partial<AppConfig>>(APP_CONFIG_PATH, DEFAULT_APP_CONFIG);
   const envAdmins = parseCsv(process.env.GITHUB_ADMIN_USERS);
   const envScopes = parseCsv(process.env.GITHUB_OAUTH_SCOPES);
+  const envRepository = process.env.GITHUB_REPO?.trim() || process.env.PROJECT_REPOSITORY?.trim();
+  const envSyncEnabled = parseBoolean(process.env.DOCS_REPO_SYNC_ENABLED);
+  const envSyncBranch = process.env.DOCS_REPO_SYNC_BRANCH?.trim();
+  const envTokenEnvName = process.env.DOCS_REPO_TOKEN_ENV?.trim();
+  const envReadmePath = process.env.DOCS_REPO_README_PATH?.trim();
+  const envApiDocPath = process.env.DOCS_REPO_API_PATH?.trim();
+  const envMessagePrefix = process.env.DOCS_REPO_COMMIT_PREFIX?.trim();
+  const envCommitAuthorName = process.env.DOCS_REPO_COMMIT_AUTHOR?.trim();
+  const envCommitAuthorEmail = process.env.DOCS_REPO_COMMIT_EMAIL?.trim();
+
+  const mergedConfig: AppConfig = {
+    ...DEFAULT_APP_CONFIG,
+    ...fileConfig,
+    project: {
+      ...DEFAULT_APP_CONFIG.project,
+      ...(fileConfig.project ?? {}),
+    },
+    auth: {
+      ...DEFAULT_APP_CONFIG.auth,
+      ...(fileConfig.auth ?? {}),
+      github: {
+        ...DEFAULT_APP_CONFIG.auth.github,
+        ...(fileConfig.auth?.github ?? {}),
+      },
+    },
+    repoSync: {
+      ...DEFAULT_APP_CONFIG.repoSync,
+      ...(fileConfig.repoSync ?? {}),
+      docs: {
+        ...DEFAULT_APP_CONFIG.repoSync.docs,
+        ...(fileConfig.repoSync?.docs ?? {}),
+        auth: {
+          ...DEFAULT_APP_CONFIG.repoSync.docs.auth,
+          ...(fileConfig.repoSync?.docs?.auth ?? {}),
+        },
+        commit: {
+          ...DEFAULT_APP_CONFIG.repoSync.docs.commit,
+          ...(fileConfig.repoSync?.docs?.commit ?? {}),
+        },
+      },
+    },
+  };
 
   return {
-    ...fileConfig,
+    ...mergedConfig,
+    project: {
+      ...mergedConfig.project,
+      repository: envRepository || mergedConfig.project.repository,
+    },
     auth: {
-      ...fileConfig.auth,
+      ...mergedConfig.auth,
       github: {
-        ...fileConfig.auth.github,
-        admins: envAdmins.length > 0 ? envAdmins : fileConfig.auth.github.admins,
-        scopes: envScopes.length > 0 ? envScopes : fileConfig.auth.github.scopes,
+        ...mergedConfig.auth.github,
+        admins: envAdmins.length > 0 ? envAdmins : mergedConfig.auth.github.admins,
+        scopes: envScopes.length > 0 ? envScopes : mergedConfig.auth.github.scopes,
+      },
+    },
+    repoSync: {
+      ...mergedConfig.repoSync,
+      docs: {
+        ...mergedConfig.repoSync.docs,
+        enabled: envSyncEnabled ?? mergedConfig.repoSync.docs.enabled,
+        branch: envSyncBranch || mergedConfig.repoSync.docs.branch,
+        readmePath: envReadmePath || mergedConfig.repoSync.docs.readmePath,
+        apiDocPath: envApiDocPath || mergedConfig.repoSync.docs.apiDocPath,
+        auth: {
+          ...mergedConfig.repoSync.docs.auth,
+          tokenEnvName: envTokenEnvName || mergedConfig.repoSync.docs.auth.tokenEnvName,
+        },
+        commit: {
+          ...mergedConfig.repoSync.docs.commit,
+          messagePrefix: envMessagePrefix || mergedConfig.repoSync.docs.commit.messagePrefix,
+          authorName: envCommitAuthorName || mergedConfig.repoSync.docs.commit.authorName,
+          authorEmail: envCommitAuthorEmail || mergedConfig.repoSync.docs.commit.authorEmail,
+        },
       },
     },
   };

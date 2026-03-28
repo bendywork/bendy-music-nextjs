@@ -1,43 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { STORE_KEYS, getStoredValue, readJsonFile, setStoredValue } from '@/lib/server/data-store';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // 读取 data/api.json 文件
-    const apiJsonPath = path.join(process.cwd(), 'data', 'api.json');
-    const apiJsonContent = fs.readFileSync(apiJsonPath, 'utf8');
-    
-    // 解析 JSON 内容
-    const apiConfig = JSON.parse(apiJsonContent);
-    
-    // 返回 JSON 响应
+    const apiConfig = await getStoredValue(
+      STORE_KEYS.API_CONFIG,
+      () => readJsonFile('data/api.json', { apis: [] }),
+    );
+
     return NextResponse.json(apiConfig);
   } catch (error) {
-    console.error('读取 api.json 失败:', error);
+    console.error('Failed to read API config:', error);
     return NextResponse.json(
-      { error: '读取接口配置失败' },
-      { status: 500 }
+      { error: 'Failed to read API config' },
+      { status: 500 },
     );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // 获取请求体中的配置数据
     const apiConfig = await request.json();
-    
-    // 写入 data/api.json 文件
-    const apiJsonPath = path.join(process.cwd(), 'data', 'api.json');
-    fs.writeFileSync(apiJsonPath, JSON.stringify(apiConfig, null, 2), 'utf8');
-    
-    // 返回成功响应
-    return NextResponse.json({ message: '接口配置保存成功' });
+    const stored = await setStoredValue(STORE_KEYS.API_CONFIG, apiConfig);
+
+    return NextResponse.json({
+      message: 'API config saved',
+      data: stored,
+    });
   } catch (error) {
-    console.error('保存 api.json 失败:', error);
+    console.error('Failed to save API config:', error);
     return NextResponse.json(
-      { error: '保存接口配置失败' },
-      { status: 500 }
+      { error: 'Failed to save API config' },
+      { status: 500 },
     );
   }
 }
