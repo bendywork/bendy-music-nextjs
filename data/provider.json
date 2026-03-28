@@ -1,0 +1,22 @@
+{
+  "providers": [
+    {
+      "id": "provider-1769575008570",
+      "name": "tunehub",
+      "code": "TH",
+      "status": "enabled",
+      "remark": "LinuxDO 公益API",
+      "nature": "nonProfit",
+      "url": "https://tunehub.sayqz.com/api"
+    },
+    {
+      "id": "provider-1769575234978",
+      "name": "岑鬼鬼",
+      "code": "CGG",
+      "status": "enabled",
+      "remark": "岑鬼鬼音乐API",
+      "nature": "paid",
+      "category": "personal"
+    }
+  ]
+}

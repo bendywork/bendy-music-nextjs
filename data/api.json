@@ -1,0 +1,16 @@
+{
+  "apis": [
+    {
+      "id": "api-1769586249802",
+      "name": "获取歌曲信息-tunehub",
+      "path": "/v1/parse",
+      "pathType": "relative",
+      "method": "POST",
+      "provider": "provider-1769575008570",
+      "params": "{\"platform\":\"\",\"ids\":\"\",\"quality\":\"\"}",
+      "headers": "X-API-Key=th_58887b405d662703ee110408040e3b9de340b6fbe1b23eed",
+      "status": "enabled",
+      "remark": "解析歌曲，额度是有次数限制的"
+    }
+  ]
+}

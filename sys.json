@@ -1,0 +1,13 @@
+{
+  "apiManagement": {
+    "apis": []
+  },
+  "providerManagement": {
+    "providers": []
+  },
+  "configuration": {
+    "githubProjectPath": "https://github.com/yokeay/ddmusic-nextjs",
+    "apiTimeout": 300000,
+    "maxConcurrentRequests": 100
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "project": {
+    "name": "ddmusic-nextjs",
+    "repository": "yokeay/ddmusic-nextjs"
+  },
+  "auth": {
+    "github": {
+      "admins": [
+        "yokeay"
+      ],
+      "scopes": [
+        "read:user",
+        "repo"
+      ]
+    }
+  }
+}

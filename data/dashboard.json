@@ -1,0 +1,26 @@
+{
+  "proxyRequestCount": 0,
+  "systemUptime": 0,
+  "recentRequests": [],
+  "serviceStatus": [
+    {
+      "name": "kuwo",
+      "displayName": "酷我音乐",
+      "errorCount": 0,
+      "status": "Normal"
+    },
+    {
+      "name": "qq",
+      "displayName": "QQ音乐",
+      "errorCount": 0,
+      "status": "Normal"
+    },
+    {
+      "name": "Netease",
+      "displayName": "网易云音乐",
+      "errorCount": 0,
+      "status": "Normal"
+    }
+  ],
+  "lastSyncTime": 0
+}

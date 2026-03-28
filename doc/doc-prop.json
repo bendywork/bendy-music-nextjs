@@ -1,0 +1,271 @@
+{
+  "api": {
+    "toplists": {
+      "netease": {
+        "enabled": true,
+        "description": "获取网易云音乐排行榜列表",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=toplists",
+        "params": []
+      },
+      "qq": {
+        "enabled": true,
+        "description": "获取QQ音乐排行榜列表",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=toplists",
+        "params": []
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "获取酷我音乐排行榜列表",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=toplists",
+        "params": []
+      }
+    },
+    "toplist": {
+      "netease": {
+        "enabled": true,
+        "description": "获取网易云音乐排行榜歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=toplist&id={排行榜ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "排行榜ID"
+          }
+        ]
+      },
+      "qq": {
+        "enabled": true,
+        "description": "获取QQ音乐排行榜歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=toplist&id={排行榜ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "排行榜ID"
+          }
+        ]
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "获取酷我音乐排行榜歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=toplist&id={排行榜ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "排行榜ID"
+          }
+        ]
+      }
+    },
+    "playlist": {
+      "netease": {
+        "enabled": true,
+        "description": "获取网易云音乐歌单详情",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=playlist&id={歌单ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌单ID"
+          }
+        ]
+      },
+      "qq": {
+        "enabled": false,
+        "description": "获取QQ音乐歌单详情",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=playlist&id={歌单ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌单ID"
+          }
+        ]
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "获取酷我音乐歌单详情",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=playlist&id={歌单ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌单ID"
+          }
+        ]
+      }
+    },
+    "search": {
+      "netease": {
+        "enabled": true,
+        "description": "搜索网易云音乐歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=search&keyword={搜索关键词}&limit={结果数量}",
+        "params": [
+          {
+            "name": "keyword",
+            "type": "string",
+            "required": true,
+            "description": "搜索关键词"
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "required": false,
+            "default": 20,
+            "description": "结果数量限制"
+          }
+        ]
+      },
+      "qq": {
+        "enabled": false,
+        "description": "搜索QQ音乐歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=search&keyword={搜索关键词}&limit={结果数量}",
+        "params": [
+          {
+            "name": "keyword",
+            "type": "string",
+            "required": true,
+            "description": "搜索关键词"
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "required": false,
+            "default": 20,
+            "description": "结果数量限制"
+          }
+        ]
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "搜索酷我音乐歌曲",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=search&keyword={搜索关键词}&limit={结果数量}",
+        "params": [
+          {
+            "name": "keyword",
+            "type": "string",
+            "required": true,
+            "description": "搜索关键词"
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "required": false,
+            "default": 20,
+            "description": "结果数量限制"
+          }
+        ]
+      }
+    },
+    "info": {
+      "netease": {
+        "enabled": true,
+        "description": "获取网易云音乐歌曲信息",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=info&id={歌曲ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          }
+        ]
+      },
+      "qq": {
+        "enabled": false,
+        "description": "获取QQ音乐歌曲信息",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=info&id={歌曲ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          }
+        ]
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "获取酷我音乐歌曲信息",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=info&id={歌曲ID}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          }
+        ]
+      }
+    },
+    "url": {
+      "netease": {
+        "enabled": true,
+        "description": "获取网易云音乐歌曲播放链接",
+        "endpoint": "GET /api?provider=tunehub&source=netease&type=url&id={歌曲ID}&br={音质}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          },
+          {
+            "name": "br",
+            "type": "string",
+            "required": false,
+            "default": "320k",
+            "description": "音质，可选值：128k, 320k, flac"
+          }
+        ]
+      },
+      "qq": {
+        "enabled": false,
+        "description": "获取QQ音乐歌曲播放链接",
+        "endpoint": "GET /api?provider=tunehub&source=qq&type=url&id={歌曲ID}&br={音质}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          },
+          {
+            "name": "br",
+            "type": "string",
+            "required": false,
+            "default": "320k",
+            "description": "音质，可选值：128k, 320k, flac"
+          }
+        ]
+      },
+      "kuwo": {
+        "enabled": false,
+        "description": "获取酷我音乐歌曲播放链接",
+        "endpoint": "GET /api?provider=tunehub&source=kuwo&type=url&id={歌曲ID}&br={音质}",
+        "params": [
+          {
+            "name": "id",
+            "type": "string",
+            "required": true,
+            "description": "歌曲ID"
+          },
+          {
+            "name": "br",
+            "type": "string",
+            "required": false,
+            "default": "320k",
+            "description": "音质，可选值：128k, 320k, flac"
+          }
+        ]
+      }
+    }
+  }
+}
