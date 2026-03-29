@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { STORE_KEYS, getStoredValue, readTextFile, setStoredValue } from '@/lib/server/data-store';
+import { STORE_KEYS, readTextFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
 import { syncDocToRepository } from '@/lib/server/repo-sync';
+
+const README_FALLBACK = '# bendy-music-nextjs\n';
 
 export async function GET() {
   try {
-    const content = await getStoredValue(
-      STORE_KEYS.DOC_README,
-      () => readTextFile('README.md', '# ddmusic-nextjs\n'),
-    );
-
+    const content = await readTextFile('README.md', README_FALLBACK);
+    await setStoredValue(STORE_KEYS.DOC_README, content);
     return NextResponse.json({ content });
   } catch (error) {
     console.error('Failed to read README document:', error);
@@ -22,7 +21,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json()) as { content?: string };
-    const content = payload.content ?? '';
+    const content = await writeTextFile('README.md', payload.content ?? README_FALLBACK);
     await setStoredValue(STORE_KEYS.DOC_README, content);
 
     const repoSync = await syncDocToRepository('readme', content);

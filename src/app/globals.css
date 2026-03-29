@@ -1,40 +1,272 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-display: "Aptos", "Segoe UI Variable Text", "Trebuchet MS", sans-serif;
+  --font-mono-local: "IBM Plex Mono", "Cascadia Code", "Consolas", monospace;
+  --background: #f6f6f4;
+  --foreground: #111111;
+  --card: rgba(255, 255, 255, 0.88);
+  --card-foreground: #111111;
+  --popover: rgba(255, 255, 255, 0.92);
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #fafaf9;
+  --secondary: #e9e7e3;
+  --secondary-foreground: #111111;
+  --muted: #ebe9e4;
+  --muted-foreground: #5b5b57;
+  --accent: #dbd8d2;
+  --accent-foreground: #111111;
+  --border: rgba(17, 17, 17, 0.1);
+  --input: rgba(17, 17, 17, 0.12);
+  --ring: rgba(17, 17, 17, 0.24);
+  --sidebar: rgba(255, 255, 255, 0.74);
+  --sidebar-foreground: #111111;
+  --radius: 1rem;
   color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-mono-local);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    color-scheme: dark;
-  }
+html {
+  background:
+    radial-gradient(circle at top left, rgba(17, 17, 17, 0.06), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(17, 17, 17, 0.05), transparent 26%),
+    var(--background);
 }
 
 html.light {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f6f4;
+  --foreground: #111111;
+  --card: rgba(255, 255, 255, 0.88);
+  --card-foreground: #111111;
+  --popover: rgba(255, 255, 255, 0.92);
+  --popover-foreground: #111111;
+  --primary: #111111;
+  --primary-foreground: #fafaf9;
+  --secondary: #e9e7e3;
+  --secondary-foreground: #111111;
+  --muted: #ebe9e4;
+  --muted-foreground: #5b5b57;
+  --accent: #dbd8d2;
+  --accent-foreground: #111111;
+  --border: rgba(17, 17, 17, 0.1);
+  --input: rgba(17, 17, 17, 0.12);
+  --ring: rgba(17, 17, 17, 0.24);
+  --sidebar: rgba(255, 255, 255, 0.74);
+  --sidebar-foreground: #111111;
   color-scheme: light;
 }
 
 html.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #090909;
+  --foreground: #f4f4f3;
+  --card: rgba(21, 21, 22, 0.88);
+  --card-foreground: #f4f4f3;
+  --popover: rgba(18, 18, 19, 0.92);
+  --popover-foreground: #f4f4f3;
+  --primary: #f4f4f3;
+  --primary-foreground: #111111;
+  --secondary: #1a1a1b;
+  --secondary-foreground: #f4f4f3;
+  --muted: #171718;
+  --muted-foreground: #a1a1aa;
+  --accent: #232326;
+  --accent-foreground: #f4f4f3;
+  --border: rgba(255, 255, 255, 0.09);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: rgba(255, 255, 255, 0.22);
+  --sidebar: rgba(16, 16, 17, 0.8);
+  --sidebar-foreground: #f4f4f3;
   color-scheme: dark;
 }
 
+* {
+  border-color: var(--border);
+}
+
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono-local);
+}
+
+::selection {
+  background: rgba(17, 17, 17, 0.12);
+}
+
+html.dark ::selection {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.surface-grid {
+  background-image:
+    linear-gradient(to right, rgba(127, 127, 127, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(127, 127, 127, 0.08) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.markdown-preview {
+  color: var(--foreground);
+  line-height: 1.75;
+}
+
+.markdown-preview > * + * {
+  margin-top: 1rem;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4 {
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+.markdown-preview h1 {
+  font-size: 1.9rem;
+}
+
+.markdown-preview h2 {
+  font-size: 1.45rem;
+}
+
+.markdown-preview h3 {
+  font-size: 1.2rem;
+}
+
+.markdown-preview p,
+.markdown-preview li {
+  color: color-mix(in srgb, var(--foreground) 88%, transparent);
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  padding-left: 1.4rem;
+}
+
+.markdown-preview blockquote {
+  border-left: 3px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+  padding-left: 1rem;
+  color: var(--muted-foreground);
+}
+
+.markdown-preview code {
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  padding: 0.15rem 0.35rem;
+  font-size: 0.92em;
+}
+
+.markdown-preview pre {
+  overflow-x: auto;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  padding: 1rem;
+}
+
+.markdown-preview pre code {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.markdown-preview table {
+  width: 100%;
+  overflow: hidden;
+  border-collapse: collapse;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.markdown-preview th,
+.markdown-preview td {
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 8%, transparent);
+  padding: 0.75rem 0.9rem;
+  text-align: left;
+}
+
+.markdown-preview a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--foreground) 35%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.markdown-editor-shell .rc-md-editor {
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.markdown-editor-shell .editor-container,
+.markdown-editor-shell .sec-md,
+.markdown-editor-shell .sec-html {
+  background: transparent !important;
+}
+
+.markdown-editor-shell .rc-md-navigation {
+  border-bottom: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+  background: color-mix(in srgb, var(--background) 82%, transparent) !important;
+}
+
+.markdown-editor-shell .button-wrap,
+.markdown-editor-shell button {
+  color: var(--foreground) !important;
+}
+
+.markdown-editor-shell textarea,
+.markdown-editor-shell .custom-html-style {
+  font-size: 13px !important;
+  line-height: 1.7 !important;
+}
+
+.markdown-editor-shell textarea {
+  background: transparent !important;
+  color: var(--foreground) !important;
+}
+
+.markdown-editor-shell .sec-html {
+  border-left: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent) !important;
+}
+
+.markdown-editor-shell .custom-html-style {
+  padding: 1.25rem !important;
 }

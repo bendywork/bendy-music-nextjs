@@ -1,38 +1,33 @@
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-// 服务器端组件，在服务器端读取并渲染文档内容
 export default function DocsPage() {
   let docContent = '';
   let error = '';
 
   try {
-    // 读取项目根目录下的 doc/doc.html 文件
-    const docHtmlPath = join(process.cwd(), 'doc', 'doc.html');
-    
+    const docHtmlPath = join(/* turbopackIgnore: true */ process.cwd(), 'doc', 'doc.html');
+
     if (existsSync(docHtmlPath)) {
       docContent = readFileSync(docHtmlPath, 'utf8');
     } else {
-      error = '文档文件不存在';
+      error = '未找到文档文件 doc/doc.html。';
     }
-  } catch (err) {
-    console.error('加载文档失败:', err);
-    error = '加载文档失败，请稍后再试';
+  } catch (loadError) {
+    console.error('Failed to load docs page:', loadError);
+    error = '文档加载失败，请稍后再试。';
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">错误</h1>
-          <p className="text-red-600 dark:text-red-400">{error}</p>
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-lg rounded-[2rem] border border-border bg-card/90 p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-black tracking-[-0.04em]">Docs Unavailable</h1>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">{error}</p>
         </div>
       </div>
     );
   }
 
-  // 直接返回原始 HTML 内容
-  return (
-    <div dangerouslySetInnerHTML={{ __html: docContent }} />
-  );
+  return <div dangerouslySetInnerHTML={{ __html: docContent }} />;
 }
