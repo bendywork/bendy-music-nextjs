@@ -270,3 +270,28 @@
   - 风险：部署环境需提供 `DATABASE_URL` 与 Redis 连接，否则新数据接口不可用；文档 commit 依赖 `GITHUB_REPO_TOKEN`（或自定义 token env）配置。
   - 回滚：可回退本迭代文件并恢复原本地 JSON 路由实现。
 - 备注：`GITHUB_OAUTH_SCOPES` 默认已调整为 `read:user`，repo 写入权限从 OAuth 用户 token 转为全局仓库 token 配置。
+
+## [v0.1.4] - 2026-03-29
+- 迭代类型：fix（管理员白名单匹配策略修复）
+- 需求来源：`GITHUB_ADMIN_USERS` 配置含 `yokeay.52bendy` 时，`yokeay` 登录被拒绝。
+- 变更摘要：将 GitHub 管理员判定从“精确命中”调整为“包含命中（大小写不敏感）”。
+- 具体修改：
+  - 修改文件：`src/app/api/auth/github/callback/route.ts`
+  - 修改方式：新增 `isAdminMatched` 匹配函数并替换原 `includes(exact)` 判定。
+  - 关键实现：支持 `adminEntry.includes(login)` 与 `login.includes(adminEntry)` 双向包含匹配。
+  - 修改文件：`package.json`、`config/release.config.json`
+  - 修改方式：递增版本号到 `v0.1.4`。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，27 warning）。
+  - test：已执行 `npm test`，失败（仓库未定义 `test` script）。
+  - build：已执行 `npm run build`，通过（含 1 条 Turbopack NFT tracing warning）。
+  - audit：已执行 `npm audit`，存在 2 条 moderate 漏洞（无 high/critical）。
+- 发布动作：
+  - 分支：未执行
+  - commit：未执行
+  - tag：未执行
+  - push：未执行
+- 风险与回滚：
+  - 风险：包含匹配会扩大授权范围，建议白名单值保持完整且唯一，避免过短字符串。
+  - 回滚：可回退 `callback/route.ts` 到精确匹配逻辑。
+- 备注：本次仅修复登录授权判定，不涉及 OAuth 配置项结构变更。

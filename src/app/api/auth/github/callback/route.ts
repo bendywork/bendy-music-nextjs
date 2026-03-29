@@ -20,6 +20,26 @@ interface GitHubUserResponse {
   avatar_url?: string;
 }
 
+const isAdminMatched = (login: string | undefined, adminUsers: string[]): boolean => {
+  const normalizedLogin = login?.toLowerCase().trim();
+  if (!normalizedLogin) {
+    return false;
+  }
+
+  return adminUsers.some((adminUser) => {
+    const normalizedAdmin = adminUser.toLowerCase().trim();
+    if (!normalizedAdmin) {
+      return false;
+    }
+
+    return (
+      normalizedAdmin === normalizedLogin
+      || normalizedAdmin.includes(normalizedLogin)
+      || normalizedLogin.includes(normalizedAdmin)
+    );
+  });
+};
+
 const redirectToLogin = (request: NextRequest, errorCode: string, login?: string) => {
   const loginUrl = new URL('/login', request.url);
   loginUrl.searchParams.set('error', errorCode);
@@ -126,10 +146,7 @@ export async function GET(request: NextRequest) {
     }
 
     const user = (await userResponse.json()) as GitHubUserResponse;
-    const normalizedLogin = user.login?.toLowerCase();
-    const isAdmin = normalizedLogin
-      ? runtimeConfig.adminUsers.includes(normalizedLogin)
-      : false;
+    const isAdmin = isAdminMatched(user.login, runtimeConfig.adminUsers);
 
     if (!isAdmin) {
       return redirectToLogin(request, 'unauthorized_admin', user.login);
