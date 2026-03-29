@@ -13,40 +13,40 @@ export function DocsPanel({
   onDocTabChange,
   readmeContent,
   onReadmeChange,
-  docPropContent,
-  onDocPropChange,
+  docsPageContent,
+  onDocsPageChange,
   readmeBusy,
-  apiBusy,
+  docsBusy,
   onSaveReadme,
-  onSaveApiDoc,
+  onSaveDocsPage,
 }: {
   activeDocTab: DocTabKey;
   onDocTabChange: (value: DocTabKey) => void;
   readmeContent: string;
   onReadmeChange: (value: string) => void;
-  docPropContent: string;
-  onDocPropChange: (value: string) => void;
+  docsPageContent: string;
+  onDocsPageChange: (value: string) => void;
   readmeBusy: boolean;
-  apiBusy: boolean;
+  docsBusy: boolean;
   onSaveReadme: () => void;
-  onSaveApiDoc: () => void;
+  onSaveDocsPage: () => void;
 }) {
   return (
     <div className="space-y-5">
       <SectionIntro
         title="文档中心"
-        description="README 和 API 文档配置都会直接写回本地 UTF-8 文件，再同步数据库和 GitHub。"
-        badge="UTF-8 source of truth"
+        description="README 和 /docs 页面内容都会先保存到 PostgreSQL，再按配置同步回本地文件和 GitHub。"
+        badge="PostgreSQL source of truth"
       />
 
       <Tabs value={activeDocTab} onValueChange={(value) => onDocTabChange(value as DocTabKey)}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <TabsList>
             <TabsTrigger value="readme">README.md</TabsTrigger>
-            <TabsTrigger value="api">API Doc Config</TabsTrigger>
+            <TabsTrigger value="docs">Docs Page</TabsTrigger>
           </TabsList>
           <Badge variant="outline">
-            {activeDocTab === 'readme' ? '路径: /README.md' : '路径: /doc/doc-prop.json'}
+            {activeDocTab === 'readme' ? '路径: /README.md' : '渲染页: /docs'}
           </Badge>
         </div>
 
@@ -55,7 +55,7 @@ export function DocsPanel({
             <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <CardTitle>README 编辑器</CardTitle>
-                <CardDescription>编辑器内容和外部值保持同步，避免重新拉取后仍显示旧内容。</CardDescription>
+                <CardDescription>编辑内容会与数据库和仓库同步，避免刷新后又回到旧版本。</CardDescription>
               </div>
               <Button type="button" onClick={onSaveReadme} disabled={readmeBusy}>
                 <Save className="h-4 w-4" />
@@ -72,24 +72,24 @@ export function DocsPanel({
           </Card>
         </TabsContent>
 
-        <TabsContent value="api">
+        <TabsContent value="docs">
           <Card className="rounded-[2rem]">
             <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <CardTitle>API 文档配置</CardTitle>
-                <CardDescription>保存前会校验 JSON 格式，避免写出非法配置文件。</CardDescription>
+                <CardTitle>/docs 页面内容</CardTitle>
+                <CardDescription>这里编辑的 HTML 会直接作为 https://ddmusic.polofox.com/docs 的渲染内容。</CardDescription>
               </div>
-              <Button type="button" onClick={onSaveApiDoc} disabled={apiBusy}>
+              <Button type="button" onClick={onSaveDocsPage} disabled={docsBusy}>
                 <Save className="h-4 w-4" />
-                {apiBusy ? '保存中...' : '保存 API 文档'}
+                {docsBusy ? '保存中...' : '保存 /docs'}
               </Button>
             </CardHeader>
             <CardContent>
               <Textarea
-                value={docPropContent}
-                onChange={(event) => onDocPropChange(event.target.value)}
+                value={docsPageContent}
+                onChange={(event) => onDocsPageChange(event.target.value)}
                 className="min-h-[560px] font-mono text-xs"
-                placeholder="输入 doc-prop.json 内容"
+                placeholder="输入 /docs 页面 HTML 内容"
               />
             </CardContent>
           </Card>

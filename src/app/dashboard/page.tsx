@@ -26,7 +26,7 @@ import type { ApiItem, DashboardMenuKey, ProviderItem } from '@/components/dashb
 import {
   createEmptyApi,
   createEmptyProvider,
-  DEFAULT_API_DOC,
+  DEFAULT_DOCS_PAGE,
   DEFAULT_DASHBOARD_DATA,
   DEFAULT_README,
   DEFAULT_SYSTEM_CONFIG,
@@ -107,7 +107,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [readmeContent, setReadmeContent] = useState(DEFAULT_README);
-  const [docPropContent, setDocPropContent] = useState(DEFAULT_API_DOC);
+  const [docsPageContent, setDocsPageContent] = useState(DEFAULT_DOCS_PAGE);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
   const [editingProvider, setEditingProvider] = useState<ProviderItem | null>(null);
   const [apis, setApis] = useState<ApiItem[]>([]);
@@ -154,10 +154,10 @@ export default function DashboardPage() {
         setReadmeContent(payload.content || DEFAULT_README);
       }
 
-      if (apiDocResponse.ok) {
-        const payload = (await apiDocResponse.json()) as { content?: string };
-        setDocPropContent(payload.content || DEFAULT_API_DOC);
-      }
+        if (apiDocResponse.ok) {
+          const payload = (await apiDocResponse.json()) as { content?: string };
+          setDocsPageContent(payload.content || DEFAULT_DOCS_PAGE);
+        }
     } catch (loadError) {
       console.warn('Failed to load documents:', loadError);
     }
@@ -443,20 +443,20 @@ export default function DashboardPage() {
     }
   };
 
-  const handleApiDocSave = async () => {
+  const handleDocsPageSave = async () => {
     clearFeedback();
 
     try {
-      JSON.parse(docPropContent);
+      void docsPageContent;
     } catch {
       setError('API 文档配置必须是有效的 JSON。');
       return;
     }
 
-    setBusySection('api-doc');
+    setBusySection('docs-page');
     try {
       const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/api', {
-        content: docPropContent,
+        content: docsPageContent,
       });
       setSuccess(
         payload.repoSync?.message
@@ -690,12 +690,12 @@ export default function DashboardPage() {
                 onDocTabChange={setActiveDocTab}
                 readmeContent={readmeContent}
                 onReadmeChange={setReadmeContent}
-                docPropContent={docPropContent}
-                onDocPropChange={setDocPropContent}
+                docsPageContent={docsPageContent}
+                onDocsPageChange={setDocsPageContent}
                 readmeBusy={busySection === 'readme'}
-                apiBusy={busySection === 'api-doc'}
+                docsBusy={busySection === 'docs-page'}
                 onSaveReadme={() => void handleReadmeSave()}
-                onSaveApiDoc={() => void handleApiDocSave()}
+                onSaveDocsPage={() => void handleDocsPageSave()}
               />
             ) : null}
 

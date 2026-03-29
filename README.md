@@ -146,7 +146,7 @@ REDIS_KEY_PREFIX=bendywork_ddmusic_nextjs_
 The dashboard writes docs to PostgreSQL first, then syncs these files back to GitHub when enabled:
 
 - `README.md`
-- `doc/doc-prop.json`
+- `doc/doc.html`
 
 ## Verification
 
