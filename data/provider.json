@@ -1,4 +1,4 @@
-{
+﻿{
   "providers": [
     {
       "id": "provider-1769575008570",
@@ -11,10 +11,10 @@
     },
     {
       "id": "provider-1769575234978",
-      "name": "岑鬼鬼",
+      "name": "岑鬼",
       "code": "CGG",
       "status": "enabled",
-      "remark": "岑鬼鬼音乐API",
+      "remark": "岑鬼音乐API",
       "nature": "paid",
       "category": "personal"
     }

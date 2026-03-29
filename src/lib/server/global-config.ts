@@ -87,6 +87,7 @@ const DEFAULT_APP_CONFIG: AppConfig = {
 
 const RELEASE_CONFIG_PATH = path.join(process.cwd(), 'config', 'release.config.json');
 const APP_CONFIG_PATH = path.join(process.cwd(), 'config', 'app.config.json');
+const stripBom = (value: string): string => value.replace(/^\uFEFF/, '');
 
 const parseCsv = (value?: string): string[] => {
   if (!value) {
@@ -122,7 +123,7 @@ const readJsonWithFallback = <T>(filePath: string, fallback: T): T => {
       return fallback;
     }
 
-    const raw = fs.readFileSync(filePath, 'utf8');
+    const raw = stripBom(fs.readFileSync(filePath, 'utf8'));
     return JSON.parse(raw) as T;
   } catch (error) {
     console.warn(`Failed to parse config file: ${filePath}`, error);

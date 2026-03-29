@@ -2,6 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Pool } from 'pg';
 import { createClient } from 'redis';
+import { repairMojibakeValue } from '@/lib/server/mojibake';
 import { withRedisKeyPrefix } from '@/lib/server/redis-key';
 
 const STORE_TABLE_NAME = 'app_data_store';
@@ -10,6 +11,7 @@ const parsedCacheTtl = Number(process.env.REDIS_CACHE_TTL_SECONDS ?? 60);
 const CACHE_TTL_SECONDS = Number.isFinite(parsedCacheTtl) && parsedCacheTtl > 0
   ? parsedCacheTtl
   : 60;
+const stripBom = (value: string): string => value.replace(/^\uFEFF/, '');
 
 export const STORE_KEYS = {
   API_CONFIG: 'api-config',
@@ -146,8 +148,8 @@ export const readJsonFile = async <T>(relativePath: string, fallback: T): Promis
   const absolutePath = path.join(process.cwd(), relativePath);
 
   try {
-    const raw = await fs.readFile(absolutePath, 'utf8');
-    return JSON.parse(raw) as T;
+    const raw = stripBom(await fs.readFile(absolutePath, 'utf8'));
+    return repairMojibakeValue(JSON.parse(raw) as T);
   } catch {
     return fallback;
   }
@@ -157,7 +159,7 @@ export const readTextFile = async (relativePath: string, fallback: string): Prom
   const absolutePath = path.join(process.cwd(), relativePath);
 
   try {
-    return await fs.readFile(absolutePath, 'utf8');
+    return repairMojibakeValue(stripBom(await fs.readFile(absolutePath, 'utf8')));
   } catch {
     return fallback;
   }
@@ -180,17 +182,18 @@ export const getStoredValue = async <T>(
   );
 
   if (result.rows.length > 0) {
-    const value = result.rows[0].store_value;
+    const value = repairMojibakeValue(result.rows[0].store_value);
     await writeCache(key, value);
     return value;
   }
 
-  const fallback = await fallbackFactory();
+  const fallback = repairMojibakeValue(await fallbackFactory());
   await setStoredValue(key, fallback);
   return fallback;
 };
 
 export const setStoredValue = async <T>(key: string, value: T): Promise<T> => {
+  const normalizedValue = repairMojibakeValue(value);
   await ensureStoreTable();
 
   const result = await getPool().query<{ store_value: T }>(
@@ -201,10 +204,10 @@ export const setStoredValue = async <T>(key: string, value: T): Promise<T> => {
       DO UPDATE SET store_value = EXCLUDED.store_value, updated_at = NOW()
       RETURNING store_value
     `,
-    [key, JSON.stringify(value)],
+    [key, JSON.stringify(normalizedValue)],
   );
 
-  const storedValue = result.rows[0].store_value;
+  const storedValue = repairMojibakeValue(result.rows[0].store_value);
   await writeCache(key, storedValue);
   return storedValue;
 };

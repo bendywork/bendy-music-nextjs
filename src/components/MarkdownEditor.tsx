@@ -11,19 +11,22 @@ interface MarkdownEditorProps {
   placeholder?: string;
 }
 
-// 创建markdown-it实例
+// Render markdown into HTML for the preview pane.
 const mdParser = new MarkdownIt({
   html: true,
   linkify: true,
-  breaks: true
+  breaks: true,
 });
 
-// 渲染HTML
 const renderHTML = (text: string) => {
   return mdParser.render(text);
 };
 
-export default function MarkdownEditor({ value, onChange, placeholder = '请输入Markdown内容' }: MarkdownEditorProps) {
+export default function MarkdownEditor({
+  value,
+  onChange,
+  placeholder = 'Enter markdown content',
+}: MarkdownEditorProps) {
   const [editorValue, setEditorValue] = useState(value);
 
   const handleEditorChange = ({ text }: { text: string }) => {
@@ -41,7 +44,7 @@ export default function MarkdownEditor({ value, onChange, placeholder = '请输�
         style={{
           height: '600px',
           border: '1px solid #e2e8f0',
-          borderRadius: '0.375rem'
+          borderRadius: '0.375rem',
         }}
       />
     </div>

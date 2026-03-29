@@ -1,6 +1,6 @@
 {
   "name": "ddmusic-nextjs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "^7.3.0",
     "axios": "^1.13.2",
+    "iconv-lite": "^0.6.3",
     "linkify-it": "^5.0.0",
     "markdown-it": "^14.1.0",
     "mdurl": "^2.0.0",
