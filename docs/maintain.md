@@ -295,3 +295,35 @@
   - 风险：包含匹配会扩大授权范围，建议白名单值保持完整且唯一，避免过短字符串。
   - 回滚：可回退 `callback/route.ts` 到精确匹配逻辑。
 - 备注：本次仅修复登录授权判定，不涉及 OAuth 配置项结构变更。
+
+## [v0.1.5] - 2026-03-29
+- 迭代类型：fix（乱码文本修复）
+- 需求来源：后台页面与 README 文档出现大面积乱码，影响管理操作与文档编辑。
+- 变更摘要：修复 dashboard 可见文案、重写 README 为 ASCII 安全文案，并增加服务端读取时的乱码自动纠正能力。
+- 具体修改：
+  - 修改文件：`src/app/dashboard/page.tsx`、`src/components/MarkdownEditor.tsx`、`src/lib/dashboard.ts`
+  - 修改方式：清理后台可见文案中的乱码，替换为可读的中英文标签，并修正仪表盘默认服务名显示。
+  - 关键实现：文档管理、Provider/API 管理、系统概览等主页面均恢复为可读文本。
+  - 修改文件：`README.md`
+  - 修改方式：重写 README 为纯英文安全文案，避免再次出现编码导致的展示乱码。
+  - 关键实现：README 在后台编辑器与仓库预览中均可稳定显示。
+  - 修改文件：`src/lib/server/mojibake.ts`、`src/lib/server/data-store.ts`、`src/lib/server/global-config.ts`
+  - 修改方式：新增乱码修复工具，并在数据读取阶段自动清理历史脏数据。
+  - 关键实现：已存入 PostgreSQL / JSON 文件中的乱码字符串可在读取时自动归一化。
+  - 修改文件：`data/api.json`、`data/provider.json`、`data/dashboard.json`、`package.json`、`config/release.config.json`
+  - 修改方式：修正示例数据文本并递增版本号到 `v0.1.5`。
+  - 关键实现：清除示例数据中的乱码和坏 JSON 问题。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，27 warning）。
+  - test：当前仓库暂无 `test` script，未执行。
+  - build：已执行 `npm run build`，通过（含 1 条 Turbopack NFT tracing warning）。
+  - audit：本次未新增高危依赖问题，`npm install` 后仍为 2 条 moderate。
+- 发布动作：
+  - 分支：未执行
+  - commit：未执行
+  - tag：未执行
+  - push：未执行
+- 风险与回滚：
+  - 风险：历史数据中若存在无法自动恢复的个别字符串，仍可能需要人工二次校正。
+  - 回滚：可回退本次页面文案与 `mojibake` 工具改动。
+- 备注：本次重点修复用户可见页面与文档编辑体验，注释内残留乱码不影响运行。

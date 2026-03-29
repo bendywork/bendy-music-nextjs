@@ -1,4 +1,4 @@
-export interface DashboardData {
+﻿export interface DashboardData {
   proxyRequestCount: number;
   systemUptime: number;
   recentRequests: RecentRequest[];

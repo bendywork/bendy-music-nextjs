@@ -37,9 +37,9 @@ export default function DashboardPage() {
     systemUptime: 0,
     recentRequests: [],
     serviceStatus: [
-      { name: 'kuwo', displayName: '閰锋垜闊充箰', errorCount: 0, status: 'Normal' },
-      { name: 'qq', displayName: 'QQ闊充箰', errorCount: 0, status: 'Normal' },
-      { name: 'Netease', displayName: 'Netease Music', errorCount: 0, status: 'Normal' }
+      { name: 'kuwo', displayName: '酷我音乐', errorCount: 0, status: 'Normal' },
+      { name: 'qq', displayName: 'QQ音乐', errorCount: 0, status: 'Normal' },
+      { name: 'Netease', displayName: '网易云音乐', errorCount: 0, status: 'Normal' }
     ]
   });
   const [uptime, setUptime] = useState('0s');
@@ -49,7 +49,7 @@ export default function DashboardPage() {
     void checkLoginStatus();
   }, []);
 
-  // 瀹氭椂鏇存柊杩愯鏃堕棿
+  // 定时更新运行时间
   useEffect(() => {
     const updateUptime = () => {
       const uptimeMs = dashboardData.systemUptime || 0;
@@ -160,17 +160,17 @@ export default function DashboardPage() {
         }
       }
     } catch (err) {
-      console.warn('鑾峰彇鐢ㄦ埛淇℃伅澶辫触:', err);
+      console.warn('获取用户信息失败:', err);
     }
   };
 
   const loadSysConfig = async () => {
     try {
-      // 浠嶢PI绔偣鍔犺浇sys.json閰嶇疆
+      // 从API端点加载sys.json配置
       const response = await fetch('/api/sys');
       if (response.ok) {
         const config = await response.json();
-        // 鍔犺浇绯荤粺閰嶇疆
+        // 加载System Settings
         if (config.configuration) {
           setSysConfig({
             project: {
@@ -184,39 +184,39 @@ export default function DashboardPage() {
         }
       }
     } catch (err) {
-      console.warn('鍔犺浇绯荤粺閰嶇疆澶辫触:', err);
+      console.warn('加载System Settings失败:', err);
     }
   };
 
-  // 鍔犺浇鎺ュ彛閰嶇疆
+  // 加载接口配置
   const loadApiConfig = async () => {
     try {
       const response = await fetch('/api/data/api');
       if (response.ok) {
         const apiConfig = await response.json();
-        // 鍔犺浇鎺ュ彛閰嶇疆
+        // 加载接口配置
         if (apiConfig.apis) {
           setApis(apiConfig.apis);
         }
       }
     } catch (err) {
-      console.warn('鍔犺浇鎺ュ彛閰嶇疆澶辫触:', err);
+      console.warn('加载接口配置失败:', err);
     }
   };
 
-  // 鍔犺浇鏈嶅姟鍟嗛厤缃?
+  // 鍔犺浇Provider嗛厤缃?
   const loadProviderConfig = async () => {
     try {
       const response = await fetch('/api/data/provider');
       if (response.ok) {
         const providerConfig = await response.json();
-        // 鍔犺浇鏈嶅姟鍟嗛厤缃?
+        // 鍔犺浇Provider嗛厤缃?
         if (providerConfig.providers) {
           setProviders(providerConfig.providers);
         }
       }
     } catch (err) {
-      console.warn('鍔犺浇鏈嶅姟鍟嗛厤缃け璐?', err);
+      console.warn('鍔犺浇Provider嗛厤缃け璐?', err);
     }
   };
 
@@ -270,9 +270,9 @@ export default function DashboardPage() {
       }
 
       const syncSuffix = payload.repoSync?.message ? ` (${payload.repoSync.message})` : '';
-      setSuccess(`README.md 保存成功${syncSuffix}`);
+      setSuccess(`README.md Save成功${syncSuffix}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存 README.md 失败');
+      setError(err instanceof Error ? err.message : 'Save README.md 失败');
     } finally {
       setLoading(false);
     }
@@ -298,9 +298,9 @@ export default function DashboardPage() {
       }
 
       const syncSuffix = payload.repoSync?.message ? ` (${payload.repoSync.message})` : '';
-      setSuccess(`API 文档配置保存成功${syncSuffix}`);
+      setSuccess(`API Doc ConfigSave成功${syncSuffix}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存 API 文档配置失败');
+      setError(err instanceof Error ? err.message : 'Save API Doc Config失败');
     } finally {
       setLoading(false);
     }
@@ -330,10 +330,10 @@ export default function DashboardPage() {
     router.push('/login');
   };
 
-  // 淇濆瓨绯荤粺閰嶇疆
+  // SaveSystem Settings
   const saveSysConfig = async () => {
     try {
-      // 鏋勫缓鏂扮殑sys.json鍐呭
+      // 构建新的sys.json内容
       const newSysConfig = {
         apiManagement: {
           apis: []
@@ -348,7 +348,7 @@ export default function DashboardPage() {
         }
       };
 
-      // 浣跨敤API绔偣淇濆瓨sys.json鏂囦欢
+      // 使用API端点Savesys.json文件
       const response = await fetch('/api/sys', {
         method: 'POST',
         headers: {
@@ -359,26 +359,26 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`淇濆瓨绯荤粺閰嶇疆澶辫触: ${errorData.error || '鏈煡閿欒'}`);
+        throw new Error(`SaveSystem Settings失败: ${errorData.error || '未知错误'}`);
       }
 
       return true;
     } catch (err) {
-      console.error('淇濆瓨绯荤粺閰嶇疆澶辫触:', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨绯荤粺閰嶇疆澶辫触锛岃妫€鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('SaveSystem Settings失败:', err);
+      setError(err instanceof Error ? err.message : 'SaveSystem Settings失败，请检查服务器权限');
       return false;
     }
   };
 
-  // 淇濆瓨鎺ュ彛閰嶇疆
+  // Save接口配置
   const saveApiConfig = async () => {
     try {
-      // 鏋勫缓鎺ュ彛閰嶇疆鍐呭
+      // 构建接口配置内容
       const apiConfig = {
         apis: []
       };
 
-      // 浣跨敤API绔偣淇濆瓨api.json鏂囦欢
+      // 使用API端点Saveapi.json文件
       const response = await fetch('/api/data/api', {
         method: 'POST',
         headers: {
@@ -389,18 +389,18 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`淇濆瓨鎺ュ彛閰嶇疆澶辫触: ${errorData.error || '鏈煡閿欒'}`);
+        throw new Error(`Save接口配置失败: ${errorData.error || '未知错误'}`);
       }
 
       return true;
     } catch (err) {
-      console.error('淇濆瓨鎺ュ彛閰嶇疆澶辫触:', err);
-      setError(err instanceof Error ? err.message : '淇濆瓨鎺ュ彛閰嶇疆澶辫触锛岃妫€鏌ユ湇鍔″櫒鏉冮檺');
+      console.error('Save接口配置失败:', err);
+      setError(err instanceof Error ? err.message : 'Save接口配置失败，请检查服务器权限');
       return false;
     }
   };
 
-  // 淇濆瓨鏈嶅姟鍟嗛厤缃?
+  // SaveProvider嗛厤缃?
   const saveProviderConfig = async () => {
     try {
       const response = await fetch('/api/data/provider', {
@@ -413,18 +413,18 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`保存服务商配置失败: ${errorData.error || '未知错误'}`);
+        throw new Error(`Save服务商配置失败: ${errorData.error || '未知错误'}`);
       }
 
       return true;
     } catch (err) {
-      console.error('保存服务商配置失败:', err);
-      setError(err instanceof Error ? err.message : '保存服务商配置失败，请检查服务端权限');
+      console.error('Save服务商配置失败:', err);
+      setError(err instanceof Error ? err.message : 'Save服务商配置失败，请检查服务端权限');
       return false;
     }
   };
 
-  // 淇濆瓨鍒皊ys.json鐨勫嚱鏁帮紙淇濇寔鍚戝悗鍏煎锛?
+  // Save鍒皊ys.json鐨勫嚱鏁帮紙淇濇寔鍚戝悗鍏煎锛?
   const saveToSysJson = async () => {
     try {
       const sysSaved = await saveSysConfig();
@@ -432,15 +432,15 @@ export default function DashboardPage() {
       const providerSaved = await saveProviderConfig();
 
       if (sysSaved && apiSaved && providerSaved) {
-        setSuccess('配置保存成功');
+        setSuccess('配置Save成功');
       }
     } catch (err) {
-      console.error('保存配置失败:', err);
-      setError(err instanceof Error ? err.message : '保存配置失败，请检查服务端权限');
+      console.error('Save Settings失败:', err);
+      setError(err instanceof Error ? err.message : 'Save Settings失败，请检查服务端权限');
     }
   };
 
-  // 鏈嶅姟鍟嗙鐞嗗姛鑳?
+  // Provider Management嗗姛鑳?
   const handleAddProvider = () => {
     const newProvider = {
       id: `provider-${Date.now()}`,
@@ -489,13 +489,13 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || '保存服务商失败');
+        throw new Error(errorData.error || 'Save服务商失败');
       }
 
-      setSuccess('服务商保存成功');
+      setSuccess('服务商Save成功');
     } catch (err) {
-      console.error('保存服务商失败:', err);
-      setError(err instanceof Error ? err.message : '保存服务商失败，请检查服务端权限');
+      console.error('Save服务商失败:', err);
+      setError(err instanceof Error ? err.message : 'Save服务商失败，请检查服务端权限');
     }
   };
 
@@ -555,7 +555,7 @@ export default function DashboardPage() {
     }
   };
 
-  // 鎺ュ彛绠＄悊鍔熻兘
+  // API Management功能
   const handleAddApi = () => {
     const newApi = {
       id: `api-${Date.now()}`,
@@ -580,7 +580,7 @@ export default function DashboardPage() {
     if (!editingApi) return;
 
     if (!editingApi.name || !editingApi.path || !editingApi.method) {
-      setError('接口名称、路径和方法不能为空');
+      setError('API Name、路径和方法不能为空');
       return;
     }
 
@@ -606,13 +606,13 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || '保存接口失败');
+        throw new Error(errorData.error || 'Save接口失败');
       }
 
-      setSuccess('接口保存成功');
+      setSuccess('接口Save成功');
     } catch (err) {
-      console.error('保存接口失败:', err);
-      setError(err instanceof Error ? err.message : '保存接口失败，请检查服务端权限');
+      console.error('Save接口失败:', err);
+      setError(err instanceof Error ? err.message : 'Save接口失败，请检查服务端权限');
     }
   };
 
@@ -672,57 +672,57 @@ export default function DashboardPage() {
     }
   };
 
-  // 閰嶇疆绠＄悊鍔熻兘
+  // Settings功能
   const handleConfigSave = async () => {
     try {
-      // 淇濆瓨绯荤粺閰嶇疆
+      // SaveSystem Settings
       const saved = await saveSysConfig();
       if (saved) {
-        // 娓呴櫎鐧诲綍缂撳瓨
+        // 清除登录缓存
         await fetch('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
         githubService.logout();
         // 璺宠浆鍒扮櫥褰曢〉闈㈤噸鏂伴獙璇?
         router.push('/login');
       }
     } catch (err) {
-      console.error('淇濆瓨閰嶇疆澶辫触:', err);
+      console.error('Save Settings失败:', err);
       // 閿欒宸茬粡鍦?saveSysConfig 鍑芥暟涓鐞?
     }
   };
 
   const menuItems = [
     {
-      title: '绯荤粺闈㈡澘',
+      title: '系统面板',
       items: [
         {
           id: 'dashboard',
           label: 'Dashboard',
-          icon: '馃搳'
+          icon: 'DB'
         }
       ]
     },
     {
-      title: '鏍稿績鍔熻兘',
+      title: '核心功能',
       items: [
         {
           id: 'provider-management',
           label: 'Provider Management',
-          icon: '馃彧'
+          icon: 'PR'
         },
         {
           id: 'api-management',
-          label: '鎺ュ彛绠＄悊',
-          icon: '馃攲'
+          label: 'API Management',
+          icon: 'API'
         },
         {
           id: 'doc-management',
-          label: '鏂囨。绠＄悊',
-          icon: '馃摎'
+          label: 'Docs Management',
+          icon: 'DOC'
         },
         {
           id: 'config-management',
-          label: '閰嶇疆绠＄悊',
-          icon: '鈿欙笍'
+          label: 'Settings',
+          icon: 'CFG'
         }
       ]
     }
@@ -734,7 +734,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">鍔犺浇涓?..</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -744,12 +744,12 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* 渚ц竟鏍忓鑸?*/}
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        {/* 鍝佺墝鏍囪瘑 */}
+        {/* 品牌标识 */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
-          <img src="/logo.svg" alt="椤剁偣鍚庡彴" className="h-6 w-6" />
+          <img src="/logo.svg" alt="Admin Console" className="h-6 w-6" />
           <div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">椤剁偣鍚庡彴</h1>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">API浠ｇ悊鏈嶅姟</p>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Admin Console</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">API Gateway</p>
           </div>
         </div>
 
@@ -781,7 +781,7 @@ export default function DashboardPage() {
           ))}
         </nav>
 
-        {/* 鐢ㄦ埛淇℃伅 */}
+        {/* 用户信息 */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
@@ -797,14 +797,14 @@ export default function DashboardPage() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-white">{userInfo.login || 'Admin'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">GitHub璁よ瘉</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">GitHub Auth</p>
             </div>
           </div>
           <button 
             onClick={handleLogout}
             className="mt-3 w-full text-xs text-red-600 dark:text-red-400 hover:underline"
           >
-            鐧诲嚭
+            Sign out
           </button>
         </div>
       </aside>
@@ -816,17 +816,17 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
               {activeMenu === 'dashboard' && 'Dashboard'}
-              {activeMenu === 'api-management' && '鎺ュ彛绠＄悊'}
-              {activeMenu === 'doc-management' && '鏂囨。绠＄悊'}
-              {activeMenu === 'config-management' && '閰嶇疆绠＄悊'}
+              {activeMenu === 'api-management' && 'API Management'}
+              {activeMenu === 'doc-management' && 'Docs Management'}
+              {activeMenu === 'config-management' && 'Settings'}
             </h1>
           </div>
           <div className="flex items-center gap-4">
             <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-              <span className="text-gray-500 dark:text-gray-400">馃敂</span>
+              <span className="text-gray-500 dark:text-gray-400">Alerts</span>
             </button>
             <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-              <span className="text-gray-500 dark:text-gray-400">鈿欙笍</span>
+              <span className="text-gray-500 dark:text-gray-400">Settings</span>
             </button>
           </div>
         </header>
@@ -850,56 +850,56 @@ export default function DashboardPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">绯荤粺姒傝</h2>
-                  <p className="text-gray-500 dark:text-gray-400 mt-1">娆㈣繋浣跨敤API浠ｇ悊鏈嶅姟绠＄悊绯荤粺</p>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">System Overview</h2>
+                  <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome to the API gateway dashboard</p>
                 </div>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  杩愯涓?
+                  Running
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex flex-row items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">浠ｇ悊璇锋眰鏁</h3>
-                    <div className="h-4 w-4 text-green-500">鈿</div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Proxy Requests</h3>
+                    <div className="h-4 w-4 text-green-500">RQ</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData.proxyRequestCount || 0}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">鎬昏姹</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Requests</div>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex flex-row items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">娲昏穬鏈嶅姟鍟</h3>
-                    <div className="h-4 w-4 text-blue-500">馃枼锔</div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Providers</h3>
+                    <div className="h-4 w-4 text-blue-500">PR</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">褰撳墠杩炴帴</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Current Connections</div>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex flex-row items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">鏁版嵁搴撹繛鎺</h3>
-                    <div className="h-4 w-4 text-purple-500">馃梽锔</div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Database Connections</h3>
+                    <div className="h-4 w-4 text-purple-500">DB</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">娲昏穬杩炴帴</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Active Connections</div>
                   </div>
                 </div>
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="flex flex-row items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">绯荤粺杩愯鏃堕棿</h3>
-                    <div className="h-4 w-4 text-amber-500">鈴</div>
+                    <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">系统运行时间</h3>
+                    <div className="h-4 w-4 text-amber-500">UP</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold text-gray-900 dark:text-white">{uptime}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">浠庝笂娆″惎鍔</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Since Last Restart</div>
                   </div>
                 </div>
               </div>
@@ -907,18 +907,18 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 lg:col-span-2">
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">鏈€杩戜唬鐞嗚姹</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">杩囧幓24灏忔椂鍐呯殑浠ｇ悊璇锋眰璁板綍</p>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Proxy Requests</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Proxy request history in the last 24 hours</p>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-700">
-                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鏃堕棿</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">璺緞</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鏈嶅姟鍟</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鐘舵€佺爜</th>
-                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鑰楁椂</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">时间</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Path</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Provider</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Status Code</th>
+                          <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Duration</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -945,7 +945,7 @@ export default function DashboardPage() {
                         ) : (
                           <tr className="border-b border-gray-200 dark:border-gray-700">
                             <td colSpan={5} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                              鏆傛棤璇锋眰璁板綍
+                              暂无请求记录
                             </td>
                           </tr>
                         )}
@@ -956,8 +956,8 @@ export default function DashboardPage() {
 
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                   <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">鏈嶅姟鐘舵€</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">鍚凙PI鏈嶅姟鐨勮繍琛岀姸鎬佸拰閿欒缁熻</p>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Service Status</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Runtime status and error count for each API service</p>
                   </div>
                   <div className="space-y-4">
                     {dashboardData.serviceStatus && dashboardData.serviceStatus.map((service: any) => (
@@ -970,13 +970,13 @@ export default function DashboardPage() {
                           <span className="font-medium text-gray-700 dark:text-gray-300">{service.displayName}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500 dark:text-gray-400">閿欒: {service.errorCount}</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Errors: {service.errorCount}</span>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             service.status === 'Normal' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
                             service.status === 'Warning' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                             'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                           }`}>
-                            {service.status === 'Normal' ? '姝ｅ父' : service.status === 'Warning' ? '璀﹀憡' : '鏁呴殰'}
+                            {service.status === 'Normal' ? 'Normal' : service.status === 'Warning' ? 'Warning' : 'Down'}
                           </span>
                         </div>
                       </div>
@@ -984,7 +984,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      閿欒 &lt;100 姝ｅ父锛?00-999 璀﹀憡锛屸墺1000 鏁呴殰
+                      Errors &lt;100 Normal, 100-999 Warning, &gt;=1000 Down
                     </div>
                   </div>
                 </div>
@@ -995,28 +995,28 @@ export default function DashboardPage() {
           {activeMenu === 'api-management' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">鎺ュ彛绠＄悊</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">绠＄悊绯荤粺鎺ュ彛閰嶇疆鍜岀姸鎬</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">API Management</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage system API configuration and status</p>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">鎺ュ彛鍒楄〃</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">API List</h3>
                   <button 
                     onClick={handleAddApi}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
-                    娣诲姞鎺ュ彛
+                    Add API
                   </button>
                 </div>
                 
-                {/* 鎺ュ彛缂栬緫琛ㄥ崟 */}
+                {/* 接口编辑表单 */}
                 {editingApi && (
                   <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
-                    <h4 className="text-md font-semibold mb-4">{apis.some(p => p.id === editingApi.id) ? '缂栬緫鎺ュ彛' : '娣诲姞鎺ュ彛'}</h4>
+                    <h4 className="text-md font-semibold mb-4">{apis.some(p => p.id === editingApi.id) ? 'Edit API' : 'Add API'}</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鎺ュ彛鍚嶇О
+                          API Name
                         </label>
                         <input
                           type="text"
@@ -1028,7 +1028,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鎺ュ彛璺緞
+                          API Path
                         </label>
                         <input
                           type="text"
@@ -1040,20 +1040,20 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          璺緞绫诲瀷
+                          Path Type
                         </label>
                         <select
                           value={editingApi.pathType || 'relative'}
                           onChange={(e) => setEditingApi({ ...editingApi, pathType: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="absolute">缁濆璺緞</option>
-                          <option value="relative">鐩稿璺緞</option>
+                          <option value="absolute">Absolute Path</option>
+                          <option value="relative">Relative Path</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          璇锋眰鏂规硶
+                          Method
                         </label>
                         <select
                           value={editingApi.method}
@@ -1070,14 +1070,14 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鏈嶅姟鍟?
+                          Provider
                         </label>
                         <select
                           value={editingApi.provider || ''}
                           onChange={(e) => setEditingApi({ ...editingApi, provider: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="">璇烽€夋嫨鏈嶅姟鍟</option>
+                          <option value="">Select Provider</option>
                           {providers.map(provider => (
                             <option key={provider.id} value={provider.id}>
                               {provider.name} ({provider.code})
@@ -1087,44 +1087,44 @@ export default function DashboardPage() {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          璇锋眰鍙傛暟
+                          Query Params
                         </label>
                         <input
                           type="text"
                           value={editingApi.params || ''}
                           onChange={(e) => setEditingApi({ ...editingApi, params: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="璇疯緭鍏ヨ姹傚弬鏁帮紝濡傦細key1=value1&key2=value2"
+                          placeholder="请输入Query Params，如：key1=value1&key2=value2"
                         />
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          璇锋眰澶碒eader
+                          Headers
                         </label>
                         <input
                           type="text"
                           value={editingApi.headers || ''}
                           onChange={(e) => setEditingApi({ ...editingApi, headers: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="璇疯緭鍏ヨ姹傚ご锛屽锛欳ontent-Type=application/json"
+                          placeholder="请输入请求头，如：Content-Type=application/json"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鐘舵€?
+                          Status
                         </label>
                         <select
                           value={editingApi.status}
                           onChange={(e) => setEditingApi({ ...editingApi, status: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="enabled">鍚敤</option>
-                          <option value="disabled">绂佺敤</option>
+                          <option value="enabled">Enabled</option>
+                          <option value="disabled">Disabled</option>
                         </select>
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          澶囨敞
+                          Notes
                         </label>
                         <input
                           type="text"
@@ -1140,13 +1140,13 @@ export default function DashboardPage() {
                         onClick={handleSaveApi}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                       >
-                        淇濆瓨
+                        Save
                       </button>
                       <button
                         onClick={() => setEditingApi(null)}
                         className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
                       >
-                        鍙栨秷
+                        Cancel
                       </button>
                     </div>
                   </div>
@@ -1156,25 +1156,25 @@ export default function DashboardPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鎺ュ彛鍚嶇О</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">璺緞</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">璺緞绫诲瀷</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鏂规硶</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鏈嶅姟鍟</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鐘舵€</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">澶囨敞</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鎿嶄綔</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">API Name</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Path</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Path Type</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">方法</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Provider</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Notes</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {apis.map(api => {
-                        // 鎵惧埌瀵瑰簲鐨勬湇鍔″晢淇℃伅
+                        // 找到对应的服务商信息
                         const provider = providers.find(p => p.id === api.provider);
                         return (
                           <tr key={api.id} className="border-b border-gray-200 dark:border-gray-700">
                             <td className="py-3 px-4">{api.name}</td>
                             <td className="py-3 px-4 font-mono text-sm">{api.path}</td>
-                            <td className="py-3 px-4">{api.pathType === 'absolute' ? '缁濆璺緞' : '鐩稿璺緞'}</td>
+                            <td className="py-3 px-4">{api.pathType === 'absolute' ? 'Absolute Path' : '相对路径'}</td>
                             <td className="py-3 px-4">{api.method}</td>
                             <td className="py-3 px-4">{provider ? `${provider.name} (${provider.code})` : '-'}</td>
                             <td className="py-3 px-4">
@@ -1186,7 +1186,7 @@ export default function DashboardPage() {
                                     : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800'
                                 } transition-colors`}
                               >
-                                {api.status === 'enabled' ? '鍚敤' : '绂佺敤'}
+                                {api.status === 'enabled' ? 'Enabled' : 'Disabled'}
                               </button>
                             </td>
                             <td className="py-3 px-4">{api.remark || '-'}</td>
@@ -1195,16 +1195,16 @@ export default function DashboardPage() {
                                 onClick={() => handleEditApi(api)}
                                 className="text-blue-600 dark:text-blue-400 hover:underline mr-2"
                               >
-                                缂栬緫
+                                编辑
                               </button>
                               <button 
                                 onClick={() => handleDeleteApi(api.id)}
                                 className="text-red-600 dark:text-red-400 hover:underline mr-2"
                               >
-                                鍒犻櫎
+                                Delete
                               </button>
                               <button 
-                                onClick={() => alert('娴嬭瘯鎺ュ彛鍔熻兘寮€鍙戜腑')}
+                                onClick={() => alert('Test API is under development')}
                                 className="text-green-600 dark:text-green-400 hover:underline"
                               >
                                 娴嬭瘯
@@ -1216,7 +1216,7 @@ export default function DashboardPage() {
                       {apis.length === 0 && (
                         <tr className="border-b border-gray-200 dark:border-gray-700">
                           <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            鏆傛棤鎺ュ彛鏁版嵁
+                            No API data
                           </td>
                         </tr>
                       )}
@@ -1230,76 +1230,76 @@ export default function DashboardPage() {
           {activeMenu === 'provider-management' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">鏈嶅姟鍟嗙鐞</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">绠＄悊绯荤粺鏈嶅姟鍟嗛厤缃</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Provider Management</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage provider settings</p>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">鏈嶅姟鍟嗗垪琛</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Provider List</h3>
                   <button 
                     onClick={handleAddProvider}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
-                    娣诲姞鏈嶅姟鍟?
+                    Add Provider
                   </button>
                 </div>
                 
-                {/* 鏈嶅姟鍟嗙紪杈戣〃鍗?*/}
+                {/* Provider嗙紪杈戣〃鍗?*/}
                 {editingProvider && (
                   <div className="mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
                     <h4 className="text-md font-semibold mb-4">
-                      {providers.some(p => p.id === editingProvider.id) ? 'Edit provider' : 'Add provider'}
+                      {providers.some(p => p.id === editingProvider.id) ? 'Edit Provider' : 'Add Provider'}
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鏈嶅姟鍟嗗悕绉?
+                          Provider Name
                         </label>
                         <input
                           type="text"
                           value={editingProvider.name}
                           onChange={(e) => setEditingProvider({ ...editingProvider, name: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="璇疯緭鍏ユ湇鍔″晢鍚嶇О"
+                          placeholder="Enter provider name"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鏈嶅姟鍟嗕唬鐮?
+                          Provider Code
                         </label>
                         <input
                           type="text"
                           value={editingProvider.code}
                           onChange={(e) => setEditingProvider({ ...editingProvider, code: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                          placeholder="璇疯緭鍏ユ湇鍔″晢浠ｇ爜"
+                          placeholder="Enter provider code"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          绫诲埆
+                          Category
                         </label>
                         <select
                           value={editingProvider.category || 'official'}
                           onChange={(e) => setEditingProvider({ ...editingProvider, category: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="official">瀹樻柟</option>
-                          <option value="personal">涓汉</option>
+                          <option value="official">Official</option>
+                          <option value="personal">Personal</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鎬ц川
+                          Type
                         </label>
                         <select
                           value={editingProvider.nature || 'openSource'}
                           onChange={(e) => setEditingProvider({ ...editingProvider, nature: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="openSource">寮€婧</option>
-                          <option value="nonProfit">鍏泭</option>
-                          <option value="paid">浠樿垂</option>
+                          <option value="openSource">Open Source</option>
+                          <option value="nonProfit">Non-profit</option>
+                          <option value="paid">付费</option>
                         </select>
                       </div>
                       <div className="md:col-span-2">
@@ -1316,20 +1316,20 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          鐘舵€?
+                          Status
                         </label>
                         <select
                           value={editingProvider.status}
                           onChange={(e) => setEditingProvider({ ...editingProvider, status: e.target.value })}
                           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                         >
-                          <option value="enabled">鍚敤</option>
-                          <option value="disabled">绂佺敤</option>
+                          <option value="enabled">Enabled</option>
+                          <option value="disabled">Disabled</option>
                         </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          澶囨敞
+                          Notes
                         </label>
                         <input
                           type="text"
@@ -1345,13 +1345,13 @@ export default function DashboardPage() {
                         onClick={handleSaveProvider}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                       >
-                        淇濆瓨
+                        Save
                       </button>
                       <button
                         onClick={() => setEditingProvider(null)}
                         className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
                       >
-                        鍙栨秷
+                        Cancel
                       </button>
                     </div>
                   </div>
@@ -1361,14 +1361,14 @@ export default function DashboardPage() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200 dark:border-gray-700">
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鏈嶅姟鍟嗗悕绉</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">浠ｇ爜</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">绫诲埆</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鎬ц川</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Provider Name</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">代码</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Category</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Type</th>
                         <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">URL</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鐘舵€</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">澶囨敞</th>
-                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">鎿嶄綔</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Status</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Notes</th>
+                        <th className="text-left py-3 px-4 font-medium text-sm text-gray-500 dark:text-gray-400">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1376,10 +1376,10 @@ export default function DashboardPage() {
                         <tr key={provider.id} className="border-b border-gray-200 dark:border-gray-700">
                           <td className="py-3 px-4">{provider.name}</td>
                           <td className="py-3 px-4 font-mono text-sm">{provider.code}</td>
-                          <td className="py-3 px-4">{provider.category === 'official' ? '瀹樻柟' : '涓汉'}</td>
+                          <td className="py-3 px-4">{provider.category === 'official' ? '官方' : '个人'}</td>
                           <td className="py-3 px-4">
                             {provider.nature === 'openSource' ? 'Open Source' : 
-                             provider.nature === 'nonProfit' ? '鍏泭' : '浠樿垂'}
+                             provider.nature === 'nonProfit' ? '公益' : '付费'}
                           </td>
                           <td className="py-3 px-4 font-mono text-sm break-all">{provider.url || '-'}</td>
                           <td className="py-3 px-4">
@@ -1391,7 +1391,7 @@ export default function DashboardPage() {
                                   : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 hover:bg-red-200 dark:hover:bg-red-800'
                               } transition-colors`}
                             >
-                              {provider.status === 'enabled' ? '鍚敤' : '绂佺敤'}
+                              {provider.status === 'enabled' ? 'Enabled' : 'Disabled'}
                             </button>
                           </td>
                           <td className="py-3 px-4">{provider.remark || '-'}</td>
@@ -1400,13 +1400,13 @@ export default function DashboardPage() {
                               onClick={() => handleEditProvider(provider)}
                               className="text-blue-600 dark:text-blue-400 hover:underline mr-2"
                             >
-                              缂栬緫
+                              编辑
                             </button>
                             <button 
                               onClick={() => handleDeleteProvider(provider.id)}
                               className="text-red-600 dark:text-red-400 hover:underline"
                             >
-                              鍒犻櫎
+                              Delete
                             </button>
                           </td>
                         </tr>
@@ -1414,7 +1414,7 @@ export default function DashboardPage() {
                       {providers.length === 0 && (
                         <tr className="border-b border-gray-200 dark:border-gray-700">
                           <td colSpan={8} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                            鏆傛棤鏈嶅姟鍟嗘暟鎹?
+                            No provider data
                           </td>
                         </tr>
                       )}
@@ -1428,78 +1428,78 @@ export default function DashboardPage() {
           {activeMenu === 'doc-management' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">鏂囨。绠＄悊</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">绠＄悊README鍜孉PI鏂囨。閰嶇疆</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Docs Management</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage README and API doc configuration</p>
               </div>
 
-              {/* 鏂囨。绫诲瀷鍒囨崲鑿滃崟 */}
+              {/* 文档类型切换菜单 */}
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setActiveDocTab('readme')}
                     className={`px-4 py-2 rounded-md transition-colors ${activeDocTab === 'readme' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                   >
-                    README.md 鏂囨。
+                    README.md
                   </button>
                   <button
                     onClick={() => setActiveDocTab('api')}
                     className={`px-4 py-2 rounded-md transition-colors ${activeDocTab === 'api' ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
                   >
-                    API 鏂囨。閰嶇疆
+                    API Doc Config
                   </button>
                 </div>
               </div>
 
-              {/* README绠＄悊 */}
+              {/* README管理 */}
               {activeDocTab === 'readme' && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">README.md 绠＄悊</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">README.md</h3>
                     <button
                       onClick={handleReadmeSave}
                       disabled={loading}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
                     >
-                      {loading ? '淇濆瓨涓?..' : '淇濆瓨'}
+                      {loading ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                   {loading ? (
-                    <div className="text-center py-10">鍔犺浇涓?..</div>
+                    <div className="text-center py-10">Loading...</div>
                   ) : (
                     <MarkdownEditor
                       value={readmeContent}
                       onChange={setReadmeContent}
-                      placeholder="璇疯緭鍏EADME.md鍐呭"
+                      placeholder="Enter README.md content"
                     />
                   )}
                 </div>
               )}
 
-              {/* API鏂囨。閰嶇疆绠＄悊 */}
+              {/* API Doc Config */}
               {activeDocTab === 'api' && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">API鏂囨。閰嶇疆绠＄悊</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">API Doc Config</h3>
                     <button
                       onClick={handleDocPropSave}
                       disabled={loading}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium disabled:bg-blue-400 disabled:cursor-not-allowed"
                     >
-                      {loading ? '淇濆瓨涓?..' : '淇濆瓨'}
+                      {loading ? 'Saving...' : 'Save'}
                     </button>
                   </div>
                   {loading ? (
-                    <div className="text-center py-10">鍔犺浇涓?..</div>
+                    <div className="text-center py-10">Loading...</div>
                   ) : (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        doc-prop.json 鍐呭
+                        doc-prop.json content
                       </label>
                       <textarea
                         value={docPropContent}
                         onChange={(e) => setDocPropContent(e.target.value)}
                         className="w-full h-96 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white font-mono text-sm"
-                        placeholder="璇疯緭鍏oc-prop.json鍐呭"
+                        placeholder="Enter doc-prop.json content"
                       />
                     </div>
                   )}
@@ -1511,17 +1511,17 @@ export default function DashboardPage() {
           {activeMenu === 'config-management' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">閰嶇疆绠＄悊</h2>
-                <p className="text-gray-500 dark:text-gray-400 mt-1">绠＄悊绯荤粺閰嶇疆鍙傛暟</p>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Manage system settings</p>
               </div>
               <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
                 <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">绯荤粺閰嶇疆</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">System Settings</h3>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      椤圭洰 GitHub 璺緞
+                      Project GitHub Path
                     </label>
                     <input
                       type="text"
@@ -1534,12 +1534,12 @@ export default function DashboardPage() {
                         }
                       })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="璇疯緭鍏ラ」鐩?GitHub 璺緞"
+                      placeholder="Enter project GitHub path"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      API璇锋眰瓒呮椂鏃堕棿
+                      API Timeout
                     </label>
                     <input
                       type="number"
@@ -1556,7 +1556,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      鏈€澶у苟鍙戣姹傛暟
+                      Max Concurrent Requests
                     </label>
                     <input
                       type="number"
@@ -1576,7 +1576,7 @@ export default function DashboardPage() {
                       onClick={handleConfigSave}
                       className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
                     >
-                      淇濆瓨閰嶇疆
+                      Save Settings
                     </button>
                   </div>
                 </div>
@@ -1588,6 +1588,10 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+
+
+
 
 
 
