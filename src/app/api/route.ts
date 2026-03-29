@@ -149,6 +149,37 @@ async function handleGetSongInfo(provider: string, source: string | null, id: st
  * @param id 歌单ID
  * @returns 歌单详情
  */
+async function handleSearchSongs(source: string | null, keyword: string | null, limit: number): Promise<NextResponse> {
+  const normalizedKeyword = keyword?.trim();
+
+  if (!source || !normalizedKeyword) {
+    return NextResponse.json({ code: 400, message: 'Missing source or keyword parameter' }, { status: 400 });
+  }
+
+  const musicService = createSearchService(source);
+  if (!musicService) {
+    return NextResponse.json({ code: 400, message: 'Unsupported platform' }, { status: 400 });
+  }
+
+  try {
+    const searchResult = await musicService.searchSong(normalizedKeyword, limit);
+
+    return NextResponse.json({
+      code: 200,
+      message: 'success',
+      data: searchResult,
+    });
+  } catch (error) {
+    console.error('Error in handleSearchSongs:', error);
+    recordError(source);
+    return NextResponse.json({
+      code: 500,
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : String(error),
+    }, { status: 500 });
+  }
+}
+
 async function handleGetPlaylistDetail(provider: string, source: string | null, id: string | null): Promise<NextResponse> {
   if (!source || !id) {
     return NextResponse.json({ code: 400, message: 'Missing source or id parameter' }, { status: 400 });
