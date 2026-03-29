@@ -13,8 +13,10 @@ import {
   Settings2,
   ShieldCheck,
   Sparkles,
+  Tag,
   Waypoints,
 } from 'lucide-react';
+import packageJson from '../../../package.json';
 import { ApiPanel } from '@/components/dashboard/api-panel';
 import { DocsPanel } from '@/components/dashboard/docs-panel';
 import { OverviewPanel } from '@/components/dashboard/overview-panel';
@@ -41,6 +43,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { githubService } from '@/lib/github';
 import { cn } from '@/lib/utils';
+
+const appVersion = packageJson.version;
 
 const menuGroups: Array<{
   title: string;
@@ -177,7 +181,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch('/api/data/api', { cache: 'no-store' });
       if (!response.ok) {
-        throw new Error('Failed to load apis');
+        throw new Error('Failed to load APIs');
       }
 
       const payload = (await response.json()) as { apis?: ApiItem[] };
@@ -352,6 +356,7 @@ export default function DashboardPage() {
     if (!window.confirm('确定删除这个服务商吗？')) {
       return;
     }
+
     const saved = await persistProviders(
       providers.filter((item) => item.id !== providerId),
       '服务商已删除。',
@@ -370,6 +375,7 @@ export default function DashboardPage() {
           }
         : item,
     );
+
     await persistProviders(nextProviders, '服务商状态已更新。');
   };
 
@@ -397,6 +403,7 @@ export default function DashboardPage() {
     if (!window.confirm('确定删除这个接口吗？')) {
       return;
     }
+
     const saved = await persistApis(apis.filter((item) => item.id !== apiId), '接口已删除。');
     if (saved && editingApi?.id === apiId) {
       setEditingApi(null);
@@ -412,18 +419,22 @@ export default function DashboardPage() {
           }
         : item,
     );
+
     await persistApis(nextApis, '接口状态已更新。');
   };
 
   const handleReadmeSave = async () => {
     setBusySection('readme');
     clearFeedback();
+
     try {
       const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/readme', {
         content: readmeContent,
       });
       setSuccess(
-        payload.repoSync?.message ? `README 已保存，并完成同步：${payload.repoSync.message}` : 'README 已保存。',
+        payload.repoSync?.message
+          ? `README 已保存，并完成同步：${payload.repoSync.message}`
+          : 'README 已保存。',
       );
     } catch (persistError) {
       setError(persistError instanceof Error ? persistError.message : '保存 README 失败');
@@ -434,6 +445,7 @@ export default function DashboardPage() {
 
   const handleApiDocSave = async () => {
     clearFeedback();
+
     try {
       JSON.parse(docPropContent);
     } catch {
@@ -461,6 +473,7 @@ export default function DashboardPage() {
   const handleConfigSave = async () => {
     setBusySection('settings');
     clearFeedback();
+
     try {
       await postJson('/api/sys', {
         apiManagement: { apis },
@@ -502,8 +515,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1720px] flex-col lg:flex-row">
-        <aside className="surface-grid border-b border-border/80 bg-sidebar/85 backdrop-blur lg:w-[244px] lg:border-b-0 lg:border-r">
+      <div className="flex min-h-screen w-full flex-col lg:flex-row">
+        <aside className="flex flex-col border-b border-border/80 bg-sidebar lg:w-[248px] lg:border-b-0 lg:border-r">
           <div className="border-b border-border/80 px-5 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border bg-background/80">
@@ -511,12 +524,12 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-lg font-black tracking-[-0.04em]">Admin Console</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Bendy Music Gateway</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Bendywork Service Base</p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-6 px-4 py-5">
+          <div className="flex-1 space-y-6 px-4 py-5">
             {menuGroups.map((group) => (
               <div key={group.title} className="space-y-2">
                 <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -537,7 +550,12 @@ export default function DashboardPage() {
                           active ? 'bg-foreground text-background shadow-sm' : 'hover:bg-background/70',
                         )}
                       >
-                        <div className={cn('mt-0.5 rounded-xl border p-2', active ? 'border-white/15 bg-white/10' : 'border-border bg-background/70')}>
+                        <div
+                          className={cn(
+                            'mt-0.5 rounded-xl border p-2',
+                            active ? 'border-white/15 bg-white/10' : 'border-border bg-background/70',
+                          )}
+                        >
                           <Icon className="h-4 w-4" />
                         </div>
                         <div className="min-w-0">
@@ -554,7 +572,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div className="border-t border-border/80 px-4 py-4">
+          <div className="mt-auto border-t border-border/80 px-4 py-4">
             <div className="rounded-[1.5rem] border border-border bg-background/75 p-3">
               <div className="flex items-center gap-3">
                 <Image
@@ -569,7 +587,23 @@ export default function DashboardPage() {
                   <p className="truncate text-xs text-muted-foreground">{userInfo.name || 'GitHub 管理员'}</p>
                 </div>
               </div>
-              <Button type="button" variant="ghost" className="mt-3 w-full justify-start rounded-xl px-3" onClick={handleLogout}>
+
+              <div className="mt-3 rounded-xl border border-border bg-card/70 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    <Tag className="h-3.5 w-3.5" />
+                    系统版本
+                  </div>
+                  <span className="text-sm font-bold">v{appVersion}</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="mt-3 w-full justify-start rounded-xl px-3"
+                onClick={handleLogout}
+              >
                 <LogOut className="h-4 w-4" />
                 退出登录
               </Button>
@@ -591,10 +625,6 @@ export default function DashboardPage() {
                   <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
                   GitHub Session
                 </Badge>
-                <Badge variant="secondary">
-                  <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-                  Tailwind + shadcn style
-                </Badge>
                 <ThemeToggle />
               </div>
             </div>
@@ -606,6 +636,7 @@ export default function DashboardPage() {
                 {error}
               </div>
             ) : null}
+
             {success ? (
               <div className="rounded-[1.5rem] border border-border bg-card/90 px-4 py-3 text-sm">{success}</div>
             ) : null}
@@ -680,7 +711,7 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.6rem] border border-border bg-card/70 px-4 py-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                整体视觉已压缩为更紧凑的后台密度，避免依赖浏览器缩放。
+                后台布局已扩展为左右贴合的全宽视图，并收紧整体密度。
               </div>
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-1">

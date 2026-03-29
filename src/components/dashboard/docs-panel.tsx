@@ -1,12 +1,12 @@
+import { Save } from 'lucide-react';
 import MarkdownEditor from '@/components/MarkdownEditor';
+import { SectionIntro } from '@/components/dashboard/shared';
+import type { DocTabKey } from '@/components/dashboard/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Save } from 'lucide-react';
-import { SectionIntro } from '@/components/dashboard/shared';
-import type { DocTabKey } from '@/components/dashboard/types';
 
 export function DocsPanel({
   activeDocTab,
@@ -35,7 +35,7 @@ export function DocsPanel({
     <div className="space-y-5">
       <SectionIntro
         title="文档中心"
-        description="README 与 API 文档配置都直接写回本地 UTF-8 文件，再同步数据库和 GitHub。这样可以避免历史乱码继续回流。"
+        description="README 和 API 文档配置都会直接写回本地 UTF-8 文件，再同步数据库和 GitHub。"
         badge="UTF-8 source of truth"
       />
 

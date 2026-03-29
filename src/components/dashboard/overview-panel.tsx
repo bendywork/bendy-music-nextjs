@@ -24,21 +24,21 @@ export function OverviewPanel({
     <div className="space-y-5">
       <SectionIntro
         title="运行总览"
-        description="黑白灰后台布局已整体收紧，页面不再依赖浏览器缩放到 90% 才能正常使用。这里集中查看运行指标、服务状态和最近请求。"
+        description="集中查看系统运行状态、服务节点健康度、最近请求和仓库同步信息。"
         badge="Live dashboard"
       />
 
       <Card className="overflow-hidden rounded-[2rem]">
-        <CardContent className="grid gap-5 p-5 lg:grid-cols-[1.4fr_0.9fr] lg:p-6">
+        <CardContent className="grid gap-5 p-5 lg:grid-cols-[1.45fr_0.95fr] lg:p-6">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="success">系统运行中</Badge>
               <Badge variant="outline">README 采用 UTF-8 文件源</Badge>
             </div>
             <div className="space-y-2">
-              <h2 className="text-3xl font-black tracking-[-0.06em]">Bendy Music Admin Workspace</h2>
+              <h2 className="text-3xl font-black tracking-[-0.06em]">顶点音乐稳定音乐服务代理后台管理</h2>
               <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-                当前控制台基于 Tailwind CSS 和 shadcn 风格组件重做，支持浅色 / 深色切换，顶部按钮位置遵循常规 Web 后台布局。
+                Bendywork 服务基座。
               </p>
             </div>
           </div>
@@ -83,7 +83,7 @@ export function OverviewPanel({
         />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
         <Card className="rounded-[2rem]">
           <CardHeader>
             <CardTitle>服务健康度</CardTitle>

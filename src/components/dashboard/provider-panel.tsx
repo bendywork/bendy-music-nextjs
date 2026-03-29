@@ -33,7 +33,7 @@ export function ProviderPanel({
     <div className="space-y-5">
       <SectionIntro
         title="服务商管理"
-        description="维护每个 Provider 的编码、来源类型、URL 与状态。表单和列表间距已经统一缩紧。"
+        description="维护每个 Provider 的编码、来源类型、URL 与状态。"
         badge={`${providers.length} providers`}
       />
 

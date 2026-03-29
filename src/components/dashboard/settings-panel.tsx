@@ -1,9 +1,9 @@
 import { Box, Clock3, GitBranch, Globe2, Save } from 'lucide-react';
+import { SectionIntro } from '@/components/dashboard/shared';
+import type { SystemConfigState } from '@/components/dashboard/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { SectionIntro } from '@/components/dashboard/shared';
-import type { SystemConfigState } from '@/components/dashboard/types';
 
 export function SettingsPanel({
   sysConfig,
