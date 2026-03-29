@@ -11,7 +11,10 @@ const parsedCacheTtl = Number(process.env.REDIS_CACHE_TTL_SECONDS ?? 60);
 const CACHE_TTL_SECONDS = Number.isFinite(parsedCacheTtl) && parsedCacheTtl > 0
   ? parsedCacheTtl
   : 60;
+
 const stripBom = (value: string): string => value.replace(/^\uFEFF/, '');
+const getAbsolutePath = (relativePath: string): string =>
+  path.join(/* turbopackIgnore: true */ process.cwd(), relativePath);
 
 export const STORE_KEYS = {
   API_CONFIG: 'api-config',
@@ -145,7 +148,7 @@ export const clearStoreCache = async (key: string): Promise<void> => {
 };
 
 export const readJsonFile = async <T>(relativePath: string, fallback: T): Promise<T> => {
-  const absolutePath = path.join(process.cwd(), relativePath);
+  const absolutePath = getAbsolutePath(relativePath);
 
   try {
     const raw = stripBom(await fs.readFile(absolutePath, 'utf8'));
@@ -156,13 +159,21 @@ export const readJsonFile = async <T>(relativePath: string, fallback: T): Promis
 };
 
 export const readTextFile = async (relativePath: string, fallback: string): Promise<string> => {
-  const absolutePath = path.join(process.cwd(), relativePath);
+  const absolutePath = getAbsolutePath(relativePath);
 
   try {
     return repairMojibakeValue(stripBom(await fs.readFile(absolutePath, 'utf8')));
   } catch {
     return fallback;
   }
+};
+
+export const writeTextFile = async (relativePath: string, content: string): Promise<string> => {
+  const absolutePath = getAbsolutePath(relativePath);
+  const normalizedContent = repairMojibakeValue(content);
+  await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+  await fs.writeFile(absolutePath, normalizedContent, 'utf8');
+  return normalizedContent;
 };
 
 export const getStoredValue = async <T>(

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Editor from 'react-markdown-editor-lite';
-import 'react-markdown-editor-lite/lib/index.css';
 import MarkdownIt from 'markdown-it';
+import 'react-markdown-editor-lite/lib/index.css';
 
 interface MarkdownEditorProps {
   value: string;
@@ -11,16 +11,13 @@ interface MarkdownEditorProps {
   placeholder?: string;
 }
 
-// Render markdown into HTML for the preview pane.
 const mdParser = new MarkdownIt({
   html: true,
   linkify: true,
   breaks: true,
 });
 
-const renderHTML = (text: string) => {
-  return mdParser.render(text);
-};
+const renderHTML = (text: string) => mdParser.render(text);
 
 export default function MarkdownEditor({
   value,
@@ -29,22 +26,25 @@ export default function MarkdownEditor({
 }: MarkdownEditorProps) {
   const [editorValue, setEditorValue] = useState(value);
 
+  useEffect(() => {
+    setEditorValue(value);
+  }, [value]);
+
   const handleEditorChange = ({ text }: { text: string }) => {
     setEditorValue(text);
     onChange(text);
   };
 
   return (
-    <div className="w-full">
+    <div className="markdown-editor-shell w-full overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
       <Editor
         value={editorValue}
         onChange={handleEditorChange}
         placeholder={placeholder}
         renderHTML={renderHTML}
+        className="!border-0 !bg-transparent"
         style={{
-          height: '600px',
-          border: '1px solid #e2e8f0',
-          borderRadius: '0.375rem',
+          height: '520px',
         }}
       />
     </div>

@@ -8,8 +8,12 @@ Next.js-based music API gateway and admin dashboard.
 - PostgreSQL persistence
 - Redis cache with Upstash compatibility
 - Admin pages for providers, APIs, docs, and system settings
+- Tailwind CSS 4 + shadcn-style UI primitives
+- Neutral black/white/gray theme with light and dark mode toggle
 - README and API doc config can be committed back to GitHub
+- README and API doc config are written back to local UTF-8 files before syncing
 - Redis keys are isolated with a business prefix
+- Dockerized development environment with PostgreSQL and Redis
 
 ## Stack
 
@@ -17,6 +21,8 @@ Next.js-based music API gateway and admin dashboard.
 - React 19
 - TypeScript
 - Tailwind CSS 4
+- Radix UI primitives
+- next-themes
 - PostgreSQL
 - Redis
 
@@ -63,6 +69,32 @@ psql "$DATABASE_URL" -f db/migrations/20260328_postgres_store.sql
 
 ```bash
 npm run dev
+```
+
+## Docker development
+
+Start the full development stack:
+
+```bash
+docker compose up --build
+```
+
+Services started by Compose:
+
+- Next.js app on `http://localhost:3000`
+- PostgreSQL on `localhost:5432`
+- Redis on `localhost:6379`
+
+Compose defaults:
+
+- `DATABASE_URL=postgresql://dev:dev@postgres:5432/ddmusic_dev`
+- `REDIS_URL=redis://redis:6379/0`
+- Docs repo sync is disabled by default in Docker
+
+To stop the stack:
+
+```bash
+docker compose down
 ```
 
 ## Vercel deployment

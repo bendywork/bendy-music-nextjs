@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 interface SessionResponse {
   code: number;
@@ -48,30 +49,10 @@ const errorTextMap: Record<string, string> = {
   oauth_callback_failed: 'OAuth callback handling failed. Please retry later.',
 };
 
-const getInitialTheme = (): 'light' | 'dark' => {
-  if (typeof window === 'undefined') {
-    return 'light';
-  }
-
-  const savedTheme = localStorage.getItem('theme_preference');
-  if (savedTheme === 'light' || savedTheme === 'dark') {
-    return savedTheme;
-  }
-
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
-
-const applyTheme = (theme: 'light' | 'dark') => {
-  const root = document.documentElement;
-  root.classList.remove('light', 'dark');
-  root.classList.add(theme);
-};
-
 export default function LoginPage() {
   const router = useRouter();
 
   const [checkingSession, setCheckingSession] = useState(true);
-  const [theme, setTheme] = useState<'light' | 'dark'>(getInitialTheme);
   const [activeSlide, setActiveSlide] = useState(0);
   const [typingIndex, setTypingIndex] = useState(0);
   const [errorCode, setErrorCode] = useState('');
@@ -94,11 +75,6 @@ export default function LoginPage() {
     setErrorCode(params.get('error') ?? '');
     setErrorLogin(params.get('login') ?? '');
   }, []);
-
-  useEffect(() => {
-    applyTheme(theme);
-    localStorage.setItem('theme_preference', theme);
-  }, [theme]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -162,10 +138,6 @@ export default function LoginPage() {
     void verifySession();
   }, [router]);
 
-  const handleThemeToggle = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
-
   const handleGitHubLogin = () => {
     window.location.href = '/api/auth/github/login';
   };
@@ -180,13 +152,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen bg-neutral-100 text-neutral-900 transition-colors duration-300 dark:bg-neutral-950 dark:text-neutral-100">
-      <button
-        type="button"
-        onClick={handleThemeToggle}
-        className="absolute right-6 top-6 z-20 rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
-      >
-        {theme === 'light' ? 'Dark mode' : 'Light mode'}
-      </button>
+      <ThemeToggle className="absolute right-6 top-6 z-20 border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800" />
 
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col overflow-hidden md:flex-row">
         <section className="relative flex min-h-[45vh] flex-1 items-end p-8 md:min-h-screen md:p-12">

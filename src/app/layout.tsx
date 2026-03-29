@@ -1,26 +1,28 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+import './globals.css';
+import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: "API代理服务",
-  description: "基于Next.js的API跨域代理转发服务",
+  title: 'bendy-music-nextjs',
+  description: 'Next.js-based music API gateway and admin dashboard.',
   icons: [
     {
-      url: "/logo.png",
-      href: "/logo.png"
-    }
+      url: '/logo.png',
+      href: '/logo.png',
+    },
   ],
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body className="antialiased">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
