@@ -72,7 +72,7 @@ const DEFAULT_APP_CONFIG: AppConfig = {
       enabled: true,
       branch: 'main',
       readmePath: 'README.md',
-      apiDocPath: 'doc/doc-prop.json',
+      apiDocPath: 'doc/doc.html',
       auth: {
         tokenEnvName: 'GITHUB_REPO_TOKEN',
       },

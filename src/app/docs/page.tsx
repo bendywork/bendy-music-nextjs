@@ -1,21 +1,23 @@
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { STORE_KEYS, getStoredValue, readTextFile } from '@/lib/server/data-store';
 
-export default function DocsPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function DocsPage() {
   let docContent = '';
   let error = '';
 
   try {
-    const docHtmlPath = join(/* turbopackIgnore: true */ process.cwd(), 'doc', 'doc.html');
+    docContent = await getStoredValue(
+      STORE_KEYS.DOC_PAGE,
+      () => readTextFile('doc/doc.html', ''),
+    );
 
-    if (existsSync(docHtmlPath)) {
-      docContent = readFileSync(docHtmlPath, 'utf8');
-    } else {
-      error = '未找到文档文件 doc/doc.html。';
+    if (!docContent) {
+      error = 'Docs page content is unavailable.';
     }
   } catch (loadError) {
     console.error('Failed to load docs page:', loadError);
-    error = '文档加载失败，请稍后再试。';
+    error = 'Failed to load docs page content. Please try again later.';
   }
 
   if (error) {

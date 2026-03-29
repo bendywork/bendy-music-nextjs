@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Platform, Quality, Provider } from '@/modules/music/types';
+import type { MusicService } from '@/modules/music/services/MusicService';
 import { MusicServiceFactory, registerMusicProviders } from '@/modules/music/services/providers';
-import { httpClient } from '@/lib/http';
-import { getNeteaseToplist, getNeteasePlaylistDetail, getNeteaseToplistSongs, createNeteaseMusicService } from '@/modules/music/services/providers/netease';
-import { getQQToplist, getQQPlaylistDetail, getQQToplistSongs, createQQMusicService } from '@/modules/music/services/providers/qq';
+import { getNeteaseToplist, getNeteaseToplistSongs, createNeteaseMusicService } from '@/modules/music/services/providers/netease';
+import { getQQToplist, getQQToplistSongs, createQQMusicService } from '@/modules/music/services/providers/qq';
 import { createKuwoMusicService } from '@/modules/music/services/providers/kuwo';
 import { KuwoPublicService } from '@/modules/music/services/providers/kuwo/KuwoPublicService';
 import { dashboardService } from '@/lib/dashboard';
@@ -23,6 +23,19 @@ function recordError(provider: string) {
   dashboardService.incrementErrorCount(provider);
 }
 
+function createSearchService(source: string | null): MusicService | null {
+  switch (source) {
+    case Platform.NETEASE:
+      return createNeteaseMusicService(Provider.TUNEHUB);
+    case Platform.QQ:
+      return createQQMusicService(Provider.TUNEHUB);
+    case Platform.KUWO:
+      return createKuwoMusicService(Provider.TUNEHUB);
+    default:
+      return null;
+  }
+}
+
 /**
  * 处理所有API请求
  * @param request Next.js请求对象
@@ -40,7 +53,8 @@ export async function GET(request: NextRequest) {
     const id = searchParams.get('id');
     const type = searchParams.get('type');
     const keyword = searchParams.get('keyword');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const rawLimit = Number.parseInt(searchParams.get('limit') || '20', 10);
+    const limit = Number.isNaN(rawLimit) || rawLimit <= 0 ? 20 : rawLimit;
     const br = searchParams.get('br') || Quality.HIGH;
 
     let response: NextResponse;
@@ -60,7 +74,7 @@ export async function GET(request: NextRequest) {
         response = NextResponse.json({ code: 404, message: 'Lyrics endpoint not implemented' }, { status: 404 });
         break;
       case 'search':
-        response = NextResponse.json({ code: 404, message: 'Search endpoint not implemented' }, { status: 404 });
+        response = await handleSearchSongs(source, keyword, limit);
         break;
       case 'aggregateSearch':
         response = NextResponse.json({ code: 404, message: 'Aggregate search endpoint not implemented' }, { status: 404 });

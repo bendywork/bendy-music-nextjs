@@ -7,7 +7,7 @@ export type DashboardMenuKey =
   | 'doc-management'
   | 'config-management';
 
-export type DocTabKey = 'readme' | 'api';
+export type DocTabKey = 'readme' | 'docs';
 export type ToggleStatus = 'enabled' | 'disabled';
 
 export interface UserInfo {
@@ -63,7 +63,7 @@ export interface SessionResponse {
 }
 
 export const DEFAULT_README = '# bendy-music-nextjs\n';
-export const DEFAULT_API_DOC = '{\n  "api": {}\n}\n';
+export const DEFAULT_DOCS_PAGE = '';
 
 export const DEFAULT_SYSTEM_CONFIG: SystemConfigState = {
   project: {

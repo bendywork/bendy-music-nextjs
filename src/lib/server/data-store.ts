@@ -23,6 +23,7 @@ export const STORE_KEYS = {
   DASHBOARD: 'dashboard',
   DOC_README: 'doc-readme',
   DOC_API: 'doc-api',
+  DOC_PAGE: 'doc-page',
 } as const;
 
 type StoreValue = unknown;
