@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadApiDocHtml, saveApiDocHtml } from '@/lib/server/managed-docs';
+import { loadApiDocHtml, regenerateApiDocHtml, saveApiDocHtml } from '@/lib/server/managed-docs';
 import { syncDocToRepository } from '@/lib/server/repo-sync';
 
 export async function GET() {
@@ -18,13 +18,15 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = (await request.json()) as { content?: string };
-    const content = await saveApiDocHtml(payload.content ?? '');
+    const payload = (await request.json()) as { content?: string; regenerate?: boolean };
+    const content = payload.regenerate
+      ? await regenerateApiDocHtml()
+      : await saveApiDocHtml(payload.content ?? '');
 
     const repoSync = await syncDocToRepository('api', content);
 
     return NextResponse.json({
-      message: 'Docs page saved',
+      message: payload.regenerate ? 'Docs page regenerated' : 'Docs page saved',
       repoSync,
     });
   } catch (error) {

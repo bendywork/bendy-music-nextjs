@@ -10,6 +10,8 @@ import { siteCopy } from '@/lib/i18n/site';
 export function DocsPageShell({ docContent, hasError }: { docContent: string; hasError: boolean }) {
   const { locale } = useLocale();
   const copy = siteCopy[locale].docsPage;
+  const docsHeading = locale === 'zh' ? '顶点音乐API文档' : copy.description;
+  const docsFrameTitle = locale === 'zh' ? '顶点音乐API文档' : copy.frameTitle;
 
   if (hasError || !docContent) {
     return (
@@ -39,7 +41,7 @@ export function DocsPageShell({ docContent, hasError }: { docContent: string; ha
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{copy.label}</p>
-            <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{copy.description}</h1>
+            <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{docsHeading}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <LocaleToggle variant="outline" />
@@ -49,7 +51,7 @@ export function DocsPageShell({ docContent, hasError }: { docContent: string; ha
       </header>
 
       <iframe
-        title={copy.frameTitle}
+        title={docsFrameTitle}
         srcDoc={docContent}
         className="block h-[calc(100vh-89px)] w-full border-0 bg-white"
         sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
