@@ -1,4 +1,5 @@
 import { getAppConfig } from '@/lib/server/global-config';
+import { STORE_KEYS, getStoredValue, readJsonFile } from '@/lib/server/data-store';
 
 interface ParsedRepository {
   owner: string;
@@ -10,6 +11,18 @@ export interface RepoSyncResult {
   committed: boolean;
   message: string;
 }
+
+interface SystemConfigShape {
+  configuration?: {
+    githubProjectPath?: string;
+  };
+}
+
+const DEFAULT_SYSTEM_CONFIG: SystemConfigShape = {
+  configuration: {
+    githubProjectPath: '',
+  },
+};
 
 const parseRepository = (repository: string): ParsedRepository | null => {
   const raw = repository.trim();
@@ -116,6 +129,21 @@ const upsertFileToGitHub = async (
   }
 };
 
+const getRepositoryFromSystemConfig = async (): Promise<string | null> => {
+  try {
+    const sysConfig = await getStoredValue<SystemConfigShape>(
+      STORE_KEYS.SYS_CONFIG,
+      () => readJsonFile('sys.json', DEFAULT_SYSTEM_CONFIG),
+    );
+
+    const repository = sysConfig.configuration?.githubProjectPath?.trim();
+    return repository || null;
+  } catch (error) {
+    console.warn('Failed to resolve repository from system config, fallback to app config:', error);
+    return null;
+  }
+};
+
 export const syncDocToRepository = async (
   docType: 'readme' | 'api',
   content: string,
@@ -131,12 +159,13 @@ export const syncDocToRepository = async (
     };
   }
 
-  const parsedRepo = parseRepository(appConfig.project.repository);
+  const configuredRepository = await getRepositoryFromSystemConfig() ?? appConfig.project.repository;
+  const parsedRepo = parseRepository(configuredRepository);
   if (!parsedRepo) {
     return {
       ok: false,
       committed: false,
-      message: 'Invalid project.repository in app config',
+      message: `Invalid repository config: ${configuredRepository}`,
     };
   }
 

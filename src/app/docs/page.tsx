@@ -1,4 +1,4 @@
-import { STORE_KEYS, getStoredValue, readTextFile } from '@/lib/server/data-store';
+import { loadApiDocHtml } from '@/lib/server/managed-docs';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,10 +7,7 @@ export default async function DocsPage() {
   let error = '';
 
   try {
-    docContent = await getStoredValue(
-      STORE_KEYS.DOC_PAGE,
-      () => readTextFile('doc/doc.html', ''),
-    );
+    docContent = await loadApiDocHtml();
 
     if (!docContent) {
       error = 'Docs page content is unavailable.';
@@ -31,5 +28,12 @@ export default async function DocsPage() {
     );
   }
 
-  return <div dangerouslySetInnerHTML={{ __html: docContent }} />;
+  return (
+    <iframe
+      title="DDMusic API documentation"
+      srcDoc={docContent}
+      className="block min-h-screen w-full border-0 bg-white"
+      sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+    />
+  );
 }

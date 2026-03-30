@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { STORE_KEYS, getStoredValue, readTextFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
+import { loadApiDocHtml, saveApiDocHtml } from '@/lib/server/managed-docs';
 import { syncDocToRepository } from '@/lib/server/repo-sync';
-
-const DOC_PAGE_FALLBACK = '';
 
 export async function GET() {
   try {
-    const content = await getStoredValue(
-      STORE_KEYS.DOC_PAGE,
-      () => readTextFile('doc/doc.html', DOC_PAGE_FALLBACK),
-    );
+    const content = await loadApiDocHtml();
 
     return NextResponse.json({ content });
   } catch (error) {
@@ -24,8 +19,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const payload = (await request.json()) as { content?: string };
-    const content = await writeTextFile('doc/doc.html', payload.content ?? DOC_PAGE_FALLBACK);
-    await setStoredValue(STORE_KEYS.DOC_PAGE, content);
+    const content = await saveApiDocHtml(payload.content ?? '');
 
     const repoSync = await syncDocToRepository('api', content);
 

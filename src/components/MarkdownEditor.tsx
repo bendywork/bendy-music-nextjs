@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import Editor from 'react-markdown-editor-lite';
+import { useDeferredValue } from 'react';
 import MarkdownIt from 'markdown-it';
-import 'react-markdown-editor-lite/lib/index.css';
+import { Textarea } from '@/components/ui/textarea';
 
 interface MarkdownEditorProps {
   value: string;
@@ -17,36 +16,40 @@ const mdParser = new MarkdownIt({
   breaks: true,
 });
 
-const renderHTML = (text: string) => mdParser.render(text);
-
 export default function MarkdownEditor({
   value,
   onChange,
   placeholder = 'Enter markdown content',
 }: MarkdownEditorProps) {
-  const [editorValue, setEditorValue] = useState(value);
-
-  useEffect(() => {
-    setEditorValue(value);
-  }, [value]);
-
-  const handleEditorChange = ({ text }: { text: string }) => {
-    setEditorValue(text);
-    onChange(text);
-  };
+  const deferredValue = useDeferredValue(value);
 
   return (
-    <div className="markdown-editor-shell w-full overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
-      <Editor
-        value={editorValue}
-        onChange={handleEditorChange}
-        placeholder={placeholder}
-        renderHTML={renderHTML}
-        className="!border-0 !bg-transparent"
-        style={{
-          height: '520px',
-        }}
-      />
+    <div className="grid gap-4 xl:grid-cols-2">
+      <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
+        <div className="border-b border-border/80 px-4 py-3">
+          <p className="text-sm font-semibold">Markdown</p>
+          <p className="text-xs text-muted-foreground">Editing README.md</p>
+        </div>
+        <div className="p-4">
+          <Textarea
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            placeholder={placeholder}
+            className="min-h-[520px] resize-y border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0"
+          />
+        </div>
+      </section>
+
+      <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
+        <div className="border-b border-border/80 px-4 py-3">
+          <p className="text-sm font-semibold">Preview</p>
+          <p className="text-xs text-muted-foreground">Rendered markdown output</p>
+        </div>
+        <div
+          className="prose prose-sm max-w-none p-6 dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: mdParser.render(deferredValue || '') }}
+        />
+      </section>
     </div>
   );
 }

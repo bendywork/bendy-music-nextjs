@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -26,8 +26,8 @@ import type { ApiItem, DashboardMenuKey, ProviderItem } from '@/components/dashb
 import {
   createEmptyApi,
   createEmptyProvider,
-  DEFAULT_DOCS_PAGE,
   DEFAULT_DASHBOARD_DATA,
+  DEFAULT_DOCS_PAGE,
   DEFAULT_README,
   DEFAULT_SYSTEM_CONFIG,
   DEFAULT_USER,
@@ -56,42 +56,42 @@ const menuGroups: Array<{
   }>;
 }> = [
   {
-    title: '控制台',
+    title: 'Overview',
     items: [
       {
         id: 'dashboard',
-        label: '总览',
+        label: 'Dashboard',
         icon: Gauge,
-        description: '运行状态、请求趋势与服务健康度',
+        description: 'Service status, request trends, and runtime health.',
       },
     ],
   },
   {
-    title: '工作区',
+    title: 'Workspace',
     items: [
       {
         id: 'provider-management',
-        label: '服务商',
+        label: 'Providers',
         icon: Cable,
-        description: '维护 Provider 来源与状态',
+        description: 'Manage provider definitions and availability.',
       },
       {
         id: 'api-management',
-        label: '接口管理',
+        label: 'API Config',
         icon: Waypoints,
-        description: '维护 API 路径、请求方式与备注',
+        description: 'Maintain API paths, methods, headers, and params.',
       },
       {
         id: 'doc-management',
-        label: '文档中心',
+        label: 'Docs Center',
         icon: BookText,
-        description: 'README 与 API 文档配置',
+        description: 'Edit README.md and the /docs HTML document.',
       },
       {
         id: 'config-management',
-        label: '系统设置',
+        label: 'Settings',
         icon: Settings2,
-        description: 'GitHub 仓库地址与运行参数',
+        description: 'Repository target, timeout, and concurrency settings.',
       },
     ],
   },
@@ -154,10 +154,10 @@ export default function DashboardPage() {
         setReadmeContent(payload.content || DEFAULT_README);
       }
 
-        if (apiDocResponse.ok) {
-          const payload = (await apiDocResponse.json()) as { content?: string };
-          setDocsPageContent(payload.content || DEFAULT_DOCS_PAGE);
-        }
+      if (apiDocResponse.ok) {
+        const payload = (await apiDocResponse.json()) as { content?: string };
+        setDocsPageContent(payload.content || DEFAULT_DOCS_PAGE);
+      }
     } catch (loadError) {
       console.warn('Failed to load documents:', loadError);
     }
@@ -273,7 +273,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     void initializeDashboard();
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     if (!authenticated) {
@@ -306,7 +306,7 @@ export default function DashboardPage() {
       return true;
     } catch (persistError) {
       setProviders(previous);
-      setError(persistError instanceof Error ? persistError.message : '保存服务商失败');
+      setError(persistError instanceof Error ? persistError.message : 'Failed to save providers.');
       return false;
     } finally {
       setBusySection(null);
@@ -325,7 +325,7 @@ export default function DashboardPage() {
       return true;
     } catch (persistError) {
       setApis(previous);
-      setError(persistError instanceof Error ? persistError.message : '保存接口失败');
+      setError(persistError instanceof Error ? persistError.message : 'Failed to save APIs.');
       return false;
     } finally {
       setBusySection(null);
@@ -336,8 +336,9 @@ export default function DashboardPage() {
     if (!editingProvider) {
       return;
     }
+
     if (!editingProvider.name.trim() || !editingProvider.code.trim()) {
-      setError('服务商名称和代码不能为空。');
+      setError('Provider name and code are required.');
       setSuccess('');
       return;
     }
@@ -346,20 +347,20 @@ export default function DashboardPage() {
     const nextProviders = exists
       ? providers.map((item) => (item.id === editingProvider.id ? editingProvider : item))
       : [...providers, editingProvider];
-    const saved = await persistProviders(nextProviders, exists ? '服务商已更新。' : '服务商已创建。');
+    const saved = await persistProviders(nextProviders, exists ? 'Provider updated.' : 'Provider created.');
     if (saved) {
       setEditingProvider(null);
     }
   };
 
   const handleDeleteProvider = async (providerId: string) => {
-    if (!window.confirm('确定删除这个服务商吗？')) {
+    if (!window.confirm('Delete this provider?')) {
       return;
     }
 
     const saved = await persistProviders(
       providers.filter((item) => item.id !== providerId),
-      '服务商已删除。',
+      'Provider deleted.',
     );
     if (saved && editingProvider?.id === providerId) {
       setEditingProvider(null);
@@ -376,15 +377,16 @@ export default function DashboardPage() {
         : item,
     );
 
-    await persistProviders(nextProviders, '服务商状态已更新。');
+    await persistProviders(nextProviders, 'Provider status updated.');
   };
 
   const handleSaveApi = async () => {
     if (!editingApi) {
       return;
     }
+
     if (!editingApi.name.trim() || !editingApi.path.trim() || !editingApi.method.trim()) {
-      setError('接口名称、路径和方法不能为空。');
+      setError('API name, path, and method are required.');
       setSuccess('');
       return;
     }
@@ -393,18 +395,18 @@ export default function DashboardPage() {
     const nextApis = exists
       ? apis.map((item) => (item.id === editingApi.id ? editingApi : item))
       : [...apis, editingApi];
-    const saved = await persistApis(nextApis, exists ? '接口已更新。' : '接口已创建。');
+    const saved = await persistApis(nextApis, exists ? 'API updated.' : 'API created.');
     if (saved) {
       setEditingApi(null);
     }
   };
 
   const handleDeleteApi = async (apiId: string) => {
-    if (!window.confirm('确定删除这个接口吗？')) {
+    if (!window.confirm('Delete this API entry?')) {
       return;
     }
 
-    const saved = await persistApis(apis.filter((item) => item.id !== apiId), '接口已删除。');
+    const saved = await persistApis(apis.filter((item) => item.id !== apiId), 'API deleted.');
     if (saved && editingApi?.id === apiId) {
       setEditingApi(null);
     }
@@ -420,7 +422,7 @@ export default function DashboardPage() {
         : item,
     );
 
-    await persistApis(nextApis, '接口状态已更新。');
+    await persistApis(nextApis, 'API status updated.');
   };
 
   const handleReadmeSave = async () => {
@@ -431,13 +433,9 @@ export default function DashboardPage() {
       const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/readme', {
         content: readmeContent,
       });
-      setSuccess(
-        payload.repoSync?.message
-          ? `README 已保存，并完成同步：${payload.repoSync.message}`
-          : 'README 已保存。',
-      );
+      setSuccess(payload.repoSync?.message ? `README saved and synced: ${payload.repoSync.message}` : 'README saved.');
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : '保存 README 失败');
+      setError(persistError instanceof Error ? persistError.message : 'Failed to save README.');
     } finally {
       setBusySection(null);
     }
@@ -445,26 +443,17 @@ export default function DashboardPage() {
 
   const handleDocsPageSave = async () => {
     clearFeedback();
-
-    try {
-      void docsPageContent;
-    } catch {
-      setError('API 文档配置必须是有效的 JSON。');
-      return;
-    }
-
     setBusySection('docs-page');
+
     try {
       const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/api', {
         content: docsPageContent,
       });
       setSuccess(
-        payload.repoSync?.message
-          ? `API 文档配置已保存，并完成同步：${payload.repoSync.message}`
-          : 'API 文档配置已保存。',
+        payload.repoSync?.message ? `HTML docs saved and synced: ${payload.repoSync.message}` : 'HTML docs saved.',
       );
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : '保存 API 文档失败');
+      setError(persistError instanceof Error ? persistError.message : 'Failed to save HTML docs.');
     } finally {
       setBusySection(null);
     }
@@ -484,16 +473,16 @@ export default function DashboardPage() {
           maxConcurrentRequests: Math.max(1, Number(sysConfig.api.maxConcurrentRequests)),
         },
       });
-      setSuccess('系统设置已保存。');
+      setSuccess('System settings saved.');
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : '保存系统设置失败');
+      setError(persistError instanceof Error ? persistError.message : 'Failed to save system settings.');
     } finally {
       setBusySection(null);
     }
   };
 
   const providerNameById = (providerId: string): string =>
-    providers.find((item) => item.id === providerId)?.name || '未分配';
+    providers.find((item) => item.id === providerId)?.name || 'Unassigned';
 
   if (initializing) {
     return (
@@ -504,8 +493,8 @@ export default function DashboardPage() {
               <RefreshCcw className="h-6 w-6 animate-spin" />
             </div>
             <div className="space-y-1">
-              <p className="text-lg font-bold">正在加载后台控制台</p>
-              <p className="text-sm text-muted-foreground">读取会话、配置与文档内容中。</p>
+              <p className="text-lg font-bold">Loading admin dashboard</p>
+              <p className="text-sm text-muted-foreground">Reading session, settings, and documentation content.</p>
             </div>
           </CardContent>
         </Card>
@@ -524,7 +513,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="text-lg font-black tracking-[-0.04em]">Admin Console</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Bendywork Service Base</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">DDMusic Service Base</p>
               </div>
             </div>
           </div>
@@ -584,7 +573,7 @@ export default function DashboardPage() {
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{userInfo.login}</p>
-                  <p className="truncate text-xs text-muted-foreground">{userInfo.name || 'GitHub 管理员'}</p>
+                  <p className="truncate text-xs text-muted-foreground">{userInfo.name || 'GitHub Admin'}</p>
                 </div>
               </div>
 
@@ -592,7 +581,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     <Tag className="h-3.5 w-3.5" />
-                    系统版本
+                    Version
                   </div>
                   <span className="text-sm font-bold">v{appVersion}</span>
                 </div>
@@ -605,7 +594,7 @@ export default function DashboardPage() {
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
-                退出登录
+                Sign out
               </Button>
             </div>
           </div>
@@ -616,7 +605,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:px-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  {currentMenu?.label || '控制台'}
+                  {currentMenu?.label || 'Dashboard'}
                 </p>
                 <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{currentMenu?.description}</h1>
               </div>
@@ -711,16 +700,16 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.6rem] border border-border bg-card/70 px-4 py-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                后台布局已扩展为左右贴合的全宽视图，并收紧整体密度。
+                README and API documentation now write directly to project files and sync back to the configured repository.
               </div>
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-1">
                   <ExternalLink className="h-3.5 w-3.5" />
-                  README / API doc 文件直写
+                  README.md + doc/doc.html
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  主题切换位于顶部右侧
+                  Editable from the admin console
                 </span>
               </div>
             </div>
@@ -730,3 +719,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
