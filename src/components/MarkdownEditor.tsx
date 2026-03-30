@@ -18,6 +18,7 @@ const mdParser = new MarkdownIt({
   html: true,
   linkify: true,
   breaks: true,
+  typographer: true,
 });
 
 export default function MarkdownEditor({
@@ -54,7 +55,7 @@ export default function MarkdownEditor({
           <p className="text-xs text-muted-foreground">{previewDescription}</p>
         </div>
         <div
-          className="prose prose-sm max-w-none p-6 dark:prose-invert"
+          className="markdown-preview min-h-[520px] overflow-auto p-6"
           dangerouslySetInnerHTML={{ __html: mdParser.render(deferredValue || '') }}
         />
       </section>

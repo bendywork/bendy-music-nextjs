@@ -105,12 +105,12 @@ export default function DashboardPage() {
 
       if (readmeResponse.ok) {
         const payload = (await readmeResponse.json()) as { content?: string };
-        setReadmeContent(payload.content || DEFAULT_README);
+        setReadmeContent(payload.content ?? DEFAULT_README);
       }
 
       if (apiDocResponse.ok) {
         const payload = (await apiDocResponse.json()) as { content?: string };
-        setDocsPageContent(payload.content || DEFAULT_DOCS_PAGE);
+        setDocsPageContent(payload.content ?? DEFAULT_DOCS_PAGE);
       }
     } catch (loadError) {
       console.warn('Failed to load documents:', loadError);

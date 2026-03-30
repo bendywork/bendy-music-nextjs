@@ -1,129 +1,135 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DDMusic API Documentation</title>
+  <title>顶点音乐API文档</title>
   <style>
     :root {
       color-scheme: light;
-      --bg: #f4f1ea;
-      --paper: rgba(255, 252, 246, 0.96);
-      --paper-strong: #fffdf8;
-      --ink: #1f2937;
-      --muted: #5b6472;
-      --line: rgba(31, 41, 55, 0.12);
-      --accent: #b45309;
-      --accent-soft: rgba(180, 83, 9, 0.12);
-      --accent-strong: #7c2d12;
-      --success: #166534;
-      --warning: #92400e;
-      --danger: #b91c1c;
-      --shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
+      --bg: #efe9df;
+      --paper: rgba(255, 252, 247, 0.96);
+      --paper-strong: #fffdf9;
+      --ink: #18181b;
+      --muted: #5b5f67;
+      --line: rgba(24, 24, 27, 0.1);
+      --accent: #0f766e;
+      --accent-soft: rgba(15, 118, 110, 0.12);
+      --shadow: 0 22px 60px rgba(15, 23, 42, 0.12);
       --radius-xl: 28px;
       --radius-lg: 18px;
       --radius-md: 12px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       margin: 0;
-      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: var(--ink);
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(180, 83, 9, 0.16), transparent 24%),
-        radial-gradient(circle at bottom right, rgba(124, 45, 18, 0.12), transparent 28%),
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.18), transparent 22%),
+        radial-gradient(circle at bottom right, rgba(8, 145, 178, 0.14), transparent 26%),
         var(--bg);
     }
 
-    a { color: inherit; }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    code,
+    pre {
+      font-family: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+    }
 
     .shell {
-      width: min(1380px, calc(100% - 32px));
+      width: min(1420px, calc(100% - 32px));
       margin: 24px auto;
       display: grid;
-      grid-template-columns: 280px minmax(0, 1fr);
+      grid-template-columns: 300px minmax(0, 1fr);
       gap: 24px;
+      align-items: start;
+    }
+
+    .sidebar,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--paper);
+      box-shadow: var(--shadow);
     }
 
     .sidebar {
       position: sticky;
       top: 24px;
-      align-self: start;
+      padding: 24px 20px;
       max-height: calc(100vh - 48px);
       overflow: auto;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      background: rgba(255, 250, 240, 0.86);
-      backdrop-filter: blur(18px);
-      box-shadow: var(--shadow);
-      padding: 24px 20px;
     }
 
-    .brand {
-      display: grid;
-      gap: 12px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--line);
-      margin-bottom: 18px;
-    }
-
-    .eyebrow {
+    .sidebar .eyebrow,
+    .hero .eyebrow {
       display: inline-flex;
-      width: fit-content;
       align-items: center;
       gap: 8px;
       padding: 6px 12px;
       border-radius: 999px;
       background: var(--accent-soft);
-      color: var(--accent-strong);
+      color: var(--accent);
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    .brand h1 {
-      margin: 0;
-      font-size: 28px;
-      line-height: 1.1;
+    .sidebar h1 {
+      margin: 16px 0 10px;
+      font-size: 30px;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
     }
 
-    .brand p {
+    .sidebar p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.8;
       font-size: 14px;
     }
 
     .nav-group {
-      margin-bottom: 18px;
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
     }
 
     .nav-group h2 {
       margin: 0 0 10px;
-      font-size: 12px;
       color: var(--muted);
-      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 700;
       letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
     .nav-group a {
       display: block;
-      text-decoration: none;
+      margin-top: 4px;
       padding: 10px 12px;
       border-radius: 12px;
-      color: var(--ink);
       font-size: 14px;
       transition: background-color 0.18s ease, transform 0.18s ease;
     }
 
     .nav-group a:hover,
     .nav-group a.active {
-      background: rgba(255, 255, 255, 0.84);
+      background: rgba(255, 255, 255, 0.92);
       transform: translateX(2px);
     }
 
@@ -132,184 +138,157 @@
       gap: 24px;
     }
 
-    .hero,
-    .section {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-xl);
-      background: var(--paper);
-      box-shadow: var(--shadow);
-    }
-
     .hero {
       overflow: hidden;
     }
 
     .hero-top {
-      padding: 36px;
+      padding: 34px;
       background:
-        linear-gradient(135deg, rgba(124, 45, 18, 0.96), rgba(180, 83, 9, 0.94)),
-        #7c2d12;
-      color: #fffdf8;
+        linear-gradient(135deg, rgba(15, 118, 110, 0.96), rgba(8, 145, 178, 0.94)),
+        #0f766e;
+      color: #f0fdfa;
     }
 
     .hero-top h2 {
-      margin: 14px 0 12px;
-      font-size: clamp(34px, 5vw, 54px);
+      margin: 16px 0 12px;
+      font-size: clamp(34px, 5vw, 56px);
       line-height: 0.98;
-      letter-spacing: -0.04em;
+      letter-spacing: -0.05em;
     }
 
     .hero-top p {
       margin: 0;
-      max-width: 760px;
-      line-height: 1.8;
-      color: rgba(255, 253, 248, 0.9);
+      max-width: 840px;
+      line-height: 1.85;
+      color: rgba(240, 253, 250, 0.92);
       font-size: 16px;
     }
 
+    .hero-grid,
+    .provider-grid,
+    .stat-grid {
+      display: grid;
+      gap: 16px;
+    }
+
     .hero-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      padding: 24px 36px 36px;
-      background: linear-gradient(180deg, rgba(255, 250, 240, 0.76), rgba(255, 255, 255, 0.95));
-    }
-
-    .hero-card {
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.78);
-    }
-
-    .hero-card strong {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .hero-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .section {
-      padding: 28px;
-    }
-
-    .section h2 {
-      margin: 0 0 12px;
-      font-size: 28px;
-      letter-spacing: -0.03em;
-    }
-
-    .section > p,
-    .section li {
-      color: var(--muted);
-      line-height: 1.8;
-      font-size: 15px;
-    }
-
-    .section ul {
-      margin: 10px 0 0;
-      padding-left: 20px;
-    }
-
-    .kpis {
-      display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 20px;
+      padding: 24px 34px 34px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.94));
     }
 
-    .kpi {
-      padding: 18px;
+    .stat-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 18px;
+    }
+
+    .stat-card,
+    .provider-card,
+    .endpoint-card,
+    .note-card {
+      border: 1px solid var(--line);
       border-radius: var(--radius-lg);
       background: var(--paper-strong);
-      border: 1px solid var(--line);
     }
 
-    .kpi span {
+    .stat-card,
+    .provider-card,
+    .note-card {
+      padding: 18px;
+    }
+
+    .stat-card span {
       display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
       margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .kpi strong {
+    .stat-card strong {
       font-size: 28px;
       line-height: 1;
     }
 
-    .card-grid {
-      display: grid;
+    .panel {
+      padding: 28px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+    }
+
+    .panel > p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.85;
+    }
+
+    .provider-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
       margin-top: 20px;
     }
 
-    .card {
-      padding: 20px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--line);
-      background: var(--paper-strong);
+    .provider-card h3,
+    .endpoint-card h3 {
+      margin: 12px 0 10px;
+      font-size: 22px;
+      letter-spacing: -0.03em;
     }
 
-    .card h3,
-    .endpoint h3 {
-      margin: 0 0 10px;
-      font-size: 20px;
-    }
-
-    .tags {
+    .chips {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      margin-bottom: 12px;
     }
 
-    .tag {
+    .chip,
+    .inline-chip {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
       padding: 6px 10px;
       border-radius: 999px;
+      background: rgba(15, 23, 42, 0.06);
+      color: #0f172a;
       font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.04em;
-      background: rgba(15, 23, 42, 0.06);
     }
 
-    .tag.get { color: var(--success); background: rgba(22, 101, 52, 0.1); }
-    .tag.post { color: #1d4ed8; background: rgba(29, 78, 216, 0.1); }
-    .tag.internal { color: var(--accent-strong); background: var(--accent-soft); }
-    .tag.warning { color: var(--warning); background: rgba(146, 64, 14, 0.1); }
-    .tag.danger { color: var(--danger); background: rgba(185, 28, 28, 0.1); }
+    .chip-method {
+      background: rgba(15, 118, 110, 0.12);
+      color: var(--accent);
+    }
 
-    .code,
-    pre {
+    .inline-chip {
+      font-size: 11px;
+      padding: 4px 8px;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 14px;
+      margin: 16px 0 0;
+    }
+
+    .detail-list dt {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .detail-list dd {
       margin: 0;
-      padding: 16px 18px;
-      border-radius: 16px;
-      background: #111827;
-      color: #f9fafb;
-      overflow: auto;
-      font-size: 13px;
-      line-height: 1.7;
-      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
-    }
-
-    code.inline {
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.08);
-      color: #111827;
-      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
-      font-size: 0.95em;
+      line-height: 1.75;
+      word-break: break-word;
     }
 
     .endpoint-list {
@@ -318,50 +297,41 @@
       margin-top: 20px;
     }
 
-    .endpoint {
+    .endpoint-card {
       padding: 22px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--line);
-      background: var(--paper-strong);
     }
 
-    .endpoint p {
-      margin: 10px 0 0;
+    .endpoint-card p,
+    .endpoint-card li,
+    .muted {
       color: var(--muted);
       line-height: 1.8;
-      font-size: 15px;
     }
 
-    .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+    .endpoint-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .subsection {
       margin-top: 16px;
     }
 
-    .meta {
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px;
-      background: rgba(244, 241, 234, 0.66);
-    }
-
-    .meta strong {
-      display: block;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-      margin-bottom: 8px;
+    .subsection h4 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      letter-spacing: 0.02em;
     }
 
     table {
       width: 100%;
+      margin-top: 14px;
       border-collapse: collapse;
-      margin-top: 16px;
-      overflow: hidden;
-      border-radius: 16px;
       border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
     }
 
     th,
@@ -375,33 +345,59 @@
 
     th {
       background: rgba(15, 23, 42, 0.05);
-      color: #111827;
       font-size: 12px;
+      font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    tr:last-child td { border-bottom: none; }
+    tr:last-child td {
+      border-bottom: none;
+    }
 
-    .callout {
-      margin-top: 16px;
+    pre {
+      margin: 0;
       padding: 16px 18px;
       border-radius: 16px;
-      background: rgba(146, 64, 14, 0.08);
-      border: 1px solid rgba(146, 64, 14, 0.18);
-      color: #78350f;
+      background: #111827;
+      color: #f8fafc;
+      font-size: 13px;
       line-height: 1.7;
-      font-size: 14px;
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    code {
+      word-break: break-word;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    .empty-state {
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-lg);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.56);
     }
 
     .footer {
       text-align: center;
       color: var(--muted);
       font-size: 13px;
-      padding: 12px 0 8px;
+      padding: 6px 0 12px;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1180px) {
       .shell {
         grid-template-columns: 1fr;
       }
@@ -412,319 +408,1026 @@
       }
 
       .hero-grid,
-      .kpis,
-      .card-grid,
-      .meta-grid {
+      .stat-grid,
+      .provider-grid {
         grid-template-columns: 1fr 1fr;
       }
     }
 
     @media (max-width: 760px) {
-      body { background: var(--bg); }
-      .shell { width: min(100%, calc(100% - 20px)); margin: 10px auto 24px; gap: 16px; }
+      body {
+        background: var(--bg);
+      }
+
+      .shell {
+        width: min(100%, calc(100% - 20px));
+        margin: 10px auto 24px;
+        gap: 16px;
+      }
+
+      .sidebar,
+      .panel {
+        padding: 22px;
+      }
+
       .hero-top,
+      .hero-grid {
+        padding: 22px;
+      }
+
       .hero-grid,
-      .section { padding: 22px; }
-      .hero-grid,
-      .kpis,
-      .card-grid,
-      .meta-grid { grid-template-columns: 1fr; }
-      .brand h1 { font-size: 24px; }
-      .section h2 { font-size: 24px; }
+      .stat-grid,
+      .provider-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- bendy-music-nextjs-generated-api-doc -->
   <div class="shell">
     <aside class="sidebar">
-      <div class="brand">
-        <span class="eyebrow">DDMusic Docs</span>
-        <h1>接口文档中心</h1>
-        <p>这份 HTML 文档由后台文档中心直接维护，保存后会回写到 <code class="inline">doc/doc.html</code>，并在 <code class="inline">/docs</code> 页面原样渲染。</p>
-      </div>
+      <span class="eyebrow">Generated Docs</span>
+      <h1>顶点音乐API文档</h1>
+      <p>当前页面由项目源码路由、Provider 配置和 API 模板配置自动生成，用于保证后台文档与真实实现尽量保持一致。</p>
 
       <nav>
         <div class="nav-group">
           <h2>Overview</h2>
           <a href="#overview">项目概览</a>
-          <a href="#providers">服务商</a>
-          <a href="#public-api">公开 API</a>
-          <a href="#admin-api">后台数据接口</a>
-          <a href="#editing">文档编辑链路</a>
+          <a href="#providers">当前 Provider</a>
+          <a href="#public-api">公开接口</a>
         </div>
         <div class="nav-group">
-          <h2>Runtime</h2>
-          <a href="#errors">错误与约束</a>
-          <a href="#security">安全说明</a>
-          <a href="#changelog">当前版本说明</a>
+          <h2>Admin</h2>
+          <a href="#api-templates">上游 API 模板</a>
+          <a href="#management">后台管理接口</a>
+          <a href="#auth">认证接口</a>
+        </div>
+        <div class="nav-group">
+          <h2>Status</h2>
+          <a href="#pending">未实现能力</a>
+          <a href="#doc-flow">文档链路</a>
         </div>
       </nav>
     </aside>
 
     <main class="main">
-      <section class="hero" id="overview">
+      <section class="panel hero" id="overview">
         <div class="hero-top">
-          <span class="eyebrow">Version 1</span>
-          <h2>DDMusic API Documentation</h2>
-          <p>基于当前 <code class="inline">ddmusic-nextjs</code> 系统自动梳理的第一版接口文档，覆盖公开音乐聚合接口、后台配置接口、认证接口，以及 README 与 HTML 文档的后台编辑能力。</p>
+          <span class="eyebrow">Version 0.1.8</span>
+          <h2>顶点音乐API文档</h2>
+          <p>文档基于当前 Next.js 路由实现自动整理：公开入口为 <code>/api</code>，文档页为 <code>/docs</code>，后台配置页为 <code>/dashboard</code>。README 与 API 文档分别直接落盘到 <code>README.md</code> 和 <code>doc/doc.html</code>。</p>
         </div>
         <div class="hero-grid">
-          <div class="hero-card">
-            <strong>公开访问入口</strong>
-            <p>音乐聚合 API 对外入口为 <code class="inline">/api</code>，文档展示页入口为 <code class="inline">/docs</code>。</p>
+          <div class="stat-card">
+            <span>项目版本</span>
+            <strong>v0.1.8</strong>
           </div>
-          <div class="hero-card">
-            <strong>后台管理入口</strong>
-            <p>管理控制台位于 <code class="inline">/dashboard</code>，可编辑 Provider、API 配置、README、HTML 文档和系统设置。</p>
+          <div class="stat-card">
+            <span>已实现公开 type</span>
+            <strong>5</strong>
           </div>
-          <div class="hero-card">
-            <strong>文档存储策略</strong>
-            <p>README 直接落盘到 <code class="inline">README.md</code>，API 文档直接落盘到 <code class="inline">doc/doc.html</code>，然后镜像到数据库并可同步 GitHub。</p>
+          <div class="stat-card">
+            <span>当前 Provider</span>
+            <strong>2</strong>
+          </div>
+          <div class="stat-card">
+            <span>上游 API 模板</span>
+            <strong>1</strong>
           </div>
         </div>
       </section>
 
-      <section class="section">
+      <section class="panel">
         <h2>项目概览</h2>
-        <p>当前系统是一个基于 Next.js 16 的音乐 API 网关与后台管理平台。核心能力包含 GitHub OAuth 后台登录、Provider 与 API 配置管理、运行状态面板、README 在线编辑，以及 HTML 文档页在线编辑与发布。</p>
-        <div class="kpis">
-          <div class="kpi"><span>Public entry</span><strong>/api</strong></div>
-          <div class="kpi"><span>Docs page</span><strong>/docs</strong></div>
-          <div class="kpi"><span>Admin entry</span><strong>/dashboard</strong></div>
-          <div class="kpi"><span>Doc files</span><strong>2</strong></div>
+        <p>公开音乐接口当前全部聚合在同一个 <code>/api</code> 路由中，通过 <code>type</code> 区分能力。默认 provider 为 <code>tunehub</code>，当前支持的平台枚举来自源码：<code>netease</code>、<code>kuwo</code>、<code>qq</code>。</p>
+        <div class="stat-grid">
+          <div class="note-card">
+            <strong>公开入口</strong>
+            <p><code>/api</code></p>
+          </div>
+          <div class="note-card">
+            <strong>文档入口</strong>
+            <p><code>/docs</code></p>
+          </div>
+          <div class="note-card">
+            <strong>后台入口</strong>
+            <p><code>/dashboard</code></p>
+          </div>
+          <div class="note-card">
+            <strong>文档文件</strong>
+            <p><code>README.md</code> / <code>doc/doc.html</code></p>
+          </div>
         </div>
       </section>
 
-      <section class="section" id="providers">
-        <h2>服务商与配置数据</h2>
-        <p>后台当前维护的服务商信息来源于 <code class="inline">data/provider.json</code> 和数据库镜像，实际运行时以后台保存的数据为准。</p>
-        <div class="card-grid">
-          <article class="card">
-            <div class="tags">
-              <span class="tag">Provider</span>
-              <span class="tag">Enabled</span>
-            </div>
-            <h3>tunehub</h3>
-            <p>代码：<code class="inline">TH</code><br />说明：LinuxDO 公益 API<br />地址：<code class="inline">https://tunehub.sayqz.com/api</code></p>
-          </article>
-          <article class="card">
-            <div class="tags">
-              <span class="tag">Provider</span>
-              <span class="tag warning">Paid</span>
-            </div>
-            <h3>岑鬼</h3>
-            <p>代码：<code class="inline">CGG</code><br />说明：岑鬼音乐 API<br />类型：个人服务商</p>
-          </article>
+      <section class="panel" id="providers">
+        <h2>当前 Provider 配置</h2>
+        <p>这里展示的是后台当前可读到的 Provider 配置快照，优先来自数据存储，回退到 <code>data/provider.json</code>。</p>
+        <div class="provider-grid">
+          
+      <article class="provider-card">
+        <div class="chips">
+          <span class="chip">TH</span>
+          <span class="chip">启用</span>
+        </div>
+        <h3>tunehub</h3>
+        <dl class="detail-list">
+          <div>
+            <dt>类别</dt>
+            <dd>未标注</dd>
+          </div>
+          <div>
+            <dt>性质</dt>
+            <dd>公益</dd>
+          </div>
+          <div>
+            <dt>地址</dt>
+            <dd>https://tunehub.sayqz.com/api</dd>
+          </div>
+          <div>
+            <dt>备注</dt>
+            <dd>LinuxDO 公益API</dd>
+          </div>
+        </dl>
+      </article>
+    
+      <article class="provider-card">
+        <div class="chips">
+          <span class="chip">CGG</span>
+          <span class="chip">启用</span>
+        </div>
+        <h3>岑鬼</h3>
+        <dl class="detail-list">
+          <div>
+            <dt>类别</dt>
+            <dd>个人</dd>
+          </div>
+          <div>
+            <dt>性质</dt>
+            <dd>付费</dd>
+          </div>
+          <div>
+            <dt>地址</dt>
+            <dd>未配置</dd>
+          </div>
+          <div>
+            <dt>备注</dt>
+            <dd>岑鬼音乐API</dd>
+          </div>
+        </dl>
+      </article>
+    
         </div>
       </section>
 
-      <section class="section" id="public-api">
-        <h2>公开音乐 API</h2>
-        <p>对外主要通过 <code class="inline">GET /api</code> 使用查询参数驱动不同能力。当前真实实现的能力以 <code class="inline">type</code> 参数区分。</p>
-
+      <section class="panel" id="public-api">
+        <h2>公开接口</h2>
+        <p>下列能力直接对应 <code>src/app/api/route.ts</code> 中当前已落地的 switch 分支，是对外最核心的访问入口。</p>
         <div class="endpoint-list">
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag">/api</span>
-              <span class="tag">toplists</span>
-            </div>
-            <h3>获取排行榜列表</h3>
-            <p>按平台返回公开榜单列表。目前代码中支持 <code class="inline">netease</code>、<code class="inline">qq</code>、<code class="inline">kuwo</code>。</p>
-            <div class="meta-grid">
-              <div class="meta"><strong>Query</strong><span><code class="inline">provider=tunehub</code>, <code class="inline">source=netease|qq|kuwo</code>, <code class="inline">type=toplists</code></span></div>
-              <div class="meta"><strong>Response</strong><span>统一返回 <code class="inline">code</code>、<code class="inline">message</code>、<code class="inline">data</code></span></div>
-            </div>
-            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=toplists</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag">/api</span>
-              <span class="tag">toplist</span>
-            </div>
-            <h3>获取榜单歌曲</h3>
-            <p>根据榜单 ID 返回榜单歌曲数据。当前支持 <code class="inline">netease</code>、<code class="inline">qq</code>、<code class="inline">kuwo</code>。</p>
-            <table>
-              <thead>
-                <tr><th>参数</th><th>必填</th><th>说明</th></tr>
-              </thead>
-              <tbody>
-                <tr><td><code class="inline">source</code></td><td>是</td><td>平台标识：<code class="inline">netease</code> / <code class="inline">qq</code> / <code class="inline">kuwo</code></td></tr>
-                <tr><td><code class="inline">type</code></td><td>是</td><td>固定为 <code class="inline">toplist</code></td></tr>
-                <tr><td><code class="inline">id</code></td><td>是</td><td>榜单 ID</td></tr>
-              </tbody>
-            </table>
-            <pre>GET /api?provider=tunehub&amp;source=qq&amp;type=toplist&amp;id=26</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag">/api</span>
-              <span class="tag">playlist</span>
-            </div>
-            <h3>获取歌单详情</h3>
-            <p>根据歌单 ID 返回歌单详情与歌曲列表。代码中对 <code class="inline">kuwo</code> 走公开服务，对其他平台走服务商聚合实现。</p>
-            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=playlist&amp;id=123456</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag">/api</span>
-              <span class="tag">search</span>
-            </div>
-            <h3>搜索歌曲</h3>
-            <p>当前真实代码支持平台歌曲搜索，默认结果数量 <code class="inline">limit=20</code>。实现中仅在指定平台创建搜索服务时生效。</p>
-            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=search&amp;keyword=周杰伦&amp;limit=20</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag">/api</span>
-              <span class="tag">info</span>
-            </div>
-            <h3>获取歌曲信息</h3>
-            <p>根据歌曲 ID 获取歌曲基础信息。当前已经实现 <code class="inline">info</code>，而 <code class="inline">url</code>、<code class="inline">pic</code>、<code class="inline">lrc</code>、<code class="inline">aggregateSearch</code> 在公开入口中仍返回未实现状态。</p>
-            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=info&amp;id=2608813264</pre>
-            <div class="callout">注意：<code class="inline">type=url</code>、<code class="inline">type=pic</code>、<code class="inline">type=lrc</code>、<code class="inline">type=aggregateSearch</code>、<code class="inline">type=status</code>、<code class="inline">type=stats</code> 当前代码中分别返回 404 或 501，不应在外部文档中描述为已上线。</div>
-          </article>
+          
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api</span>
+          </div>
+          <h3>获取歌曲信息</h3>
         </div>
-      </section>
-
-      <section class="section" id="admin-api">
-        <h2>后台数据接口</h2>
-        <p>管理后台通过一组内部接口读写配置与文档，这些接口并不是公开业务 API，但它们决定了后台可编辑哪些内容。</p>
-        <div class="endpoint-list">
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag post">POST</span>
-              <span class="tag internal">Internal</span>
-            </div>
-            <h3>/api/data/docs/readme</h3>
-            <p>读取和保存 <code class="inline">README.md</code>。保存时顺序为：写本地文件、镜像到数据库、按配置提交到 GitHub 仓库。</p>
-            <pre>GET  /api/data/docs/readme
-POST /api/data/docs/readme
-Body: { "content": "# Markdown" }</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag post">POST</span>
-              <span class="tag internal">Internal</span>
-            </div>
-            <h3>/api/data/docs/api</h3>
-            <p>读取和保存 <code class="inline">doc/doc.html</code>。这是 <code class="inline">/docs</code> 页面实际渲染的数据源，不再使用 JSON 文档格式。</p>
-            <pre>GET  /api/data/docs/api
-POST /api/data/docs/api
-Body: { "content": "&lt;!DOCTYPE html&gt;..." }</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag post">POST</span>
-              <span class="tag internal">Internal</span>
-            </div>
-            <h3>/api/data/api</h3>
-            <p>读取和保存后台 API 配置。当前示例配置中存在一个 <code class="inline">POST /v1/parse</code> 解析接口，备注为“解析歌曲，额度是有次数限制的”。</p>
-            <pre>{
-  "apis": [
+      </div>
+      <p>根据 provider、source 和 id 返回歌曲基础信息。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>type</code></td>
+        <td>是</td>
+        <td>固定为 info。</td>
+      </tr>
+    
+      <tr>
+        <td><code>source</code></td>
+        <td>是</td>
+        <td>平台标识，目前支持 netease、qq、kuwo。</td>
+      </tr>
+    
+      <tr>
+        <td><code>id</code></td>
+        <td>是</td>
+        <td>歌曲 ID。</td>
+      </tr>
+    
+      <tr>
+        <td><code>provider</code></td>
+        <td>否</td>
+        <td>服务商标识。当前默认使用 tunehub。<div class="muted">默认值：tunehub</div></td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api?type=info&amp;source=netease&amp;id=2608813264&amp;provider=tunehub</pre>
+      </div>
+      
+        <div class="subsection">
+          <h4>响应示例</h4>
+          <pre>{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;name&quot;: &quot;示例歌曲&quot;,
+    &quot;artist&quot;: &quot;示例歌手&quot;,
+    &quot;album&quot;: &quot;示例专辑&quot;,
+    &quot;id&quot;: &quot;2608813264&quot;,
+    &quot;platform&quot;: &quot;netease&quot;,
+    &quot;url&quot;: &quot;/api?type=url&amp;source=netease&amp;id=2608813264&quot;,
+    &quot;pic&quot;: &quot;/api?type=pic&amp;source=netease&amp;id=2608813264&quot;,
+    &quot;lrc&quot;: &quot;/api?type=lrc&amp;source=netease&amp;id=2608813264&quot;
+  }
+}</pre>
+        </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>缺少 source 或 id 时会返回 400。</li><li>成功时返回统一的 { code, message, data } 结构。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api</span>
+          </div>
+          <h3>搜索歌曲</h3>
+        </div>
+      </div>
+      <p>按平台搜索歌曲，当前由平台适配器直接处理，provider 参数不会参与分发。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>type</code></td>
+        <td>是</td>
+        <td>固定为 search。</td>
+      </tr>
+    
+      <tr>
+        <td><code>source</code></td>
+        <td>是</td>
+        <td>平台标识，目前支持 netease、qq、kuwo。</td>
+      </tr>
+    
+      <tr>
+        <td><code>keyword</code></td>
+        <td>是</td>
+        <td>搜索关键词。</td>
+      </tr>
+    
+      <tr>
+        <td><code>limit</code></td>
+        <td>否</td>
+        <td>返回数量上限。<div class="muted">默认值：20</div></td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api?type=search&amp;source=qq&amp;keyword=周杰伦&amp;limit=20</pre>
+      </div>
+      
+        <div class="subsection">
+          <h4>响应示例</h4>
+          <pre>{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;keyword&quot;: &quot;周杰伦&quot;,
+    &quot;total&quot;: 2,
+    &quot;results&quot;: [
+      {
+        &quot;id&quot;: &quot;123456&quot;,
+        &quot;name&quot;: &quot;夜曲&quot;,
+        &quot;artist&quot;: &quot;周杰伦&quot;,
+        &quot;album&quot;: &quot;十一月的萧邦&quot;,
+        &quot;platform&quot;: &quot;qq&quot;,
+        &quot;url&quot;: &quot;/api?type=url&amp;source=qq&amp;id=123456&quot;
+      }
+    ]
+  }
+}</pre>
+        </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>缺少 source 或 keyword 时会返回 400。</li><li>不支持的平台会返回 400 Unsupported platform。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api</span>
+          </div>
+          <h3>获取歌单详情</h3>
+        </div>
+      </div>
+      <p>根据 source 和 id 返回歌单详情。kuwo 平台会走公开服务，其他平台走已注册的音乐服务。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>type</code></td>
+        <td>是</td>
+        <td>固定为 playlist。</td>
+      </tr>
+    
+      <tr>
+        <td><code>source</code></td>
+        <td>是</td>
+        <td>平台标识，目前支持 netease、qq、kuwo。</td>
+      </tr>
+    
+      <tr>
+        <td><code>id</code></td>
+        <td>是</td>
+        <td>歌单 ID。</td>
+      </tr>
+    
+      <tr>
+        <td><code>provider</code></td>
+        <td>否</td>
+        <td>服务商标识。当前默认使用 tunehub。<div class="muted">默认值：tunehub</div></td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api?type=playlist&amp;source=kuwo&amp;id=3136604274</pre>
+      </div>
+      
+        <div class="subsection">
+          <h4>响应示例</h4>
+          <pre>{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: &quot;3136604274&quot;,
+    &quot;name&quot;: &quot;示例歌单&quot;,
+    &quot;description&quot;: &quot;示例歌单描述&quot;,
+    &quot;cover&quot;: &quot;https://example.com/cover.jpg&quot;,
+    &quot;songs&quot;: []
+  }
+}</pre>
+        </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>缺少 source 或 id 时会返回 400。</li><li>服务端异常时返回 500，并透出 error 字段。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api</span>
+          </div>
+          <h3>获取榜单列表</h3>
+        </div>
+      </div>
+      <p>根据平台返回榜单列表。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>type</code></td>
+        <td>是</td>
+        <td>固定为 toplists。</td>
+      </tr>
+    
+      <tr>
+        <td><code>source</code></td>
+        <td>是</td>
+        <td>平台标识，目前支持 netease、qq、kuwo。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api?type=toplists&amp;source=netease</pre>
+      </div>
+      
+        <div class="subsection">
+          <h4>响应示例</h4>
+          <pre>{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: [
     {
-      "name": "获取歌曲信息-tunehub",
-      "path": "/v1/parse",
-      "method": "POST"
+      &quot;id&quot;: &quot;19723756&quot;,
+      &quot;name&quot;: &quot;云音乐飙升榜&quot;,
+      &quot;cover&quot;: &quot;https://example.com/toplist.jpg&quot;,
+      &quot;description&quot;: &quot;示例榜单&quot;,
+      &quot;platform&quot;: &quot;netease&quot;
     }
   ]
 }</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag post">POST</span>
-              <span class="tag internal">Internal</span>
-            </div>
-            <h3>/api/sys</h3>
-            <p>读取和保存系统配置。当前后台填写的 GitHub 仓库地址会作为 README 与 HTML 文档同步的目标仓库来源。</p>
-            <pre>{
-  "configuration": {
-    "githubProjectPath": "https://github.com/yokeay/ddmusic-nextjs",
-    "apiTimeout": 300000,
-    "maxConcurrentRequests": 100
+        </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>缺少 source 时会返回 400。</li><li>当前代码对 netease、qq、kuwo 都有显式实现。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api</span>
+          </div>
+          <h3>获取榜单歌曲</h3>
+        </div>
+      </div>
+      <p>根据榜单 ID 返回榜单歌曲。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>type</code></td>
+        <td>是</td>
+        <td>固定为 toplist。</td>
+      </tr>
+    
+      <tr>
+        <td><code>source</code></td>
+        <td>是</td>
+        <td>平台标识，目前支持 netease、qq、kuwo。</td>
+      </tr>
+    
+      <tr>
+        <td><code>id</code></td>
+        <td>是</td>
+        <td>榜单 ID。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api?type=toplist&amp;source=qq&amp;id=26</pre>
+      </div>
+      
+        <div class="subsection">
+          <h4>响应示例</h4>
+          <pre>{
+  &quot;code&quot;: 200,
+  &quot;message&quot;: &quot;success&quot;,
+  &quot;data&quot;: {
+    &quot;id&quot;: &quot;26&quot;,
+    &quot;name&quot;: &quot;热歌榜&quot;,
+    &quot;titleDetail&quot;: &quot;示例标题&quot;,
+    &quot;intro&quot;: &quot;示例简介&quot;,
+    &quot;songs&quot;: []
   }
 }</pre>
-          </article>
-
-          <article class="endpoint">
-            <div class="tags">
-              <span class="tag get">GET</span>
-              <span class="tag post">POST</span>
-              <span class="tag internal">Internal</span>
-            </div>
-            <h3>认证与会话</h3>
-            <p>后台登录流程包含 <code class="inline">/api/auth/github/login</code>、<code class="inline">/api/auth/github/callback</code>、<code class="inline">/api/auth/session</code> 和 <code class="inline">/api/auth/logout</code>。</p>
-            <pre>GET  /api/auth/github/login
-GET  /api/auth/github/callback
-GET  /api/auth/session
-POST /api/auth/logout</pre>
-          </article>
+        </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>缺少 source 或 id 时会返回 400。</li><li>不支持的平台会返回 400 Unsupported platform。</li></ul>
+      </div>
+    </article>
+  
         </div>
       </section>
 
-      <section class="section" id="editing">
-        <h2>文档编辑链路</h2>
-        <p>当前版本已把 README 和 API 文档统一成“文件可编辑、后台可编辑、GitHub 可同步”的链路，满足直接基于管理系统维护项目文档的需求。</p>
+      <section class="panel" id="api-templates">
+        <h2>上游 API 模板配置</h2>
+        <p>下表来自后台维护的 API 模板配置，用于描述调用外部 Provider 时的目标路径、参数模板与请求头。为了避免泄露敏感信息，包含密钥语义的请求头值会自动隐藏。</p>
+        
+    <table>
+      <thead>
+        <tr>
+          <th>名称</th>
+          <th>方法</th>
+          <th>上游路径</th>
+          <th>绑定 Provider</th>
+          <th>状态</th>
+          <th>请求头</th>
+          <th>参数模板</th>
+          <th>备注</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>获取歌曲信息-tunehub</td>
+          <td><span class="inline-chip">POST</span></td>
+          <td><code>/v1/parse</code></td>
+          <td>tunehub</td>
+          <td>启用</td>
+          <td><pre>X-API-Key=[hidden]</pre></td>
+          <td><pre>{&quot;platform&quot;:&quot;&quot;,&quot;ids&quot;:&quot;&quot;,&quot;quality&quot;:&quot;&quot;}</pre></td>
+          <td>解析歌曲，额度是有次数限制的</td>
+        </tr>
+      </tbody>
+    </table>
+  
+      </section>
+
+      <section class="panel" id="management">
+        <h2>后台管理接口</h2>
+        <p>这些接口主要服务于 Dashboard 自身，不应当直接作为公开业务 API 使用。</p>
+        <div class="endpoint-list">
+          
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/data/docs/readme</span>
+          </div>
+          <h3>README 文档管理</h3>
+        </div>
+      </div>
+      <p>读取或保存 README.md。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>content</code></td>
+        <td>否</td>
+        <td>POST 时提交新的 Markdown 内容。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>POST /api/data/docs/readme
+{ &quot;content&quot;: &quot;# README&quot; }</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>GET 直接读取项目根目录 README.md。</li><li>POST 保存顺序为本地文件 -&gt; 数据存储镜像 -&gt; 可选 GitHub 同步。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/data/docs/api</span>
+          </div>
+          <h3>API 文档 HTML 管理</h3>
+        </div>
+      </div>
+      <p>读取、保存或重新生成 doc/doc.html。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>content</code></td>
+        <td>否</td>
+        <td>POST 时提交新的完整 HTML 文档。</td>
+      </tr>
+    
+      <tr>
+        <td><code>regenerate</code></td>
+        <td>否</td>
+        <td>POST 为 true 时按当前源码与配置重建文档。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>POST /api/data/docs/api
+{ &quot;regenerate&quot;: true }</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>GET 会在文档缺失、为空、是旧版占位内容或旧版 JSON 文档时自动重建。</li><li>POST regenerate=true 会忽略传入 content，直接覆盖 doc/doc.html。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/data/provider</span>
+          </div>
+          <h3>Provider 配置管理</h3>
+        </div>
+      </div>
+      <p>读取或保存服务商配置。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>providers</code></td>
+        <td>否</td>
+        <td>POST 时提交完整 providers 数组。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/data/provider</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>优先读取数据存储中的配置，没有时回退到 data/provider.json。</li><li>当前实现 POST 仅保存到数据存储，不会回写 data/provider.json。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/data/api</span>
+          </div>
+          <h3>上游 API 模板配置管理</h3>
+        </div>
+      </div>
+      <p>读取或保存后台维护的上游 API 配置模板。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>apis</code></td>
+        <td>否</td>
+        <td>POST 时提交完整 apis 数组。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/data/api</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>优先读取数据存储中的配置，没有时回退到 data/api.json。</li><li>这些记录描述的是上游接口模板，不是本地 Next.js 路由本身。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/sys</span>
+          </div>
+          <h3>系统配置管理</h3>
+        </div>
+      </div>
+      <p>读取或保存系统配置，包括 GitHub 仓库地址、接口超时和并发数。</p>
+      
+    <table>
+      <thead>
+        <tr>
+          <th>参数</th>
+          <th>必填</th>
+          <th>说明</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>configuration</code></td>
+        <td>否</td>
+        <td>POST 时提交新的系统配置。</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/sys</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>POST 会写入数据存储并同步回 sys.json。</li><li>文档同步目标仓库优先读取这里的 githubProjectPath。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET / POST</span>
+            <span class="chip">/api/data/dashboard</span>
+          </div>
+          <h3>运行态仪表盘数据</h3>
+        </div>
+      </div>
+      <p>读取或保存仪表盘运行数据。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/data/dashboard</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>GET 会优先返回运行时内存中的实时数据。</li><li>POST 用于 dashboardService 周期性同步仪表盘快照。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">ANY</span>
+            <span class="chip">/api/proxy/[...path]</span>
+          </div>
+          <h3>代理转发入口</h3>
+        </div>
+      </div>
+      <p>接收任意路径并转发到示例上游服务。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/proxy/example/path</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>当前代码中 serviceProvider 和目标地址仍是硬编码示例值。</li><li>它更像占位路由，不应被当作已完成的生产代理能力。</li></ul>
+      </div>
+    </article>
+  
+        </div>
+      </section>
+
+      <section class="panel" id="auth">
+        <h2>认证接口</h2>
+        <p>后台登录使用 GitHub OAuth，会话检查和退出登录也都通过独立接口完成。</p>
+        <div class="endpoint-list">
+          
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api/auth/github/login</span>
+          </div>
+          <h3>GitHub OAuth 登录入口</h3>
+        </div>
+      </div>
+      <p>发起 GitHub OAuth 登录流程。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/auth/github/login</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>用于后台管理员登录。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api/auth/github/callback</span>
+          </div>
+          <h3>GitHub OAuth 回调</h3>
+        </div>
+      </div>
+      <p>处理 GitHub OAuth 回调。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/auth/github/callback?code=...</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>成功后会建立后台会话。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">GET</span>
+            <span class="chip">/api/auth/session</span>
+          </div>
+          <h3>当前会话信息</h3>
+        </div>
+      </div>
+      <p>返回当前后台认证会话。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>GET /api/auth/session</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>Dashboard 初始化时依赖这个接口判断是否已登录。</li></ul>
+      </div>
+    </article>
+  
+    <article class="endpoint-card">
+      <div class="endpoint-heading">
+        <div>
+          <div class="chips">
+            <span class="chip chip-method">POST</span>
+            <span class="chip">/api/auth/logout</span>
+          </div>
+          <h3>退出登录</h3>
+        </div>
+      </div>
+      <p>清理当前后台会话。</p>
+      <p class="muted">无额外参数。</p>
+      <div class="subsection">
+        <h4>调用示例</h4>
+        <pre>POST /api/auth/logout</pre>
+      </div>
+      
+      <div class="subsection">
+        <h4>当前行为说明</h4>
+        <ul><li>Dashboard 退出登录时会调用这个接口。</li></ul>
+      </div>
+    </article>
+  
+        </div>
+      </section>
+
+      <section class="panel" id="pending">
+        <h2>未实现能力</h2>
+        <p>以下 <code>type</code> 虽然已经在公开路由中预留了分支，但当前源码仍返回 404 或 501，不应在外部文档中描述为可用能力。</p>
+        
+    <table>
+      <thead>
+        <tr>
+          <th>type</th>
+          <th>当前返回</th>
+          <th>代码中的行为</th>
+        </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td><code>url</code></td>
+        <td>404</td>
+        <td>Music url endpoint not implemented</td>
+      </tr>
+    
+      <tr>
+        <td><code>pic</code></td>
+        <td>404</td>
+        <td>Album cover endpoint not implemented</td>
+      </tr>
+    
+      <tr>
+        <td><code>lrc</code></td>
+        <td>404</td>
+        <td>Lyrics endpoint not implemented</td>
+      </tr>
+    
+      <tr>
+        <td><code>aggregateSearch</code></td>
+        <td>404</td>
+        <td>Aggregate search endpoint not implemented</td>
+      </tr>
+    
+      <tr>
+        <td><code>status</code></td>
+        <td>501</td>
+        <td>Not implemented</td>
+      </tr>
+    
+      <tr>
+        <td><code>stats</code></td>
+        <td>501</td>
+        <td>Not implemented</td>
+      </tr>
+    </tbody>
+    </table>
+  
+      </section>
+
+      <section class="panel" id="doc-flow">
+        <h2>文档链路</h2>
+        <p>README 与 API 文档已经统一成“文件为准、后台可编辑、可选同步到远程仓库”的链路。README 使用 Markdown，API 文档使用完整 HTML，并由 <code>/docs</code> 页面原样渲染。</p>
         <table>
           <thead>
-            <tr><th>文档</th><th>后台编辑格式</th><th>落盘文件</th><th>访问地址</th></tr>
+            <tr>
+              <th>文档</th>
+              <th>后台编辑格式</th>
+              <th>本地文件</th>
+              <th>渲染入口</th>
+            </tr>
           </thead>
           <tbody>
-            <tr><td>项目说明</td><td>Markdown</td><td><code class="inline">README.md</code></td><td>仓库首页 / 后台文档中心</td></tr>
-            <tr><td>API 文档</td><td>HTML</td><td><code class="inline">doc/doc.html</code></td><td><code class="inline">/docs</code></td></tr>
+            <tr>
+              <td>项目 README</td>
+              <td>Markdown</td>
+              <td><code>README.md</code></td>
+              <td>后台文档中心预览</td>
+            </tr>
+            <tr>
+              <td>API 文档</td>
+              <td>HTML</td>
+              <td><code>doc/doc.html</code></td>
+              <td><code>/docs</code></td>
+            </tr>
           </tbody>
         </table>
-        <div class="callout">后台保存后，系统会先写入本地 UTF-8 文件，再镜像到 PostgreSQL/缓存，并根据系统配置中的仓库地址与令牌把文档提交到 GitHub 指定分支。</div>
-      </section>
-
-      <section class="section" id="errors">
-        <h2>错误与约束</h2>
-        <div class="card-grid">
-          <article class="card">
-            <div class="tags"><span class="tag danger">400</span></div>
-            <h3>参数缺失</h3>
-            <p>公开音乐 API 在缺少 <code class="inline">source</code>、<code class="inline">id</code>、<code class="inline">keyword</code> 等关键参数时会返回 400。</p>
-          </article>
-          <article class="card">
-            <div class="tags"><span class="tag warning">404 / 501</span></div>
-            <h3>功能未实现</h3>
-            <p>部分接口类型在代码中仍未落地，会直接返回未实现。文档已按当前代码状态进行了降级说明。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section" id="security">
-        <h2>安全说明</h2>
-        <p>后台 API 配置中可能包含上游服务商密钥或 Header。为了避免将敏感信息直接暴露在公开文档，本页不会自动输出完整密钥值。公开展示时应仅描述参数结构与接入方式，不应贴出真实凭证。</p>
-      </section>
-
-      <section class="section" id="changelog">
-        <h2>当前版本说明</h2>
-        <ul>
-          <li>README 文档现在直接读写 <code class="inline">README.md</code>，可通过后台文档中心编辑。</li>
-          <li>API 文档现在直接读写 <code class="inline">doc/doc.html</code>，<code class="inline">/docs</code> 页面直接渲染该 HTML 文件。</li>
-          <li>旧的 JSON 文档文件已移除，避免后台继续把 API 文档错误保存成 JSON。</li>
-          <li>GitHub 同步目标仓库可从后台系统设置读取，保存文档后会按配置同步到远程仓库。</li>
-        </ul>
       </section>
 
       <div class="footer">
-        Built for DDMusic admin-managed documentation workflow.
+        Auto-generated from the current project routes and config snapshot.
       </div>
     </main>
   </div>
@@ -738,7 +1441,7 @@ POST /api/auth/logout</pre>
 
       const setActive = (id) => {
         links.forEach((link) => {
-          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+          link.classList.toggle('active', link.getAttribute('href') === '#' + id);
         });
       };
 
