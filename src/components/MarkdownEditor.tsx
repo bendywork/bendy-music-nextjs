@@ -35,13 +35,8 @@ export default function MarkdownEditor({
     <div className="grid gap-4 xl:grid-cols-2">
       <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
         <div className="border-b border-border/80 px-4 py-3">
-<<<<<<< HEAD
-          <p className="text-sm font-semibold">Markdown</p>
-          <p className="text-xs text-muted-foreground">Editing README.md</p>
-=======
           <p className="text-sm font-semibold">{editorTitle}</p>
           <p className="text-xs text-muted-foreground">{editorDescription}</p>
->>>>>>> dev
         </div>
         <div className="p-4">
           <Textarea
@@ -55,13 +50,8 @@ export default function MarkdownEditor({
 
       <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
         <div className="border-b border-border/80 px-4 py-3">
-<<<<<<< HEAD
-          <p className="text-sm font-semibold">Preview</p>
-          <p className="text-xs text-muted-foreground">Rendered markdown output</p>
-=======
           <p className="text-sm font-semibold">{previewTitle}</p>
           <p className="text-xs text-muted-foreground">{previewDescription}</p>
->>>>>>> dev
         </div>
         <div
           className="prose prose-sm max-w-none p-6 dark:prose-invert"
