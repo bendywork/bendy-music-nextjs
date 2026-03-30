@@ -3,11 +3,17 @@
 import { ArrowRight, BookText, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { LocaleToggle } from '@/components/locale-toggle';
+import { useLocale } from '@/components/locale-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { siteCopy } from '@/lib/i18n/site';
 
 export default function HomePage() {
+  const { locale } = useLocale();
+  const copy = siteCopy[locale].home;
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <div className="absolute inset-0 surface-grid opacity-60" />
@@ -26,7 +32,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <LocaleToggle variant="outline" />
+            <ThemeToggle />
+          </div>
         </header>
 
         <div className="flex flex-1 items-center py-10">
@@ -35,29 +44,29 @@ export default function HomePage() {
               <CardContent className="p-8 sm:p-10 lg:p-12">
                 <div className="space-y-6">
                   <div className="inline-flex items-center rounded-full border border-border bg-background/75 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    Next.js 16 + Tailwind 4 + shadcn style
+                    {copy.heroBadge}
                   </div>
 
                   <div className="space-y-4">
                     <h1 className="max-w-3xl text-4xl font-black tracking-[-0.06em] sm:text-5xl lg:text-6xl">
-                      统一管理音乐接口、文档和后台配置
+                      {copy.heroTitle}
                     </h1>
                     <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
-                      一个面向管理后台的音乐 API 网关项目。现在支持黑白灰主题、浅色/深色切换、README 在线编辑、Provider/API 管理，以及 Docker 化开发环境。
+                      {copy.heroDescription}
                     </p>
                   </div>
 
                   <div className="flex flex-wrap gap-3">
                     <Button asChild size="lg">
                       <Link href="/login">
-                        进入后台
+                        {copy.enterDashboard}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </Button>
                     <Button asChild size="lg" variant="outline">
                       <Link href="/docs">
                         <BookText className="h-4 w-4" />
-                        查看文档
+                        {copy.viewDocs}
                       </Link>
                     </Button>
                   </div>
@@ -68,11 +77,9 @@ export default function HomePage() {
             <div className="grid gap-4">
               <Card className="rounded-[2rem]">
                 <CardContent className="space-y-3 p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">核心能力</p>
-                  <h2 className="text-2xl font-black tracking-[-0.04em]">Admin Console</h2>
-                  <p className="text-sm leading-7 text-muted-foreground">
-                    服务商、接口、文档和系统设置全部集中在统一控制台中管理。
-                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{copy.featureEyebrow}</p>
+                  <h2 className="text-2xl font-black tracking-[-0.04em]">{copy.featureTitle}</h2>
+                  <p className="text-sm leading-7 text-muted-foreground">{copy.featureDescription}</p>
                 </CardContent>
               </Card>
 
@@ -80,20 +87,16 @@ export default function HomePage() {
                 <CardContent className="space-y-3 p-6">
                   <div className="flex items-center gap-2 text-sm font-semibold">
                     <ShieldCheck className="h-4 w-4" />
-                    GitHub OAuth 管理登录
+                    {copy.oauthTitle}
                   </div>
-                  <p className="text-sm leading-7 text-muted-foreground">
-                    仅允许配置过的管理员账户进入后台，保持入口干净、简单且可控。
-                  </p>
+                  <p className="text-sm leading-7 text-muted-foreground">{copy.oauthDescription}</p>
                 </CardContent>
               </Card>
 
               <Card className="rounded-[2rem]">
                 <CardContent className="space-y-3 p-6">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">文档链路</p>
-                  <p className="text-sm leading-7 text-muted-foreground">
-                    README 和 API 文档配置会直接写入本地 UTF-8 文件，再同步数据库缓存与 GitHub 仓库，避免乱码回流。
-                  </p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">{copy.docsEyebrow}</p>
+                  <p className="text-sm leading-7 text-muted-foreground">{copy.docsDescription}</p>
                 </CardContent>
               </Card>
             </div>

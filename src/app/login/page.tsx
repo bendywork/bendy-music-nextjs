@@ -1,8 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { LocaleToggle } from '@/components/locale-toggle';
+import { useLocale } from '@/components/locale-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { siteCopy } from '@/lib/i18n/site';
 
 interface SessionResponse {
   code: number;
@@ -18,39 +21,9 @@ interface SessionResponse {
   };
 }
 
-const slides = [
-  {
-    title: 'Unified Music Gateway',
-    description: 'Manage providers, docs, and platform settings from one console.',
-    typingText: 'Build once, manage every provider consistently.',
-    palette: 'from-neutral-950 via-neutral-800 to-neutral-700',
-  },
-  {
-    title: 'Release-ready Workflow',
-    description: 'Versioning, planning, QA gates, and security all in one process.',
-    typingText: 'Versioned, audited, and release-ready by design.',
-    palette: 'from-neutral-900 via-zinc-700 to-neutral-500',
-  },
-  {
-    title: 'Admin Allowlist Access',
-    description: 'Only configured GitHub admins can enter the dashboard.',
-    typingText: 'GitHub OAuth + admin allowlist authorization.',
-    palette: 'from-zinc-800 via-neutral-600 to-zinc-400',
-  },
-];
-
-const errorTextMap: Record<string, string> = {
-  missing_github_oauth_config: 'GitHub OAuth config is missing. Please set environment variables.',
-  oauth_state_mismatch: 'OAuth state validation failed. Please try again.',
-  oauth_token_exchange_failed: 'Failed to exchange OAuth token. Please retry.',
-  github_user_fetch_failed: 'Failed to fetch GitHub user profile. Please retry.',
-  unauthorized_admin: 'This GitHub account is not in the admin allowlist.',
-  oauth_callback_error: 'GitHub callback returned an error. Please retry.',
-  oauth_callback_failed: 'OAuth callback handling failed. Please retry later.',
-};
-
 export default function LoginPage() {
   const router = useRouter();
+  const { locale } = useLocale();
 
   const [checkingSession, setCheckingSession] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -58,6 +31,8 @@ export default function LoginPage() {
   const [errorCode, setErrorCode] = useState('');
   const [errorLogin, setErrorLogin] = useState('');
 
+  const copy = siteCopy[locale].login;
+  const slides = copy.slides;
   const currentSlide = slides[activeSlide];
   const typingContent = currentSlide.typingText.slice(0, typingIndex);
 
@@ -66,9 +41,9 @@ export default function LoginPage() {
       return '';
     }
 
-    const baseText = errorTextMap[errorCode] ?? 'Login failed. Please retry later.';
+    const baseText = copy.errorTextMap[errorCode as keyof typeof copy.errorTextMap] ?? copy.fallbackError;
     return errorLogin ? `${baseText} (account: ${errorLogin})` : baseText;
-  }, [errorCode, errorLogin]);
+  }, [copy, errorCode, errorLogin]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -78,23 +53,24 @@ export default function LoginPage() {
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveSlide((prev) => {
-        const next = (prev + 1) % slides.length;
+      setActiveSlide((previous) => {
+        const next = (previous + 1) % slides.length;
         setTypingIndex(0);
         return next;
       });
     }, 5500);
 
     return () => window.clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setTypingIndex((prev) => {
-        if (prev >= currentSlide.typingText.length) {
-          return prev;
+      setTypingIndex((previous) => {
+        if (previous >= currentSlide.typingText.length) {
+          return previous;
         }
-        return prev + 1;
+
+        return previous + 1;
       });
     }, 45);
 
@@ -145,14 +121,20 @@ export default function LoginPage() {
   if (checkingSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-neutral-100 text-neutral-700 dark:bg-neutral-950 dark:text-neutral-300">
-        Checking session...
+        {copy.checkingSession}
       </div>
     );
   }
 
   return (
     <div className="relative min-h-screen bg-neutral-100 text-neutral-900 transition-colors duration-300 dark:bg-neutral-950 dark:text-neutral-100">
-      <ThemeToggle className="absolute right-6 top-6 z-20 border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800" />
+      <div className="absolute right-6 top-6 z-20 flex items-center gap-2">
+        <LocaleToggle
+          variant="outline"
+          className="border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
+        />
+        <ThemeToggle className="border-neutral-300 bg-white text-neutral-800 shadow-sm hover:bg-neutral-200 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800" />
+      </div>
 
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col overflow-hidden md:flex-row">
         <section className="relative flex min-h-[45vh] flex-1 items-end p-8 md:min-h-screen md:p-12">
@@ -161,7 +143,7 @@ export default function LoginPage() {
 
           <div className="relative z-10 max-w-xl space-y-6 text-white">
             <span className="inline-flex items-center rounded-full border border-white/40 px-3 py-1 text-xs uppercase tracking-[0.2em]">
-              ddmusic-nextjs admin
+              {copy.badge}
             </span>
             <h1 className="text-3xl font-black leading-tight md:text-5xl">{currentSlide.title}</h1>
             <p className="text-sm text-neutral-200 md:text-base">{currentSlide.description}</p>
@@ -174,7 +156,7 @@ export default function LoginPage() {
                 <button
                   key={slide.title}
                   type="button"
-                  aria-label={`Go to slide ${index + 1}`}
+                  aria-label={`${copy.slideButtonLabel} ${index + 1}`}
                   onClick={() => {
                     setActiveSlide(index);
                     setTypingIndex(0);
@@ -191,17 +173,15 @@ export default function LoginPage() {
         <section className="flex w-full items-center justify-center bg-white p-8 dark:bg-neutral-900 md:w-[420px] md:p-10">
           <div className="w-full space-y-8">
             <div>
-              <h2 className="text-2xl font-bold">Admin Sign In</h2>
-              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
-                GitHub OAuth is the only login method.
-              </p>
+              <h2 className="text-2xl font-bold">{copy.title}</h2>
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{copy.description}</p>
             </div>
 
-            {loginError && (
+            {loginError ? (
               <div className="rounded-md border border-neutral-300 bg-neutral-100 px-4 py-3 text-sm text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
                 {loginError}
               </div>
-            )}
+            ) : null}
 
             <button
               type="button"
@@ -211,12 +191,12 @@ export default function LoginPage() {
               <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-current">
                 <path d="M12 .5C5.66.5.5 5.66.5 12.02c0 5.08 3.29 9.38 7.86 10.9.57.11.78-.25.78-.55 0-.27-.01-.99-.02-1.95-3.2.7-3.88-1.55-3.88-1.55-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.56-.29-5.25-1.28-5.25-5.72 0-1.27.46-2.32 1.2-3.14-.12-.3-.52-1.48.12-3.09 0 0 .98-.31 3.2 1.2.94-.26 1.94-.4 2.94-.4s2 .14 2.94.4c2.22-1.52 3.2-1.2 3.2-1.2.64 1.61.24 2.79.12 3.09.74.82 1.2 1.87 1.2 3.14 0 4.45-2.69 5.43-5.26 5.71.41.35.78 1.04.78 2.1 0 1.52-.01 2.75-.01 3.12 0 .3.2.66.79.55 4.57-1.52 7.85-5.82 7.85-10.9C23.5 5.66 18.34.5 12 .5Z" />
               </svg>
-              Continue with GitHub
+              {copy.continueWithGitHub}
             </button>
 
             <div className="space-y-2 text-xs text-neutral-500 dark:text-neutral-400">
-              <p>We will fetch your basic GitHub profile for identity verification.</p>
-              <p>Only configured admin usernames can access the dashboard.</p>
+              <p>{copy.notePrimary}</p>
+              <p>{copy.noteSecondary}</p>
             </div>
           </div>
         </section>

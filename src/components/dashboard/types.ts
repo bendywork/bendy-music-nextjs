@@ -1,4 +1,5 @@
 import type { DashboardData } from '@/lib/dashboard';
+import { getIntlLocale, type Locale } from '@/lib/i18n/locale';
 
 export type DashboardMenuKey =
   | 'dashboard'
@@ -116,12 +117,26 @@ export const createEmptyApi = (): ApiItem => ({
   remark: '',
 });
 
-export const formatUptime = (uptimeMs: number): string => {
+export const formatUptime = (uptimeMs: number, locale: Locale = 'zh'): string => {
   const totalSeconds = Math.max(0, Math.floor(uptimeMs / 1000));
   const days = Math.floor(totalSeconds / 86400);
   const hours = Math.floor((totalSeconds % 86400) / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
+
+  if (locale === 'zh') {
+    if (days > 0) {
+      return `${days}天 ${hours}小时 ${minutes}分`;
+    }
+    if (hours > 0) {
+      return `${hours}小时 ${minutes}分`;
+    }
+    if (minutes > 0) {
+      return `${minutes}分 ${seconds}秒`;
+    }
+
+    return `${seconds}秒`;
+  }
 
   if (days > 0) {
     return `${days}d ${hours}h ${minutes}m`;
@@ -132,19 +147,21 @@ export const formatUptime = (uptimeMs: number): string => {
   if (minutes > 0) {
     return `${minutes}m ${seconds}s`;
   }
+
   return `${seconds}s`;
 };
 
-export const formatTimestamp = (timestamp: number): string => {
+export const formatTimestamp = (timestamp: number, locale: Locale = 'zh'): string => {
   if (!timestamp) {
     return '-';
   }
 
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(getIntlLocale(locale), {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
   }).format(new Date(timestamp));
 };
 
@@ -158,7 +175,7 @@ export const statusVariant = (status: string): 'success' | 'warning' | 'danger' 
   return 'danger';
 };
 
-export async function postJson<T>(url: string, body: unknown): Promise<T> {
+export async function postJson<T>(url: string, body: unknown, fallbackError = 'Request failed.'): Promise<T> {
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -169,7 +186,7 @@ export async function postJson<T>(url: string, body: unknown): Promise<T> {
 
   const payload = (await response.json().catch(() => ({}))) as T & { error?: string };
   if (!response.ok) {
-    throw new Error(payload.error || '请求失败');
+    throw new Error(payload.error || fallbackError);
   }
 
   return payload;
