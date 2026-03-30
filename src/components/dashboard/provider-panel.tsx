@@ -5,6 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { EmptyRow, SectionIntro, TableShell, controlClassName } from '@/components/dashboard/shared';
 import { statusVariant, type ProviderItem } from '@/components/dashboard/types';
+import { dashboardCopy } from '@/lib/i18n/dashboard';
+
+type ProviderCopy = (typeof dashboardCopy)['zh']['providers'];
 
 export function ProviderPanel({
   providers,
@@ -17,6 +20,7 @@ export function ProviderPanel({
   onSave,
   onDelete,
   onToggleStatus,
+  copy,
 }: {
   providers: ProviderItem[];
   editingProvider: ProviderItem | null;
@@ -28,51 +32,52 @@ export function ProviderPanel({
   onSave: () => void;
   onDelete: (providerId: string) => void;
   onToggleStatus: (providerId: string) => void;
+  copy: ProviderCopy;
 }) {
   return (
     <div className="space-y-5">
       <SectionIntro
-        title="服务商管理"
-        description="维护每个 Provider 的编码、来源类型、URL 与状态。"
-        badge={`${providers.length} providers`}
+        title={copy.sectionTitle}
+        description={copy.sectionDescription}
+        badge={`${providers.length} ${copy.badgeUnit}`}
       />
 
       {editingProvider ? (
         <Card className="rounded-[2rem]">
           <CardHeader className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <CardTitle>{providers.some((item) => item.id === editingProvider.id) ? '编辑服务商' : '新增服务商'}</CardTitle>
-              <CardDescription>建议填写完整的服务商名称、简称和请求地址。</CardDescription>
+              <CardTitle>{providers.some((item) => item.id === editingProvider.id) ? copy.editTitle : copy.createTitle}</CardTitle>
+              <CardDescription>{copy.editDescription}</CardDescription>
             </div>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={onCancelEdit}>
-                取消
+                {copy.cancel}
               </Button>
               <Button type="button" onClick={onSave} disabled={busy}>
                 <Save className="h-4 w-4" />
-                {busy ? '保存中...' : '保存服务商'}
+                {busy ? copy.saving : copy.save}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-semibold">服务商名称</label>
+              <label className="text-sm font-semibold">{copy.fields.name}</label>
               <Input
                 value={editingProvider.name}
                 onChange={(event) => onChange({ ...editingProvider, name: event.target.value })}
-                placeholder="例如 tunehub"
+                placeholder={copy.placeholders.name}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">服务商代码</label>
+              <label className="text-sm font-semibold">{copy.fields.code}</label>
               <Input
                 value={editingProvider.code}
                 onChange={(event) => onChange({ ...editingProvider, code: event.target.value })}
-                placeholder="例如 TH"
+                placeholder={copy.placeholders.code}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">类别</label>
+              <label className="text-sm font-semibold">{copy.fields.category}</label>
               <select
                 value={editingProvider.category || 'official'}
                 onChange={(event) =>
@@ -83,12 +88,12 @@ export function ProviderPanel({
                 }
                 className={controlClassName}
               >
-                <option value="official">官方</option>
-                <option value="personal">个人</option>
+                <option value="official">{copy.categoryLabels.official}</option>
+                <option value="personal">{copy.categoryLabels.personal}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">类型</label>
+              <label className="text-sm font-semibold">{copy.fields.nature}</label>
               <select
                 value={editingProvider.nature || 'openSource'}
                 onChange={(event) =>
@@ -99,21 +104,21 @@ export function ProviderPanel({
                 }
                 className={controlClassName}
               >
-                <option value="openSource">开源</option>
-                <option value="nonProfit">公益</option>
-                <option value="paid">付费</option>
+                <option value="openSource">{copy.natureLabels.openSource}</option>
+                <option value="nonProfit">{copy.natureLabels.nonProfit}</option>
+                <option value="paid">{copy.natureLabels.paid}</option>
               </select>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold">请求地址</label>
+              <label className="text-sm font-semibold">{copy.fields.url}</label>
               <Input
                 value={editingProvider.url || ''}
                 onChange={(event) => onChange({ ...editingProvider, url: event.target.value })}
-                placeholder="https://example.com/api"
+                placeholder={copy.placeholders.url}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">状态</label>
+              <label className="text-sm font-semibold">{copy.fields.status}</label>
               <select
                 value={editingProvider.status}
                 onChange={(event) =>
@@ -124,16 +129,16 @@ export function ProviderPanel({
                 }
                 className={controlClassName}
               >
-                <option value="enabled">启用</option>
-                <option value="disabled">停用</option>
+                <option value="enabled">{copy.statusLabels.enabled}</option>
+                <option value="disabled">{copy.statusLabels.disabled}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">备注</label>
+              <label className="text-sm font-semibold">{copy.fields.remark}</label>
               <Input
                 value={editingProvider.remark || ''}
                 onChange={(event) => onChange({ ...editingProvider, remark: event.target.value })}
-                placeholder="例如 LinuxDO 公益 API"
+                placeholder={copy.placeholders.remark}
               />
             </div>
           </CardContent>
@@ -143,49 +148,56 @@ export function ProviderPanel({
       <Card className="rounded-[2rem]">
         <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <CardTitle>服务商列表</CardTitle>
-            <CardDescription>统一维护名称、代码、来源类型、URL 与可用状态。</CardDescription>
+            <CardTitle>{copy.listTitle}</CardTitle>
+            <CardDescription>{copy.listDescription}</CardDescription>
           </div>
           <Button type="button" onClick={onAdd}>
             <Plus className="h-4 w-4" />
-            新增服务商
+            {copy.add}
           </Button>
         </CardHeader>
         <CardContent>
-          <TableShell columns={['名称', '代码', '类别', '类型', 'URL', '状态', '备注', '操作']}>
+          <TableShell
+            columns={[
+              copy.table.name,
+              copy.table.code,
+              copy.table.category,
+              copy.table.nature,
+              copy.table.url,
+              copy.table.status,
+              copy.table.remark,
+              copy.table.actions,
+            ]}
+          >
             {providers.length > 0 ? (
               providers.map((provider) => (
                 <tr key={provider.id} className="border-t border-border/70">
                   <td className="px-4 py-3 font-semibold">{provider.name}</td>
                   <td className="px-4 py-3 font-mono text-xs">{provider.code}</td>
-                  <td className="px-4 py-3">{provider.category === 'personal' ? '个人' : '官方'}</td>
-                  <td className="px-4 py-3">
-                    {provider.nature === 'nonProfit' ? '公益' : provider.nature === 'paid' ? '付费' : '开源'}
-                  </td>
+                  <td className="px-4 py-3">{copy.categoryLabels[provider.category || 'official']}</td>
+                  <td className="px-4 py-3">{copy.natureLabels[provider.nature || 'openSource']}</td>
                   <td className="max-w-[280px] px-4 py-3 font-mono text-xs">{provider.url || '-'}</td>
                   <td className="px-4 py-3">
                     <button type="button" onClick={() => onToggleStatus(provider.id)}>
-                      <Badge variant={statusVariant(provider.status)}>
-                        {provider.status === 'enabled' ? '启用' : '停用'}
-                      </Badge>
+                      <Badge variant={statusVariant(provider.status)}>{copy.statusLabels[provider.status]}</Badge>
                     </button>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{provider.remark || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(provider)}>
-                        编辑
+                        {copy.edit}
                       </Button>
                       <Button type="button" variant="ghost" size="sm" onClick={() => onDelete(provider.id)}>
                         <Trash2 className="h-4 w-4" />
-                        删除
+                        {copy.delete}
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
-              <EmptyRow colSpan={8} message="当前还没有服务商配置。" />
+              <EmptyRow colSpan={8} message={copy.empty} />
             )}
           </TableShell>
         </CardContent>
