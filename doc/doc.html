@@ -1,1301 +1,757 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>顶点音乐聚合API文档</title>
-    <style>
-        :root {
-            --primary-color: #c8102e;
-            --secondary-color: #f8f8f8;
-            --text-color: #333;
-            --border-color: #e8e8e8;
-            --success-color: #52c41a;
-            --warning-color: #faad14;
-            --error-color: #f5222d;
-            --background-color: #fff;
-            --code-background: #f6f8fa;
-            --menu-width: 250px;
-            --menu-bg: #fafafa;
-            --menu-active: #f8e0e0;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--secondary-color);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        .menu {
-            width: var(--menu-width);
-            background-color: var(--menu-bg);
-            border-right: 1px solid var(--border-color);
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            overflow-y: auto;
-            padding: 20px 0;
-            z-index: 100;
-        }
-
-        .menu-header {
-            padding: 0 20px 20px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .menu-header h2 {
-            font-size: 1.2rem;
-            color: var(--primary-color);
-            margin: 0;
-        }
-
-        .menu-content {
-            padding: 0 10px;
-        }
-
-        .menu-item {
-            margin-bottom: 10px;
-        }
-
-        .menu-item-title {
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            padding: 0 10px;
-            color: var(--text-color);
-        }
-
-        .menu-item-list {
-            list-style: none;
-        }
-
-        .menu-item-list li {
-            margin-bottom: 4px;
-        }
-
-        .menu-item-list a {
-            display: block;
-            padding: 6px 15px;
-            text-decoration: none;
-            color: var(--text-color);
-            font-size: 0.85rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-
-        .menu-item-list a:hover {
-            background-color: var(--menu-active);
-            color: var(--primary-color);
-        }
-
-        .menu-item-list a.active {
-            background-color: var(--menu-active);
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        .menu-item-list.collapsed {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .menu-item-list {
-            max-height: none;
-            overflow: visible;
-            transition: max-height 0.3s ease;
-        }
-
-        .menu-item-title {
-            cursor: pointer;
-            position: relative;
-        }
-
-        .menu-item-title::after {
-            content: '▼';
-            position: absolute;
-            right: 10px;
-            top: 0;
-            font-size: 0.7rem;
-            transition: transform 0.3s ease;
-        }
-
-        .menu-item-title.collapsed::after {
-            transform: rotate(-90deg);
-        }
-
-        .container {
-            flex: 1;
-            margin-left: var(--menu-width);
-            padding: 20px;
-        }
-
-        .content {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 40px 0;
-            text-align: center;
-            margin-bottom: 40px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .section {
-            background-color: var(--background-color);
-            padding: 30px;
-            margin-bottom: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        h3 {
-            font-size: 1.4rem;
-            margin: 20px 0 15px;
-            color: var(--text-color);
-        }
-
-        h4 {
-            font-size: 1.2rem;
-            margin: 15px 0 10px;
-            color: var(--text-color);
-        }
-
-        p {
-            margin-bottom: 15px;
-        }
-
-        .api-endpoint {
-            background-color: var(--code-background);
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .api-endpoint code {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1rem;
-        }
-
-        .parameter-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 15px 0;
-        }
-
-        .parameter-table th,
-        .parameter-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .parameter-table th {
-            background-color: var(--secondary-color);
-            font-weight: 600;
-        }
-
-        .parameter-table tr:hover {
-            background-color: var(--secondary-color);
-        }
-
-        .example {
-            background-color: var(--code-background);
-            padding: 20px;
-            border-radius: 6px;
-            margin: 15px 0;
-            position: relative;
-        }
-
-        .example::before {
-            content: "示例";
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .example code {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-
-        .response-format {
-            background-color: var(--code-background);
-            padding: 20px;
-            border-radius: 6px;
-            margin: 15px 0;
-            position: relative;
-            overflow-x: auto;
-        }
-
-        .response-format::before {
-            content: "响应格式";
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background-color: var(--success-color);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-        }
-
-        .response-format pre {
-            margin: 0;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-
-        .json-view {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-
-        .json-property {
-            color: #0550ae;
-        }
-
-        .json-string {
-            color: #24292f;
-        }
-
-        .json-number {
-            color: #0550ae;
-        }
-
-        .json-boolean {
-            color: #0550ae;
-        }
-
-        .json-null {
-            color: #0550ae;
-        }
-
-        .error-handling {
-            background-color: rgba(245, 34, 45, 0.05);
-            padding: 20px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 4px solid var(--error-color);
-        }
-
-        .error-handling h4 {
-            color: var(--error-color);
-            margin-bottom: 10px;
-        }
-
-        .note {
-            background-color: rgba(250, 173, 20, 0.05);
-            padding: 15px;
-            border-radius: 6px;
-            margin: 15px 0;
-            border-left: 4px solid var(--warning-color);
-        }
-
-        .note::before {
-            content: "注意";
-            font-weight: 600;
-            color: var(--warning-color);
-            margin-right: 5px;
-        }
-
-        .platform-section {
-            margin: 20px 0;
-            padding: 20px;
-            background-color: var(--secondary-color);
-            border-radius: 6px;
-        }
-
-        .platform-section h4 {
-            margin-top: 0;
-        }
-
-        footer {
-            text-align: center;
-            padding: 30px 0;
-            margin-top: 50px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .tag {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-right: 8px;
-            margin-bottom: 8px;
-        }
-
-        .tag-get {
-            background-color: rgba(82, 196, 26, 0.1);
-            color: var(--success-color);
-        }
-
-        .tag-required {
-            background-color: rgba(245, 34, 45, 0.1);
-            color: var(--error-color);
-        }
-
-        .tag-optional {
-            background-color: rgba(24, 144, 255, 0.1);
-            color: var(--primary-color);
-        }
-
-        .tag-public {
-            background-color: rgba(120, 119, 198, 0.1);
-            color: #7877c6;
-        }
-
-        .tag-parse {
-            background-color: rgba(250, 173, 20, 0.1);
-            color: var(--warning-color);
-        }
-
-        .api-section {
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 1024px) {
-            :root {
-                --menu-width: 200px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .menu {
-                position: static;
-                width: 100%;
-                height: auto;
-                max-height: 300px;
-                margin-bottom: 20px;
-            }
-
-            .container {
-                margin-left: 0;
-            }
-
-            .content {
-                padding: 0;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DDMusic API Documentation</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1ea;
+      --paper: rgba(255, 252, 246, 0.96);
+      --paper-strong: #fffdf8;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: rgba(31, 41, 55, 0.12);
+      --accent: #b45309;
+      --accent-soft: rgba(180, 83, 9, 0.12);
+      --accent-strong: #7c2d12;
+      --success: #166534;
+      --warning: #92400e;
+      --danger: #b91c1c;
+      --shadow: 0 28px 70px rgba(15, 23, 42, 0.14);
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(180, 83, 9, 0.16), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(124, 45, 18, 0.12), transparent 28%),
+        var(--bg);
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      width: min(1380px, calc(100% - 32px));
+      margin: 24px auto;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: rgba(255, 250, 240, 0.86);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 12px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      width: fit-content;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .nav-group {
+      margin-bottom: 18px;
+    }
+
+    .nav-group h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .nav-group a {
+      display: block;
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--ink);
+      font-size: 14px;
+      transition: background-color 0.18s ease, transform 0.18s ease;
+    }
+
+    .nav-group a:hover,
+    .nav-group a.active {
+      background: rgba(255, 255, 255, 0.84);
+      transform: translateX(2px);
+    }
+
+    .main {
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero,
+    .section {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xl);
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      overflow: hidden;
+    }
+
+    .hero-top {
+      padding: 36px;
+      background:
+        linear-gradient(135deg, rgba(124, 45, 18, 0.96), rgba(180, 83, 9, 0.94)),
+        #7c2d12;
+      color: #fffdf8;
+    }
+
+    .hero-top h2 {
+      margin: 14px 0 12px;
+      font-size: clamp(34px, 5vw, 54px);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-top p {
+      margin: 0;
+      max-width: 760px;
+      line-height: 1.8;
+      color: rgba(255, 253, 248, 0.9);
+      font-size: 16px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      padding: 24px 36px 36px;
+      background: linear-gradient(180deg, rgba(255, 250, 240, 0.76), rgba(255, 255, 255, 0.95));
+    }
+
+    .hero-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .hero-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .hero-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .section {
+      padding: 28px;
+    }
+
+    .section h2 {
+      margin: 0 0 12px;
+      font-size: 28px;
+      letter-spacing: -0.03em;
+    }
+
+    .section > p,
+    .section li {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .section ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .kpi {
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+    }
+
+    .kpi span {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .kpi strong {
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      padding: 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+    }
+
+    .card h3,
+    .endpoint h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: rgba(15, 23, 42, 0.06);
+    }
+
+    .tag.get { color: var(--success); background: rgba(22, 101, 52, 0.1); }
+    .tag.post { color: #1d4ed8; background: rgba(29, 78, 216, 0.1); }
+    .tag.internal { color: var(--accent-strong); background: var(--accent-soft); }
+    .tag.warning { color: var(--warning); background: rgba(146, 64, 14, 0.1); }
+    .tag.danger { color: var(--danger); background: rgba(185, 28, 28, 0.1); }
+
+    .code,
+    pre {
+      margin: 0;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: #111827;
+      color: #f9fafb;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.7;
+      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+    }
+
+    code.inline {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      color: #111827;
+      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+      font-size: 0.95em;
+    }
+
+    .endpoint-list {
+      display: grid;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .endpoint {
+      padding: 22px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--paper-strong);
+    }
+
+    .endpoint p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 15px;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .meta {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(244, 241, 234, 0.66);
+    }
+
+    .meta strong {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.05);
+      color: #111827;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .callout {
+      margin-top: 16px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(146, 64, 14, 0.08);
+      border: 1px solid rgba(146, 64, 14, 0.18);
+      color: #78350f;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 12px 0 8px;
+    }
+
+    @media (max-width: 1100px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+
+      .hero-grid,
+      .kpis,
+      .card-grid,
+      .meta-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body { background: var(--bg); }
+      .shell { width: min(100%, calc(100% - 20px)); margin: 10px auto 24px; gap: 16px; }
+      .hero-top,
+      .hero-grid,
+      .section { padding: 22px; }
+      .hero-grid,
+      .kpis,
+      .card-grid,
+      .meta-grid { grid-template-columns: 1fr; }
+      .brand h1 { font-size: 24px; }
+      .section h2 { font-size: 24px; }
+    }
+  </style>
 </head>
 <body>
-    <!-- 左侧菜单 -->
-    <div class="menu">
-        <div class="menu-header">
-            <h2>顶点音乐API文档</h2>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="eyebrow">DDMusic Docs</span>
+        <h1>接口文档中心</h1>
+        <p>这份 HTML 文档由后台文档中心直接维护，保存后会回写到 <code class="inline">doc/doc.html</code>，并在 <code class="inline">/docs</code> 页面原样渲染。</p>
+      </div>
+
+      <nav>
+        <div class="nav-group">
+          <h2>Overview</h2>
+          <a href="#overview">项目概览</a>
+          <a href="#providers">服务商</a>
+          <a href="#public-api">公开 API</a>
+          <a href="#admin-api">后台数据接口</a>
+          <a href="#editing">文档编辑链路</a>
         </div>
-        <div class="menu-content">
-            <div class="menu-item">
-                <div class="menu-item-title">1. 项目介绍</div>
-                <ul class="menu-item-list">
-                    <li><a href="#project-intro">1.1 项目概述</a></li>
-                    <li><a href="#api-basics">1.2 API 基础信息</a></li>
-                </ul>
-            </div>
-
-            <div class="menu-item">
-                <div class="menu-item-title">2. 功能接口</div>
-                <ul class="menu-item-list">
-                    <li><a href="#toplists">2.1 获取排行榜列表</a></li>
-                    <li><a href="#toplist-songs">2.2 获取排行榜歌曲</a></li>
-                    <li><a href="#playlist">2.3 获取歌单详情</a></li>
-                    <li><a href="#search">2.4 搜索歌曲</a></li>
-                    <li><a href="#song-info">2.5 获取歌曲信息</a></li>
-                </ul>
-            </div>
-
-            <div class="menu-item">
-                <div class="menu-item-title">3. 其他</div>
-                <ul class="menu-item-list">
-                    <li><a href="#error-handling">3.1 错误处理</a></li>
-                    <li><a href="#example-code">3.2 示例代码</a></li>
-                    <li><a href="#notes">3.3 注意事项</a></li>
-                </ul>
-            </div>
+        <div class="nav-group">
+          <h2>Runtime</h2>
+          <a href="#errors">错误与约束</a>
+          <a href="#security">安全说明</a>
+          <a href="#changelog">当前版本说明</a>
         </div>
-    </div>
+      </nav>
+    </aside>
 
-    <!-- 主要内容 -->
-    <div class="container">
-        <div class="content">
-            <header>
-                <h1>顶点音乐聚合API文档</h1>
-                <p class="subtitle">基于 ddmusic-nextjs 项目的音乐聚合接口使用指南</p>
-            </header>
+    <main class="main">
+      <section class="hero" id="overview">
+        <div class="hero-top">
+          <span class="eyebrow">Version 1</span>
+          <h2>DDMusic API Documentation</h2>
+          <p>基于当前 <code class="inline">ddmusic-nextjs</code> 系统自动梳理的第一版接口文档，覆盖公开音乐聚合接口、后台配置接口、认证接口，以及 README 与 HTML 文档的后台编辑能力。</p>
+        </div>
+        <div class="hero-grid">
+          <div class="hero-card">
+            <strong>公开访问入口</strong>
+            <p>音乐聚合 API 对外入口为 <code class="inline">/api</code>，文档展示页入口为 <code class="inline">/docs</code>。</p>
+          </div>
+          <div class="hero-card">
+            <strong>后台管理入口</strong>
+            <p>管理控制台位于 <code class="inline">/dashboard</code>，可编辑 Provider、API 配置、README、HTML 文档和系统设置。</p>
+          </div>
+          <div class="hero-card">
+            <strong>文档存储策略</strong>
+            <p>README 直接落盘到 <code class="inline">README.md</code>，API 文档直接落盘到 <code class="inline">doc/doc.html</code>，然后镜像到数据库并可同步 GitHub。</p>
+          </div>
+        </div>
+      </section>
 
-            <div class="section api-section" id="project-intro">
-                <h2>1. 项目介绍</h2>
-                <p>本项目通过对外暴露统一的接口，内部对接不同的音乐服务商，实现了音乐资源的获取和播放。按照新的维护方式，我们只使用服务商的解析接口，其他公共接口直接使用原厂商的API。</p>
-                <p>目前维护的音乐平台：</p>
-                <ul>
-                    <li>网易云音乐</li>
-                    <li>QQ音乐</li>
-                    <li>酷我音乐</li>
-                </ul>
+      <section class="section">
+        <h2>项目概览</h2>
+        <p>当前系统是一个基于 Next.js 16 的音乐 API 网关与后台管理平台。核心能力包含 GitHub OAuth 后台登录、Provider 与 API 配置管理、运行状态面板、README 在线编辑，以及 HTML 文档页在线编辑与发布。</p>
+        <div class="kpis">
+          <div class="kpi"><span>Public entry</span><strong>/api</strong></div>
+          <div class="kpi"><span>Docs page</span><strong>/docs</strong></div>
+          <div class="kpi"><span>Admin entry</span><strong>/dashboard</strong></div>
+          <div class="kpi"><span>Doc files</span><strong>2</strong></div>
+        </div>
+      </section>
+
+      <section class="section" id="providers">
+        <h2>服务商与配置数据</h2>
+        <p>后台当前维护的服务商信息来源于 <code class="inline">data/provider.json</code> 和数据库镜像，实际运行时以后台保存的数据为准。</p>
+        <div class="card-grid">
+          <article class="card">
+            <div class="tags">
+              <span class="tag">Provider</span>
+              <span class="tag">Enabled</span>
             </div>
-
-            <div class="section api-section" id="api-basics">
-                <h2>2. API基础信息</h2>
-                <h3>2.1 基础URL</h3>
-                <p>所有API请求都基于以下基础URL：</p>
-                <div class="api-endpoint">
-                    <code>http://localhost:3000/api</code>
-                </div>
-
-                <h3>2.2 通用参数</h3>
-                <table class="parameter-table">
-                    <thead>
-                        <tr>
-                            <th>参数名</th>
-                            <th>类型</th>
-                            <th>是否必填</th>
-                            <th>默认值</th>
-                            <th>说明</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>provider</td>
-                            <td>string</td>
-                            <td><span class="tag tag-optional">可选</span></td>
-                            <td>tunehub</td>
-                            <td>服务商类型，目前仅支持 tunehub</td>
-                        </tr>
-                        <tr>
-                            <td>source</td>
-                            <td>string</td>
-                            <td><span class="tag tag-required">必填</span></td>
-                            <td>无</td>
-                            <td>音乐平台类型，网易云为 netease，QQ音乐为 qq，酷我音乐为 kuwo</td>
-                        </tr>
-                        <tr>
-                            <td>type</td>
-                            <td>string</td>
-                            <td><span class="tag tag-required">必填</span></td>
-                            <td>无</td>
-                            <td>请求类型，如 info、url、pic、lrc、search、playlist、toplists、toplist 等</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>2.3 接口类型说明</h3>
-                <p>本项目的接口分为两种类型：</p>
-                <ul>
-                    <li><span class="tag tag-public">公开接口</span>：直接对接音乐平台官方API的接口，不属于任何服务商</li>
-                    <li><span class="tag tag-parse">解析接口</span>：使用服务商API进行解析的接口，如获取音乐文件链接、歌词等</li>
-                </ul>
+            <h3>tunehub</h3>
+            <p>代码：<code class="inline">TH</code><br />说明：LinuxDO 公益 API<br />地址：<code class="inline">https://tunehub.sayqz.com/api</code></p>
+          </article>
+          <article class="card">
+            <div class="tags">
+              <span class="tag">Provider</span>
+              <span class="tag warning">Paid</span>
             </div>
+            <h3>岑鬼</h3>
+            <p>代码：<code class="inline">CGG</code><br />说明：岑鬼音乐 API<br />类型：个人服务商</p>
+          </article>
+        </div>
+      </section>
 
-            <div class="section api-section" id="toplists">
-                <h2>3. 功能接口</h2>
+      <section class="section" id="public-api">
+        <h2>公开音乐 API</h2>
+        <p>对外主要通过 <code class="inline">GET /api</code> 使用查询参数驱动不同能力。当前真实实现的能力以 <code class="inline">type</code> 参数区分。</p>
 
-                <h3>3.1 获取排行榜列表</h3>
-                <p>获取音乐平台的排行榜列表。</p>
+        <div class="endpoint-list">
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag">/api</span>
+              <span class="tag">toplists</span>
+            </div>
+            <h3>获取排行榜列表</h3>
+            <p>按平台返回公开榜单列表。目前代码中支持 <code class="inline">netease</code>、<code class="inline">qq</code>、<code class="inline">kuwo</code>。</p>
+            <div class="meta-grid">
+              <div class="meta"><strong>Query</strong><span><code class="inline">provider=tunehub</code>, <code class="inline">source=netease|qq|kuwo</code>, <code class="inline">type=toplists</code></span></div>
+              <div class="meta"><strong>Response</strong><span>统一返回 <code class="inline">code</code>、<code class="inline">message</code>、<code class="inline">data</code></span></div>
+            </div>
+            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=toplists</pre>
+          </article>
 
-                <div class="platform-section">
-                    <h4>网易云音乐</h4>
-                    <p><span class="tag tag-public">公开接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=toplists</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 netease</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 toplists</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "code": 200,
-    "list": [
-      {
-        "id": "19723756",
-        "name": "云音乐飙升榜",
-        "coverImgUrl": "https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg",
-        "description": "云音乐最热歌曲榜",
-        "updateTime": 1640000000000,
-        "trackCount": 100,
-        "playCount": 100000000
-      },
-      {
-        "id": "3778678",
-        "name": "云音乐热歌榜",
-        "coverImgUrl": "https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg",
-        "description": "云音乐最热歌曲榜",
-        "updateTime": 1640000000000,
-        "trackCount": 100,
-        "playCount": 100000000
-      }
-    ]
-  }
-}</pre>
-                    </div>
-                </div>
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag">/api</span>
+              <span class="tag">toplist</span>
+            </div>
+            <h3>获取榜单歌曲</h3>
+            <p>根据榜单 ID 返回榜单歌曲数据。当前支持 <code class="inline">netease</code>、<code class="inline">qq</code>、<code class="inline">kuwo</code>。</p>
+            <table>
+              <thead>
+                <tr><th>参数</th><th>必填</th><th>说明</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code class="inline">source</code></td><td>是</td><td>平台标识：<code class="inline">netease</code> / <code class="inline">qq</code> / <code class="inline">kuwo</code></td></tr>
+                <tr><td><code class="inline">type</code></td><td>是</td><td>固定为 <code class="inline">toplist</code></td></tr>
+                <tr><td><code class="inline">id</code></td><td>是</td><td>榜单 ID</td></tr>
+              </tbody>
+            </table>
+            <pre>GET /api?provider=tunehub&amp;source=qq&amp;type=toplist&amp;id=26</pre>
+          </article>
 
-                <div class="platform-section">
-                    <h4>QQ音乐</h4>
-                    <p><span class="tag tag-public">公开接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=qq&type=toplists</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 qq</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 toplists</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": [
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag">/api</span>
+              <span class="tag">playlist</span>
+            </div>
+            <h3>获取歌单详情</h3>
+            <p>根据歌单 ID 返回歌单详情与歌曲列表。代码中对 <code class="inline">kuwo</code> 走公开服务，对其他平台走服务商聚合实现。</p>
+            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=playlist&amp;id=123456</pre>
+          </article>
+
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag">/api</span>
+              <span class="tag">search</span>
+            </div>
+            <h3>搜索歌曲</h3>
+            <p>当前真实代码支持平台歌曲搜索，默认结果数量 <code class="inline">limit=20</code>。实现中仅在指定平台创建搜索服务时生效。</p>
+            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=search&amp;keyword=周杰伦&amp;limit=20</pre>
+          </article>
+
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag">/api</span>
+              <span class="tag">info</span>
+            </div>
+            <h3>获取歌曲信息</h3>
+            <p>根据歌曲 ID 获取歌曲基础信息。当前已经实现 <code class="inline">info</code>，而 <code class="inline">url</code>、<code class="inline">pic</code>、<code class="inline">lrc</code>、<code class="inline">aggregateSearch</code> 在公开入口中仍返回未实现状态。</p>
+            <pre>GET /api?provider=tunehub&amp;source=netease&amp;type=info&amp;id=2608813264</pre>
+            <div class="callout">注意：<code class="inline">type=url</code>、<code class="inline">type=pic</code>、<code class="inline">type=lrc</code>、<code class="inline">type=aggregateSearch</code>、<code class="inline">type=status</code>、<code class="inline">type=stats</code> 当前代码中分别返回 404 或 501，不应在外部文档中描述为已上线。</div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="admin-api">
+        <h2>后台数据接口</h2>
+        <p>管理后台通过一组内部接口读写配置与文档，这些接口并不是公开业务 API，但它们决定了后台可编辑哪些内容。</p>
+        <div class="endpoint-list">
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag post">POST</span>
+              <span class="tag internal">Internal</span>
+            </div>
+            <h3>/api/data/docs/readme</h3>
+            <p>读取和保存 <code class="inline">README.md</code>。保存时顺序为：写本地文件、镜像到数据库、按配置提交到 GitHub 仓库。</p>
+            <pre>GET  /api/data/docs/readme
+POST /api/data/docs/readme
+Body: { "content": "# Markdown" }</pre>
+          </article>
+
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag post">POST</span>
+              <span class="tag internal">Internal</span>
+            </div>
+            <h3>/api/data/docs/api</h3>
+            <p>读取和保存 <code class="inline">doc/doc.html</code>。这是 <code class="inline">/docs</code> 页面实际渲染的数据源，不再使用 JSON 文档格式。</p>
+            <pre>GET  /api/data/docs/api
+POST /api/data/docs/api
+Body: { "content": "&lt;!DOCTYPE html&gt;..." }</pre>
+          </article>
+
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag post">POST</span>
+              <span class="tag internal">Internal</span>
+            </div>
+            <h3>/api/data/api</h3>
+            <p>读取和保存后台 API 配置。当前示例配置中存在一个 <code class="inline">POST /v1/parse</code> 解析接口，备注为“解析歌曲，额度是有次数限制的”。</p>
+            <pre>{
+  "apis": [
     {
-      "id": "4",
-      "name": "巅峰榜·流行指数",
-      "cover": "https://y.gtimg.cn/music/photo_new/T002R300x300M000003rsKF44GyaSk.jpg",
-      "description": "QQ音乐流行指数排行榜",
-      "platform": "qq"
-    },
-    {
-      "id": "26",
-      "name": "巅峰榜·新歌速爆",
-      "cover": "https://y.gtimg.cn/music/photo_new/T002R300x300M000004eGs9B3kvKdS.jpg",
-      "description": "QQ音乐新歌速爆排行榜",
-      "platform": "qq"
+      "name": "获取歌曲信息-tunehub",
+      "path": "/v1/parse",
+      "method": "POST"
     }
   ]
 }</pre>
-                    </div>
-                </div>
+          </article>
 
-                <div class="platform-section">
-                    <h4>酷我音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag post">POST</span>
+              <span class="tag internal">Internal</span>
             </div>
-
-            <div class="section api-section" id="toplist-songs">
-                <h3>3.2 获取排行榜歌曲</h3>
-                <p>获取指定排行榜的歌曲列表。</p>
-
-                <div class="platform-section">
-                    <h4>网易云音乐</h4>
-                    <p><span class="tag tag-parse">解析接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=toplist&id={排行榜ID}</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 netease</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 toplist</td>
-                            </tr>
-                            <tr>
-                                <td>id</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>排行榜ID，如 19723756（云音乐飙升榜）</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": "19723756",
-    "name": "云音乐飙升榜",
-    "titleDetail": "云音乐飙升榜详细标题",
-    "intro": "云音乐飙升榜的介绍",
-    "songs": [
-      {
-        "id": "123456789",
-        "name": "歌曲名称",
-        "artist": "歌手名称",
-        "album": "专辑名称",
-        "platform": "netease",
-        "url": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=url",
-        "pic": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=pic",
-        "lrc": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=lrc"
-      }
-    ]
+            <h3>/api/sys</h3>
+            <p>读取和保存系统配置。当前后台填写的 GitHub 仓库地址会作为 README 与 HTML 文档同步的目标仓库来源。</p>
+            <pre>{
+  "configuration": {
+    "githubProjectPath": "https://github.com/yokeay/ddmusic-nextjs",
+    "apiTimeout": 300000,
+    "maxConcurrentRequests": 100
   }
 }</pre>
-                    </div>
-                </div>
+          </article>
 
-                <div class="platform-section">
-                    <h4>QQ音乐</h4>
-                    <p><span class="tag tag-parse">解析接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=qq&type=toplist&id={排行榜ID}</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 qq</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 toplist</td>
-                            </tr>
-                            <tr>
-                                <td>id</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>排行榜ID，如 4（巅峰榜·流行指数）</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": "4",
-    "name": "巅峰榜·流行指数",
-    "titleDetail": "巅峰榜·流行指数详细标题",
-    "intro": "巅峰榜·流行指数的介绍",
-    "songs": [
-      {
-        "id": "003lHj3X39NtX5",
-        "name": "歌曲名称",
-        "artist": "歌手名称",
-        "album": "专辑名称",
-        "platform": "qq",
-        "url": "http://localhost:3000/api?provider=tunehub&source=qq&id=003lHj3X39NtX5&type=url",
-        "pic": "http://localhost:3000/api?provider=tunehub&source=qq&id=003lHj3X39NtX5&type=pic",
-        "lrc": "http://localhost:3000/api?provider=tunehub&source=qq&id=003lHj3X39NtX5&type=lrc"
-      }
-    ]
-  }
-}</pre>
-                    </div>
-                </div>
-
-                <div class="platform-section">
-                    <h4>酷我音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
+          <article class="endpoint">
+            <div class="tags">
+              <span class="tag get">GET</span>
+              <span class="tag post">POST</span>
+              <span class="tag internal">Internal</span>
             </div>
-
-            <div class="section api-section" id="playlist">
-                <h3>3.3 获取歌单详情</h3>
-                <p>获取指定歌单的详细信息和歌曲列表。</p>
-
-                <div class="platform-section">
-                    <h4>网易云音乐</h4>
-                    <p><span class="tag tag-public">公开接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=playlist&id={歌单ID}</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 netease</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 playlist</td>
-                            </tr>
-                            <tr>
-                                <td>id</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>歌单ID</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": "123456789",
-    "name": "歌单名称",
-    "description": "歌单描述",
-    "cover": "歌单封面URL",
-    "songs": [
-      {
-        "id": "987654321",
-        "name": "歌曲名称",
-        "artist": "歌手名称",
-        "album": "专辑名称",
-        "platform": "netease",
-        "url": "http://localhost:3000/api?provider=tunehub&source=netease&id=987654321&type=url",
-        "pic": "http://localhost:3000/api?provider=tunehub&source=netease&id=987654321&type=pic",
-        "lrc": "http://localhost:3000/api?provider=tunehub&source=netease&id=987654321&type=lrc"
-      }
-    ]
-  }
-}</pre>
-                    </div>
-                </div>
-
-                <div class="platform-section">
-                    <h4>QQ音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-
-                <div class="platform-section">
-                    <h4>酷我音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-            </div>
-
-            <div class="section api-section" id="search">
-                <h3>3.4 搜索歌曲</h3>
-                <p>搜索音乐平台中的歌曲。</p>
-
-                <div class="platform-section">
-                    <h4>网易云音乐</h4>
-                    <p><span class="tag tag-parse">解析接口</span></p>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=search&keyword={搜索关键词}&limit={结果数量}</code>
-                    </div>
-                    <h5>参数说明</h5>
-                    <table class="parameter-table">
-                        <thead>
-                            <tr>
-                                <th>参数名</th>
-                                <th>类型</th>
-                                <th>是否必填</th>
-                                <th>默认值</th>
-                                <th>说明</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>provider</td>
-                                <td>string</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>tunehub</td>
-                                <td>服务商类型</td>
-                            </tr>
-                            <tr>
-                                <td>source</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>音乐平台类型，固定为 netease</td>
-                            </tr>
-                            <tr>
-                                <td>type</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>请求类型，固定为 search</td>
-                            </tr>
-                            <tr>
-                                <td>keyword</td>
-                                <td>string</td>
-                                <td><span class="tag tag-required">必填</span></td>
-                                <td>无</td>
-                                <td>搜索关键词</td>
-                            </tr>
-                            <tr>
-                                <td>limit</td>
-                                <td>number</td>
-                                <td><span class="tag tag-optional">可选</span></td>
-                                <td>20</td>
-                                <td>结果数量限制</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h5>响应格式</h5>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "keyword": "周杰伦",
-    "total": 100,
-    "results": [
-      {
-        "id": "123456789",
-        "name": "歌曲名称",
-        "artist": "周杰伦",
-        "album": "专辑名称",
-        "platform": "netease",
-        "url": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=url"
-      }
-    ]
-  }
-}</pre>
-                    </div>
-                </div>
-
-                <div class="platform-section">
-                    <h4>QQ音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-
-                <div class="platform-section">
-                    <h4>酷我音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-            </div>
-
-            <div class="section api-section" id="song-info">
-                <h3>3.5 获取歌曲信息</h3>
-                <p>获取歌曲的基本信息，包括播放链接、专辑封面和歌词。</p>
-
-                <div class="platform-section">
-                    <h4>网易云音乐</h4>
-                    <p><span class="tag tag-parse">解析接口</span></p>
-                    
-                    <h5>获取基本信息</h5>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=info&id={歌曲ID}</code>
-                    </div>
-                    <h5>获取音乐文件链接</h5>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=url&id={歌曲ID}&br={音质}</code>
-                    </div>
-                    <h5>获取专辑封面</h5>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=pic&id={歌曲ID}</code>
-                    </div>
-                    <h5>获取歌词</h5>
-                    <div class="api-endpoint">
-                        <code>GET /api?provider=tunehub&source=netease&type=lrc&id={歌曲ID}</code>
-                    </div>
-                    
-                    <h5>响应格式</h5>
-                    <h6>基本信息响应</h6>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "name": "歌曲名称",
-    "artist": "歌手名称",
-    "album": "专辑名称",
-    "id": "123456789",
-    "platform": "netease",
-    "url": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=url",
-    "pic": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=pic",
-    "lrc": "http://localhost:3000/api?provider=tunehub&source=netease&id=123456789&type=lrc"
-  }
-}</pre>
-                    </div>
-                    
-                    <h6>音乐文件链接响应</h6>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "url": "https://music.163.com/song/media/outer/url?id=123456789.mp3"
-  }
-}</pre>
-                    </div>
-                    
-                    <h6>专辑封面响应</h6>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "url": "https://p2.music.126.net/6y-UleORITEDbvrOLV0Q8A==/5639395138885805.jpg"
-  }
-}</pre>
-                    </div>
-                    
-                    <h6>歌词响应</h6>
-                    <div class="response-format">
-                        <pre class="json-view">{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "lyric": "[00:00.00] 歌曲名称\n[00:05.00] 歌词内容"
-  }
-}</pre>
-                    </div>
-                </div>
-
-                <div class="platform-section">
-                    <h4>QQ音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-
-                <div class="platform-section">
-                    <h4>酷我音乐</h4>
-                    <p><span class="tag tag-optional">暂未实现</span></p>
-                </div>
-            </div>
+            <h3>认证与会话</h3>
+            <p>后台登录流程包含 <code class="inline">/api/auth/github/login</code>、<code class="inline">/api/auth/github/callback</code>、<code class="inline">/api/auth/session</code> 和 <code class="inline">/api/auth/logout</code>。</p>
+            <pre>GET  /api/auth/github/login
+GET  /api/auth/github/callback
+GET  /api/auth/session
+POST /api/auth/logout</pre>
+          </article>
         </div>
+      </section>
 
-        <div class="section api-section" id="error-handling">
-            <h2>4. 错误处理</h2>
-            <div class="error-handling">
-                <h4>常见错误响应</h4>
-                <ul>
-                    <li><strong>400 Bad Request</strong>：请求参数错误或缺失，如缺少必填参数。</li>
-                    <li><strong>404 Not Found</strong>：请求的资源不存在，如歌曲ID不存在。</li>
-                    <li><strong>500 Internal Server Error</strong>：服务器内部错误，如API调用失败。</li>
-                    <li><strong>501 Not Implemented</strong>：请求的功能尚未实现。</li>
-                </ul>
-            </div>
+      <section class="section" id="editing">
+        <h2>文档编辑链路</h2>
+        <p>当前版本已把 README 和 API 文档统一成“文件可编辑、后台可编辑、GitHub 可同步”的链路，满足直接基于管理系统维护项目文档的需求。</p>
+        <table>
+          <thead>
+            <tr><th>文档</th><th>后台编辑格式</th><th>落盘文件</th><th>访问地址</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>项目说明</td><td>Markdown</td><td><code class="inline">README.md</code></td><td>仓库首页 / 后台文档中心</td></tr>
+            <tr><td>API 文档</td><td>HTML</td><td><code class="inline">doc/doc.html</code></td><td><code class="inline">/docs</code></td></tr>
+          </tbody>
+        </table>
+        <div class="callout">后台保存后，系统会先写入本地 UTF-8 文件，再镜像到 PostgreSQL/缓存，并根据系统配置中的仓库地址与令牌把文档提交到 GitHub 指定分支。</div>
+      </section>
 
-            <h3>4.1 错误响应格式</h3>
-            <div class="response-format">
-                <pre class="json-view">{
-  "code": 400,
-  "message": "Missing source or id parameter",
-  "data": null
-}</pre>
-            </div>
+      <section class="section" id="errors">
+        <h2>错误与约束</h2>
+        <div class="card-grid">
+          <article class="card">
+            <div class="tags"><span class="tag danger">400</span></div>
+            <h3>参数缺失</h3>
+            <p>公开音乐 API 在缺少 <code class="inline">source</code>、<code class="inline">id</code>、<code class="inline">keyword</code> 等关键参数时会返回 400。</p>
+          </article>
+          <article class="card">
+            <div class="tags"><span class="tag warning">404 / 501</span></div>
+            <h3>功能未实现</h3>
+            <p>部分接口类型在代码中仍未落地，会直接返回未实现。文档已按当前代码状态进行了降级说明。</p>
+          </article>
         </div>
+      </section>
 
-        <div class="section api-section" id="example-code">
-            <h2>5. 示例代码</h2>
-            <h3>5.1 获取网易云排行榜列表</h3>
-            <div class="example">
-                <code>// 使用 fetch API 获取排行榜列表
-async function getNeteaseToplists() {
-  try {
-    const response = await fetch('http://localhost:3000/api?provider=tunehub&source=netease&type=toplists');
-    const data = await response.json();
-    
-    if (data.code === 200) {
-      console.log('排行榜列表:', data.data.list);
-      // 处理排行榜数据
-    } else {
-      console.error('获取排行榜失败:', data.message);
-    }
-  } catch (error) {
-    console.error('请求错误:', error);
-  }
-}
+      <section class="section" id="security">
+        <h2>安全说明</h2>
+        <p>后台 API 配置中可能包含上游服务商密钥或 Header。为了避免将敏感信息直接暴露在公开文档，本页不会自动输出完整密钥值。公开展示时应仅描述参数结构与接入方式，不应贴出真实凭证。</p>
+      </section>
 
-// 调用函数
-getNeteaseToplists();</code>
-            </div>
+      <section class="section" id="changelog">
+        <h2>当前版本说明</h2>
+        <ul>
+          <li>README 文档现在直接读写 <code class="inline">README.md</code>，可通过后台文档中心编辑。</li>
+          <li>API 文档现在直接读写 <code class="inline">doc/doc.html</code>，<code class="inline">/docs</code> 页面直接渲染该 HTML 文件。</li>
+          <li>旧的 JSON 文档文件已移除，避免后台继续把 API 文档错误保存成 JSON。</li>
+          <li>GitHub 同步目标仓库可从后台系统设置读取，保存文档后会按配置同步到远程仓库。</li>
+        </ul>
+      </section>
 
-            <h3>5.2 获取歌单详情</h3>
-            <div class="example">
-                <code>// 获取歌单详情
-async function getPlaylistDetail(playlistId) {
-  try {
-    const response = await fetch(`http://localhost:3000/api?provider=tunehub&source=netease&type=playlist&id=${playlistId}`);
-    const data = await response.json();
-    
-    if (data.code === 200) {
-      console.log('歌单名称:', data.data.name);
-      console.log('歌单描述:', data.data.description);
-      console.log('歌曲数量:', data.data.songs.length);
-      console.log('歌曲列表:', data.data.songs);
-      // 处理歌单数据
-    } else {
-      console.error('获取歌单失败:', data.message);
-    }
-  } catch (error) {
-    console.error('请求错误:', error);
-  }
-}
+      <div class="footer">
+        Built for DDMusic admin-managed documentation workflow.
+      </div>
+    </main>
+  </div>
 
-// 调用函数
-getPlaylistDetail('123456789');</code>
-            </div>
-        </div>
+  <script>
+    (function () {
+      const links = Array.from(document.querySelectorAll('.nav-group a'));
+      const sections = links
+        .map((link) => document.querySelector(link.getAttribute('href')))
+        .filter(Boolean);
 
-        <div class="section api-section" id="notes">
-            <h2>6. 注意事项</h2>
-            <div class="note">
-                <p>1. 本项目仅用于学习和研究目的，请勿用于商业用途。</p>
-                <p>2. 音乐平台API可能会有变动，请及时关注官方API文档的更新。</p>
-                <p>3. 由于音乐平台的API限制，部分功能可能需要登录才能使用。</p>
-                <p>4. 请合理使用API，避免频繁请求导致IP被封禁。</p>
-                <p>5. 当QQ音乐和酷我的公共接口提供后，会更新相应的文档。</p>
-            </div>
-        </div>
-
-        <footer>
-            <p>&copy; 2019-2026 bendywork&stickpoint 笨迪网络&顶点音乐项目团队. All rights reserved.</p>
-        </footer>
-    </div>
-
-    <script>
-        // 页面加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化菜单
-            initMenu();
+      const setActive = (id) => {
+        links.forEach((link) => {
+          link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
         });
+      };
 
-        // 初始化菜单功能
-        function initMenu() {
-            // 为所有菜单项添加点击事件
-            const menuItems = document.querySelectorAll('.menu-item-list a');
-            menuItems.forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    scrollToSection(targetId);
-                    updateActiveMenuItem(targetId);
-                });
-            });
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id);
+          }
+        });
+      }, { rootMargin: '-35% 0px -50% 0px', threshold: 0.01 });
 
-            // 初始化时更新当前活动菜单项
-            updateActiveMenuItemFromScroll();
-
-            // 监听滚动事件，更新活动菜单项
-            window.addEventListener('scroll', updateActiveMenuItemFromScroll);
-
-            // 初始化菜单折叠功能
-            initMenuCollapse();
-        }
-
-        // 滚动到指定章节
-        function scrollToSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            if (section) {
-                const menuHeight = document.querySelector('.menu').offsetHeight;
-                const sectionTop = section.offsetTop;
-                window.scrollTo({
-                    top: sectionTop - 20,
-                    behavior: 'smooth'
-                });
-            }
-        }
-
-        // 更新活动菜单项
-        function updateActiveMenuItem(sectionId) {
-            // 移除所有菜单项的活动状态
-            const menuItems = document.querySelectorAll('.menu-item-list a');
-            menuItems.forEach(item => {
-                item.classList.remove('active');
-            });
-
-            // 添加当前菜单项的活动状态
-            const activeItem = document.querySelector(`.menu-item-list a[href="#${sectionId}"]`);
-            if (activeItem) {
-                activeItem.classList.add('active');
-            }
-        }
-
-        // 根据滚动位置更新活动菜单项
-        function updateActiveMenuItemFromScroll() {
-            const sections = document.querySelectorAll('.api-section');
-            let currentSectionId = '';
-
-            // 找到当前滚动位置对应的章节
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (window.scrollY >= sectionTop - 100) {
-                    currentSectionId = section.getAttribute('id');
-                }
-            });
-
-            // 更新活动菜单项
-            if (currentSectionId) {
-                updateActiveMenuItem(currentSectionId);
-            }
-        }
-
-        // 初始化菜单折叠功能
-        function initMenuCollapse() {
-            const menuItemTitles = document.querySelectorAll('.menu-item-title');
-            menuItemTitles.forEach(title => {
-                title.addEventListener('click', function() {
-                    const menuList = this.nextElementSibling;
-                    if (menuList) {
-                        menuList.classList.toggle('collapsed');
-                        this.classList.toggle('collapsed');
-                    }
-                });
-            });
-        }
-    </script>
+      sections.forEach((section) => observer.observe(section));
+    })();
+  </script>
 </body>
 </html>
