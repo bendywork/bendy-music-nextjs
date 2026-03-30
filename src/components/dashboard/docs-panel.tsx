@@ -1,12 +1,15 @@
-import { Save } from 'lucide-react';
+﻿import { Save } from 'lucide-react';
 import MarkdownEditor from '@/components/MarkdownEditor';
 import { SectionIntro } from '@/components/dashboard/shared';
 import type { DocTabKey } from '@/components/dashboard/types';
+import type { dashboardCopy } from '@/lib/i18n/dashboard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+
+type DocsCopy = (typeof dashboardCopy)['zh']['docs'];
 
 export function DocsPanel({
   activeDocTab,
@@ -19,6 +22,7 @@ export function DocsPanel({
   docsBusy,
   onSaveReadme,
   onSaveDocsPage,
+  copy,
 }: {
   activeDocTab: DocTabKey;
   onDocTabChange: (value: DocTabKey) => void;
@@ -30,13 +34,14 @@ export function DocsPanel({
   docsBusy: boolean;
   onSaveReadme: () => void;
   onSaveDocsPage: () => void;
+  copy: DocsCopy;
 }) {
   return (
     <div className="space-y-5">
       <SectionIntro
-        title="Docs Center"
-        description="Edit README.md as Markdown and /docs as a full HTML document. Saves write back to local files first, then sync to the configured GitHub repository."
-        badge="File-backed docs"
+        title={copy.sectionTitle}
+        description={copy.sectionDescription}
+        badge={copy.badge}
       />
 
       <Tabs value={activeDocTab} onValueChange={(value) => onDocTabChange(value as DocTabKey)}>
@@ -46,7 +51,7 @@ export function DocsPanel({
             <TabsTrigger value="docs">doc/doc.html</TabsTrigger>
           </TabsList>
           <Badge variant="outline">
-            {activeDocTab === 'readme' ? 'Path: /README.md' : 'Path: /doc/doc.html -> /docs'}
+            {activeDocTab === 'readme' ? copy.readmePath : copy.docsPath}
           </Badge>
         </div>
 
@@ -54,21 +59,23 @@ export function DocsPanel({
           <Card className="rounded-[2rem]">
             <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <CardTitle>README editor</CardTitle>
-                <CardDescription>
-                  This editor writes directly to the project README file, then mirrors the content to the admin data store and GitHub sync target.
-                </CardDescription>
+                <CardTitle>{copy.readmeTitle}</CardTitle>
+                <CardDescription>{copy.readmeDescription}</CardDescription>
               </div>
               <Button type="button" onClick={onSaveReadme} disabled={readmeBusy}>
                 <Save className="h-4 w-4" />
-                {readmeBusy ? 'Saving...' : 'Save README'}
+                {readmeBusy ? copy.saving : copy.saveReadme}
               </Button>
             </CardHeader>
             <CardContent>
               <MarkdownEditor
                 value={readmeContent}
                 onChange={onReadmeChange}
-                placeholder="Edit README.md here"
+                placeholder={copy.readmePlaceholder}
+                editorTitle={copy.markdownTitle}
+                editorDescription={copy.markdownDescription}
+                previewTitle={copy.markdownPreviewTitle}
+                previewDescription={copy.markdownPreviewDescription}
               />
             </CardContent>
           </Card>
@@ -78,40 +85,38 @@ export function DocsPanel({
           <Card className="rounded-[2rem]">
             <CardHeader className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <CardTitle>/docs HTML editor</CardTitle>
-                <CardDescription>
-                  Edit the full HTML document that is rendered at https://ddmusic.polofox.com/docs. Styles and scripts are preserved because the page is rendered from the saved HTML file.
-                </CardDescription>
+                <CardTitle>{copy.docsTitle}</CardTitle>
+                <CardDescription>{copy.docsDescription}</CardDescription>
               </div>
               <Button type="button" onClick={onSaveDocsPage} disabled={docsBusy}>
                 <Save className="h-4 w-4" />
-                {docsBusy ? 'Saving...' : 'Save /docs'}
+                {docsBusy ? copy.saving : copy.saveDocs}
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 xl:grid-cols-2">
                 <div className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
                   <div className="border-b border-border/80 px-4 py-3">
-                    <p className="text-sm font-semibold">HTML source</p>
-                    <p className="text-xs text-muted-foreground">Full document stored in doc/doc.html</p>
+                    <p className="text-sm font-semibold">{copy.htmlSource}</p>
+                    <p className="text-xs text-muted-foreground">{copy.htmlStored}</p>
                   </div>
                   <div className="p-4">
                     <Textarea
                       value={docsPageContent}
                       onChange={(event) => onDocsPageChange(event.target.value)}
                       className="min-h-[560px] resize-y font-mono text-xs"
-                      placeholder="Paste the full HTML document for /docs"
+                      placeholder={copy.htmlPlaceholder}
                     />
                   </div>
                 </div>
 
                 <div className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
                   <div className="border-b border-border/80 px-4 py-3">
-                    <p className="text-sm font-semibold">Live preview</p>
-                    <p className="text-xs text-muted-foreground">Rendered from the current HTML buffer</p>
+                    <p className="text-sm font-semibold">{copy.previewTitle}</p>
+                    <p className="text-xs text-muted-foreground">{copy.previewDescription}</p>
                   </div>
                   <iframe
-                    title="Docs preview"
+                    title={copy.previewFrameTitle}
                     srcDoc={docsPageContent}
                     className="min-h-[560px] w-full bg-white"
                     sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"

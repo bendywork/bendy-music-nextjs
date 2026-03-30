@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import {
   Cable,
   ExternalLink,
   Gauge,
+  Languages,
   LogOut,
   RefreshCcw,
   Settings2,
@@ -37,6 +38,8 @@ import {
   type SystemConfigState,
   type UserInfo,
 } from '@/components/dashboard/types';
+import type { DashboardLocale } from '@/lib/i18n/dashboard';
+import { dashboardCopy } from '@/lib/i18n/dashboard';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,60 +48,11 @@ import { githubService } from '@/lib/github';
 import { cn } from '@/lib/utils';
 
 const appVersion = packageJson.version;
-
-const menuGroups: Array<{
-  title: string;
-  items: Array<{
-    id: DashboardMenuKey;
-    label: string;
-    icon: typeof Gauge;
-    description: string;
-  }>;
-}> = [
-  {
-    title: 'Overview',
-    items: [
-      {
-        id: 'dashboard',
-        label: 'Dashboard',
-        icon: Gauge,
-        description: 'Service status, request trends, and runtime health.',
-      },
-    ],
-  },
-  {
-    title: 'Workspace',
-    items: [
-      {
-        id: 'provider-management',
-        label: 'Providers',
-        icon: Cable,
-        description: 'Manage provider definitions and availability.',
-      },
-      {
-        id: 'api-management',
-        label: 'API Config',
-        icon: Waypoints,
-        description: 'Maintain API paths, methods, headers, and params.',
-      },
-      {
-        id: 'doc-management',
-        label: 'Docs Center',
-        icon: BookText,
-        description: 'Edit README.md and the /docs HTML document.',
-      },
-      {
-        id: 'config-management',
-        label: 'Settings',
-        icon: Settings2,
-        description: 'Repository target, timeout, and concurrency settings.',
-      },
-    ],
-  },
-];
+const LOCALE_STORAGE_KEY = 'dashboard_locale';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [locale, setLocale] = useState<DashboardLocale>('zh');
   const [activeMenu, setActiveMenu] = useState<DashboardMenuKey>('dashboard');
   const [activeDocTab, setActiveDocTab] = useState<DocTabKey>('readme');
   const [authenticated, setAuthenticated] = useState(false);
@@ -116,7 +70,25 @@ export default function DashboardPage() {
   const [userInfo, setUserInfo] = useState<UserInfo>(DEFAULT_USER);
   const [dashboardData, setDashboardData] = useState(DEFAULT_DASHBOARD_DATA);
 
-  const currentMenu = menuGroups.flatMap((group) => group.items).find((item) => item.id === activeMenu);
+  const copy = dashboardCopy[locale] as (typeof dashboardCopy)['zh'];
+  const currentMenuGroup = copy.menuGroups.flatMap((group) => [...group.items]).find((item) => item.id === activeMenu);
+
+  useEffect(() => {
+    const storedLocale = typeof window !== 'undefined'
+      ? window.localStorage.getItem(LOCALE_STORAGE_KEY)
+      : null;
+
+    if (storedLocale === 'zh' || storedLocale === 'en') {
+      setLocale(storedLocale);
+    }
+  }, []);
+
+  const updateLocale = (nextLocale: DashboardLocale) => {
+    setLocale(nextLocale);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
+    }
+  };
 
   const clearFeedback = () => {
     setError('');
@@ -306,7 +278,7 @@ export default function DashboardPage() {
       return true;
     } catch (persistError) {
       setProviders(previous);
-      setError(persistError instanceof Error ? persistError.message : 'Failed to save providers.');
+      setError(persistError instanceof Error ? persistError.message : copy.messages.saveProvidersFailed);
       return false;
     } finally {
       setBusySection(null);
@@ -325,7 +297,7 @@ export default function DashboardPage() {
       return true;
     } catch (persistError) {
       setApis(previous);
-      setError(persistError instanceof Error ? persistError.message : 'Failed to save APIs.');
+      setError(persistError instanceof Error ? persistError.message : copy.messages.saveApisFailed);
       return false;
     } finally {
       setBusySection(null);
@@ -338,7 +310,7 @@ export default function DashboardPage() {
     }
 
     if (!editingProvider.name.trim() || !editingProvider.code.trim()) {
-      setError('Provider name and code are required.');
+      setError(copy.messages.providerNameRequired);
       setSuccess('');
       return;
     }
@@ -347,20 +319,20 @@ export default function DashboardPage() {
     const nextProviders = exists
       ? providers.map((item) => (item.id === editingProvider.id ? editingProvider : item))
       : [...providers, editingProvider];
-    const saved = await persistProviders(nextProviders, exists ? 'Provider updated.' : 'Provider created.');
+    const saved = await persistProviders(nextProviders, exists ? copy.messages.providerUpdated : copy.messages.providerCreated);
     if (saved) {
       setEditingProvider(null);
     }
   };
 
   const handleDeleteProvider = async (providerId: string) => {
-    if (!window.confirm('Delete this provider?')) {
+    if (!window.confirm(copy.messages.deleteProviderConfirm)) {
       return;
     }
 
     const saved = await persistProviders(
       providers.filter((item) => item.id !== providerId),
-      'Provider deleted.',
+      copy.messages.providerDeleted,
     );
     if (saved && editingProvider?.id === providerId) {
       setEditingProvider(null);
@@ -377,7 +349,7 @@ export default function DashboardPage() {
         : item,
     );
 
-    await persistProviders(nextProviders, 'Provider status updated.');
+    await persistProviders(nextProviders, copy.messages.providerStatusUpdated);
   };
 
   const handleSaveApi = async () => {
@@ -386,7 +358,7 @@ export default function DashboardPage() {
     }
 
     if (!editingApi.name.trim() || !editingApi.path.trim() || !editingApi.method.trim()) {
-      setError('API name, path, and method are required.');
+      setError(copy.messages.apiRequired);
       setSuccess('');
       return;
     }
@@ -395,18 +367,18 @@ export default function DashboardPage() {
     const nextApis = exists
       ? apis.map((item) => (item.id === editingApi.id ? editingApi : item))
       : [...apis, editingApi];
-    const saved = await persistApis(nextApis, exists ? 'API updated.' : 'API created.');
+    const saved = await persistApis(nextApis, exists ? copy.messages.apiUpdated : copy.messages.apiCreated);
     if (saved) {
       setEditingApi(null);
     }
   };
 
   const handleDeleteApi = async (apiId: string) => {
-    if (!window.confirm('Delete this API entry?')) {
+    if (!window.confirm(copy.messages.deleteApiConfirm)) {
       return;
     }
 
-    const saved = await persistApis(apis.filter((item) => item.id !== apiId), 'API deleted.');
+    const saved = await persistApis(apis.filter((item) => item.id !== apiId), copy.messages.apiDeleted);
     if (saved && editingApi?.id === apiId) {
       setEditingApi(null);
     }
@@ -422,7 +394,7 @@ export default function DashboardPage() {
         : item,
     );
 
-    await persistApis(nextApis, 'API status updated.');
+    await persistApis(nextApis, copy.messages.apiStatusUpdated);
   };
 
   const handleReadmeSave = async () => {
@@ -433,9 +405,13 @@ export default function DashboardPage() {
       const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/readme', {
         content: readmeContent,
       });
-      setSuccess(payload.repoSync?.message ? `README saved and synced: ${payload.repoSync.message}` : 'README saved.');
+      setSuccess(
+        payload.repoSync?.message
+          ? `${copy.messages.readmeSavedAndSynced} ${payload.repoSync.message}`
+          : copy.messages.readmeSaved,
+      );
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : 'Failed to save README.');
+      setError(persistError instanceof Error ? persistError.message : copy.messages.readmeSaveFailed);
     } finally {
       setBusySection(null);
     }
@@ -450,10 +426,12 @@ export default function DashboardPage() {
         content: docsPageContent,
       });
       setSuccess(
-        payload.repoSync?.message ? `HTML docs saved and synced: ${payload.repoSync.message}` : 'HTML docs saved.',
+        payload.repoSync?.message
+          ? `${copy.messages.docsSavedAndSynced} ${payload.repoSync.message}`
+          : copy.messages.docsSaved,
       );
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : 'Failed to save HTML docs.');
+      setError(persistError instanceof Error ? persistError.message : copy.messages.docsSaveFailed);
     } finally {
       setBusySection(null);
     }
@@ -473,16 +451,16 @@ export default function DashboardPage() {
           maxConcurrentRequests: Math.max(1, Number(sysConfig.api.maxConcurrentRequests)),
         },
       });
-      setSuccess('System settings saved.');
+      setSuccess(copy.messages.settingsSaved);
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : 'Failed to save system settings.');
+      setError(persistError instanceof Error ? persistError.message : copy.messages.settingsSaveFailed);
     } finally {
       setBusySection(null);
     }
   };
 
   const providerNameById = (providerId: string): string =>
-    providers.find((item) => item.id === providerId)?.name || 'Unassigned';
+    providers.find((item) => item.id === providerId)?.name || copy.messages.unassigned;
 
   if (initializing) {
     return (
@@ -493,8 +471,8 @@ export default function DashboardPage() {
               <RefreshCcw className="h-6 w-6 animate-spin" />
             </div>
             <div className="space-y-1">
-              <p className="text-lg font-bold">Loading admin dashboard</p>
-              <p className="text-sm text-muted-foreground">Reading session, settings, and documentation content.</p>
+              <p className="text-lg font-bold">{copy.loadingTitle}</p>
+              <p className="text-sm text-muted-foreground">{copy.loadingDesc}</p>
             </div>
           </CardContent>
         </Card>
@@ -512,21 +490,28 @@ export default function DashboardPage() {
                 <Image src="/logo.svg" alt="bendy music logo" width={24} height={24} className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-lg font-black tracking-[-0.04em]">Admin Console</p>
-                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">DDMusic Service Base</p>
+                <p className="text-lg font-black tracking-[-0.04em]">{copy.appTitle}</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{copy.appSubtitle}</p>
               </div>
             </div>
           </div>
 
           <div className="flex-1 space-y-6 px-4 py-5">
-            {menuGroups.map((group) => (
+            {copy.menuGroups.map((group) => (
               <div key={group.title} className="space-y-2">
                 <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {group.title}
                 </p>
                 <div className="space-y-1">
                   {group.items.map((item) => {
-                    const Icon = item.icon;
+                    const iconMap = {
+                      dashboard: Gauge,
+                      'provider-management': Cable,
+                      'api-management': Waypoints,
+                      'doc-management': BookText,
+                      'config-management': Settings2,
+                    } as const;
+                    const Icon = iconMap[item.id];
                     const active = item.id === activeMenu;
 
                     return (
@@ -573,7 +558,7 @@ export default function DashboardPage() {
                 />
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold">{userInfo.login}</p>
-                  <p className="truncate text-xs text-muted-foreground">{userInfo.name || 'GitHub Admin'}</p>
+                  <p className="truncate text-xs text-muted-foreground">{userInfo.name || copy.messages.githubAdmin}</p>
                 </div>
               </div>
 
@@ -581,7 +566,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     <Tag className="h-3.5 w-3.5" />
-                    Version
+                    {copy.version}
                   </div>
                   <span className="text-sm font-bold">v{appVersion}</span>
                 </div>
@@ -594,7 +579,7 @@ export default function DashboardPage() {
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4" />
-                Sign out
+                {copy.signOut}
               </Button>
             </div>
           </div>
@@ -605,14 +590,23 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 px-4 py-4 sm:px-5 lg:flex-row lg:items-center lg:justify-between lg:px-6">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                  {currentMenu?.label || 'Dashboard'}
+                  {currentMenuGroup?.label || copy.menuGroups[0].items[0].label}
                 </p>
-                <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{currentMenu?.description}</h1>
+                <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{currentMenuGroup?.description}</h1>
               </div>
               <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => updateLocale(locale === 'zh' ? 'en' : 'zh')}
+                  title={copy.switchTo}
+                >
+                  <Languages className="h-4 w-4" />
+                  {copy.localeLabel}
+                </Button>
                 <Badge variant="outline">
                   <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-                  GitHub Session
+                  {copy.sessionBadge}
                 </Badge>
                 <ThemeToggle />
               </div>
@@ -685,6 +679,7 @@ export default function DashboardPage() {
                 docsBusy={busySection === 'docs-page'}
                 onSaveReadme={() => void handleReadmeSave()}
                 onSaveDocsPage={() => void handleDocsPageSave()}
+                copy={copy.docs}
               />
             ) : null}
 
@@ -700,16 +695,16 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.6rem] border border-border bg-card/70 px-4 py-3 text-xs text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4" />
-                README and API documentation now write directly to project files and sync back to the configured repository.
+                {copy.footerLead}
               </div>
               <div className="flex items-center gap-4">
                 <span className="inline-flex items-center gap-1">
                   <ExternalLink className="h-3.5 w-3.5" />
-                  README.md + doc/doc.html
+                  {copy.footerDocs}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  Editable from the admin console
+                  {copy.footerEditable}
                 </span>
               </div>
             </div>
@@ -719,4 +714,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

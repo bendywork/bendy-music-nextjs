@@ -1,6 +1,6 @@
 {
   "name": "ddmusic-nextjs",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -46,3 +46,4 @@
     "typescript": "^5"
   }
 }
+
