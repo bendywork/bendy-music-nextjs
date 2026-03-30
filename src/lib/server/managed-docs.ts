@@ -1,7 +1,28 @@
-import { STORE_KEYS, readTextFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
+import { STORE_KEYS, getStoredValue, readTextFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
 import { GENERATED_API_DOC_MARKER, generateProjectApiDocHtml } from '@/lib/server/api-doc-generator';
 
 const README_FALLBACK = '# bendy-music-nextjs\n';
+
+const tryWriteTextFile = async (relativePath: string, content: string): Promise<string> => {
+  try {
+    return await writeTextFile(relativePath, content);
+  } catch (error) {
+    console.warn(`Failed to write ${relativePath}; continuing with stored content only:`, error);
+    return content;
+  }
+};
+
+const loadStoredText = async (
+  key: string,
+  fallbackFactory: () => Promise<string> | string,
+): Promise<string | null> => {
+  try {
+    return await getStoredValue<string>(key, fallbackFactory);
+  } catch (error) {
+    console.warn(`Failed to read ${key} from store, fallback to local source:`, error);
+    return null;
+  }
+};
 
 const syncStoreValueSafely = async (key: string, value: string): Promise<void> => {
   try {
@@ -11,11 +32,15 @@ const syncStoreValueSafely = async (key: string, value: string): Promise<void> =
   }
 };
 
-const syncApiDocStoreSafely = async (value: string): Promise<void> => {
-  await Promise.allSettled([
-    syncStoreValueSafely(STORE_KEYS.DOC_API, value),
-    syncStoreValueSafely(STORE_KEYS.DOC_PAGE, value),
+const persistApiDocStore = async (value: string): Promise<void> => {
+  await Promise.all([
+    setStoredValue(STORE_KEYS.DOC_API, value),
+    setStoredValue(STORE_KEYS.DOC_PAGE, value),
   ]);
+};
+
+const syncApiDocStoreSafely = async (value: string): Promise<void> => {
+  await Promise.allSettled([persistApiDocStore(value)]);
 };
 
 const isLegacyJsonPayload = (content: string): boolean => {
@@ -51,37 +76,83 @@ const shouldRegenerateApiDoc = (content: string): boolean => {
 
 export const regenerateApiDocHtml = async (): Promise<string> => {
   const generatedContent = await generateProjectApiDocHtml();
-  const savedContent = await writeTextFile('doc/doc.html', generatedContent);
-  await syncApiDocStoreSafely(savedContent);
-  return savedContent;
+  await persistApiDocStore(generatedContent);
+  await tryWriteTextFile('doc/doc.html', generatedContent);
+  return generatedContent;
+};
+
+const selectReadmeContent = (storedContent: string | null, fileContent: string): string => {
+  if (storedContent && storedContent.trim() && storedContent !== README_FALLBACK) {
+    return storedContent;
+  }
+
+  if (fileContent.trim()) {
+    return fileContent;
+  }
+
+  if (storedContent && storedContent.trim()) {
+    return storedContent;
+  }
+
+  return README_FALLBACK;
+};
+
+const selectApiDocContent = (storedContent: string | null, fileContent: string): string => {
+  if (storedContent && storedContent.trim() && !isLegacyJsonPayload(storedContent)) {
+    return storedContent;
+  }
+
+  if (fileContent.trim()) {
+    return fileContent;
+  }
+
+  return storedContent ?? '';
 };
 
 export const loadReadmeMarkdown = async (): Promise<string> => {
-  const content = await readTextFile('README.md', README_FALLBACK);
-  const normalizedContent = content || README_FALLBACK;
-  await syncStoreValueSafely(STORE_KEYS.DOC_README, normalizedContent);
+  const fileContent = await readTextFile('README.md', '');
+  const storedContent = await loadStoredText(
+    STORE_KEYS.DOC_README,
+    () => fileContent || README_FALLBACK,
+  );
+  const normalizedContent = selectReadmeContent(storedContent, fileContent);
+
+  if (storedContent !== normalizedContent) {
+    await syncStoreValueSafely(STORE_KEYS.DOC_README, normalizedContent);
+  }
+
   return normalizedContent;
 };
 
 export const saveReadmeMarkdown = async (content: string): Promise<string> => {
-  const savedContent = await writeTextFile('README.md', content || README_FALLBACK);
-  await syncStoreValueSafely(STORE_KEYS.DOC_README, savedContent);
-  return savedContent;
+  const normalizedContent = content || README_FALLBACK;
+  await setStoredValue(STORE_KEYS.DOC_README, normalizedContent);
+  await tryWriteTextFile('README.md', normalizedContent);
+  return normalizedContent;
 };
 
 export const loadApiDocHtml = async (): Promise<string> => {
-  const content = await readTextFile('doc/doc.html', '');
+  const fileContent = await readTextFile('doc/doc.html', '');
+  const storedContent = await loadStoredText(
+    STORE_KEYS.DOC_API,
+    async () => fileContent || generateProjectApiDocHtml(),
+  );
+  const content = selectApiDocContent(storedContent, fileContent);
+
   if (shouldRegenerateApiDoc(content)) {
     return regenerateApiDocHtml();
   }
 
-  await syncApiDocStoreSafely(content);
+  if (storedContent !== content) {
+    await syncApiDocStoreSafely(content);
+  }
+
   return content;
 };
 
 export const saveApiDocHtml = async (content: string): Promise<string> => {
   const normalizedContent = content.trim() ? content : await generateProjectApiDocHtml();
-  const savedContent = await writeTextFile('doc/doc.html', normalizedContent);
-  await syncApiDocStoreSafely(savedContent);
-  return savedContent;
+  await persistApiDocStore(normalizedContent);
+  await tryWriteTextFile('doc/doc.html', normalizedContent);
+  return normalizedContent;
 };

@@ -9,8 +9,9 @@ export async function GET() {
     return NextResponse.json({ content });
   } catch (error) {
     console.error('Failed to read docs page content:', error);
+    const message = error instanceof Error ? error.message : 'Failed to read docs page content';
     return NextResponse.json(
-      { error: 'Failed to read docs page content' },
+      { error: message },
       { status: 500 },
     );
   }
@@ -31,8 +32,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to save docs page content:', error);
+    const message = error instanceof Error ? error.message : 'Failed to save docs page content';
     return NextResponse.json(
-      { error: 'Failed to save docs page content' },
+      { error: message },
       { status: 500 },
     );
   }

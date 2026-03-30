@@ -8,8 +8,9 @@ export async function GET() {
     return NextResponse.json({ content });
   } catch (error) {
     console.error('Failed to read README document:', error);
+    const message = error instanceof Error ? error.message : 'Failed to read README document';
     return NextResponse.json(
-      { error: 'Failed to read README document' },
+      { error: message },
       { status: 500 },
     );
   }
@@ -28,8 +29,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Failed to save README document:', error);
+    const message = error instanceof Error ? error.message : 'Failed to save README document';
     return NextResponse.json(
-      { error: 'Failed to save README document' },
+      { error: message },
       { status: 500 },
     );
   }
