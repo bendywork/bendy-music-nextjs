@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { STORE_KEYS, getStoredValue, readJsonFile, setStoredValue } from '@/lib/server/data-store';
+import { STORE_KEYS, getStoredValue, readJsonFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
 
 const DEFAULT_SYS_CONFIG = {
   apiManagement: {
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
   try {
     const sysConfig = await request.json();
     const stored = await setStoredValue(STORE_KEYS.SYS_CONFIG, sysConfig);
+    await writeTextFile('sys.json', `${JSON.stringify(stored, null, 2)}\n`);
 
     return NextResponse.json({
       message: 'System config saved',

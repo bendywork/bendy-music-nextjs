@@ -11,7 +11,11 @@ const getDocEndpoint = (filePath: string): string => {
     return '/api/data/docs/readme';
   }
 
-  if (filePath === 'doc/doc.html' || filePath === 'doc/doc-prop.json') {
+  if (filePath === 'doc/doc.html') {
+    return '/api/data/docs/api';
+  }
+
+  if (filePath === 'doc/doc-prop.json') {
     return '/api/data/docs/api';
   }
 
