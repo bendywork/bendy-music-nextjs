@@ -4,6 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { DashboardData, RecentRequest, ServiceStatus } from '@/lib/dashboard';
 import { EmptyRow, MetricCard, SectionIntro, TableShell } from '@/components/dashboard/shared';
 import { formatTimestamp, formatUptime, statusVariant } from '@/components/dashboard/types';
+import { dashboardCopy, getServiceDisplayName } from '@/lib/i18n/dashboard';
+import type { Locale } from '@/lib/i18n/locale';
+
+type OverviewCopy = (typeof dashboardCopy)['zh']['overview'];
 
 export function OverviewPanel({
   dashboardData,
@@ -12,6 +16,8 @@ export function OverviewPanel({
   apisCount,
   enabledApis,
   repository,
+  locale,
+  copy,
 }: {
   dashboardData: DashboardData;
   providersCount: number;
@@ -19,38 +25,34 @@ export function OverviewPanel({
   apisCount: number;
   enabledApis: number;
   repository: string;
+  locale: Locale;
+  copy: OverviewCopy;
 }) {
   return (
     <div className="space-y-5">
-      <SectionIntro
-        title="运行总览"
-        description="集中查看系统运行状态、服务节点健康度、最近请求和仓库同步信息。"
-        badge="Live dashboard"
-      />
+      <SectionIntro title={copy.sectionTitle} description={copy.sectionDescription} badge={copy.badge} />
 
       <Card className="overflow-hidden rounded-[2rem]">
         <CardContent className="grid gap-5 p-5 lg:grid-cols-[1.45fr_0.95fr] lg:p-6">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="success">系统运行中</Badge>
-              <Badge variant="outline">README 采用 UTF-8 文件源</Badge>
+              <Badge variant="success">{copy.healthyBadge}</Badge>
+              <Badge variant="outline">{copy.utf8Badge}</Badge>
             </div>
             <div className="space-y-2">
-              <h2 className="text-3xl font-black tracking-[-0.06em]">顶点音乐稳定音乐服务代理后台管理</h2>
-              <p className="max-w-2xl text-sm leading-7 text-muted-foreground">
-                Bendywork 服务基座。
-              </p>
+              <h2 className="text-3xl font-black tracking-[-0.06em]">{copy.heroTitle}</h2>
+              <p className="max-w-2xl text-sm leading-7 text-muted-foreground">{copy.heroDescription}</p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">GitHub Repo</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{copy.repositoryLabel}</p>
               <p className="mt-2 break-all text-sm font-semibold">{repository}</p>
             </div>
             <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Last Sync</p>
-              <p className="mt-2 text-sm font-semibold">{formatTimestamp(dashboardData.lastSyncTime)}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{copy.lastSyncLabel}</p>
+              <p className="mt-2 text-sm font-semibold">{formatTimestamp(dashboardData.lastSyncTime, locale)}</p>
             </div>
           </div>
         </CardContent>
@@ -58,27 +60,27 @@ export function OverviewPanel({
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          title="代理请求"
+          title={copy.proxyRequestsTitle}
           value={String(dashboardData.proxyRequestCount || 0)}
-          detail="累计记录的代理请求数量"
+          detail={copy.proxyRequestsDetail}
           icon={Activity}
         />
         <MetricCard
-          title="启用服务商"
+          title={copy.enabledProvidersTitle}
           value={String(enabledProviders)}
-          detail={`共 ${providersCount} 个 Provider`}
+          detail={copy.enabledProvidersDetail.replace('{count}', String(providersCount))}
           icon={Cable}
         />
         <MetricCard
-          title="启用接口"
+          title={copy.enabledApisTitle}
           value={String(enabledApis)}
-          detail={`共 ${apisCount} 条 API 配置`}
+          detail={copy.enabledApisDetail.replace('{count}', String(apisCount))}
           icon={Sparkles}
         />
         <MetricCard
-          title="运行时间"
-          value={formatUptime(dashboardData.systemUptime)}
-          detail="由实时仪表盘持续刷新"
+          title={copy.uptimeTitle}
+          value={formatUptime(dashboardData.systemUptime, locale)}
+          detail={copy.uptimeDetail}
           icon={Clock3}
         />
       </div>
@@ -86,8 +88,8 @@ export function OverviewPanel({
       <div className="grid gap-5 xl:grid-cols-[0.92fr_1.08fr]">
         <Card className="rounded-[2rem]">
           <CardHeader>
-            <CardTitle>服务健康度</CardTitle>
-            <CardDescription>根据错误计数动态评估各音乐源的可用性。</CardDescription>
+            <CardTitle>{copy.servicesTitle}</CardTitle>
+            <CardDescription>{copy.servicesDescription}</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3">
             {dashboardData.serviceStatus.map((service: ServiceStatus) => (
@@ -96,10 +98,14 @@ export function OverviewPanel({
                 className="flex items-center justify-between rounded-[1.4rem] border border-border bg-background/60 px-4 py-3"
               >
                 <div>
-                  <p className="font-semibold">{service.displayName}</p>
-                  <p className="text-sm text-muted-foreground">错误次数 {service.errorCount}</p>
+                  <p className="font-semibold">
+                    {getServiceDisplayName(locale, service.name, service.displayName)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {copy.errorsLabel} {service.errorCount}
+                  </p>
                 </div>
-                <Badge variant={statusVariant(service.status)}>{service.status}</Badge>
+                <Badge variant={statusVariant(service.status)}>{copy.statusLabels[service.status]}</Badge>
               </div>
             ))}
           </CardContent>
@@ -107,25 +113,35 @@ export function OverviewPanel({
 
         <Card className="rounded-[2rem]">
           <CardHeader>
-            <CardTitle>最近请求</CardTitle>
-            <CardDescription>最近一批代理请求的路径、来源和返回码。</CardDescription>
+            <CardTitle>{copy.recentTitle}</CardTitle>
+            <CardDescription>{copy.recentDescription}</CardDescription>
           </CardHeader>
           <CardContent>
-            <TableShell columns={['时间', '路径', 'Provider', '状态', '耗时']}>
+            <TableShell
+              columns={[
+                copy.columns.time,
+                copy.columns.path,
+                copy.columns.provider,
+                copy.columns.status,
+                copy.columns.duration,
+              ]}
+            >
               {dashboardData.recentRequests.length > 0 ? (
                 dashboardData.recentRequests.slice(0, 8).map((request: RecentRequest) => (
                   <tr key={`${request.timestamp}-${request.path}`} className="border-t border-border/70">
-                    <td className="px-4 py-3">{formatTimestamp(request.timestamp)}</td>
+                    <td className="px-4 py-3">{formatTimestamp(request.timestamp, locale)}</td>
                     <td className="max-w-[260px] px-4 py-3 font-mono text-xs">{request.path}</td>
                     <td className="px-4 py-3">{request.provider}</td>
                     <td className="px-4 py-3">
                       <Badge variant={request.success ? 'success' : 'danger'}>{request.statusCode}</Badge>
                     </td>
-                    <td className="px-4 py-3 text-muted-foreground">{request.duration} ms</td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {request.duration} {copy.durationUnit}
+                    </td>
                   </tr>
                 ))
               ) : (
-                <EmptyRow colSpan={5} message="暂时还没有最近请求记录。" />
+                <EmptyRow colSpan={5} message={copy.emptyRecent} />
               )}
             </TableShell>
           </CardContent>

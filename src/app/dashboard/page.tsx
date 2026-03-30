@@ -8,7 +8,6 @@ import {
   Cable,
   ExternalLink,
   Gauge,
-  Languages,
   LogOut,
   RefreshCcw,
   Settings2,
@@ -23,6 +22,9 @@ import { DocsPanel } from '@/components/dashboard/docs-panel';
 import { OverviewPanel } from '@/components/dashboard/overview-panel';
 import { ProviderPanel } from '@/components/dashboard/provider-panel';
 import { SettingsPanel } from '@/components/dashboard/settings-panel';
+import { LocaleToggle } from '@/components/locale-toggle';
+import { useLocale } from '@/components/locale-provider';
+import { ThemeToggle } from '@/components/theme-toggle';
 import type { ApiItem, DashboardMenuKey, ProviderItem } from '@/components/dashboard/types';
 import {
   createEmptyApi,
@@ -38,9 +40,7 @@ import {
   type SystemConfigState,
   type UserInfo,
 } from '@/components/dashboard/types';
-import type { DashboardLocale } from '@/lib/i18n/dashboard';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,11 +48,10 @@ import { githubService } from '@/lib/github';
 import { cn } from '@/lib/utils';
 
 const appVersion = packageJson.version;
-const LOCALE_STORAGE_KEY = 'dashboard_locale';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [locale, setLocale] = useState<DashboardLocale>('zh');
+  const { locale } = useLocale();
   const [activeMenu, setActiveMenu] = useState<DashboardMenuKey>('dashboard');
   const [activeDocTab, setActiveDocTab] = useState<DocTabKey>('readme');
   const [authenticated, setAuthenticated] = useState(false);
@@ -72,23 +71,6 @@ export default function DashboardPage() {
 
   const copy = dashboardCopy[locale] as (typeof dashboardCopy)['zh'];
   const currentMenuGroup = copy.menuGroups.flatMap((group) => [...group.items]).find((item) => item.id === activeMenu);
-
-  useEffect(() => {
-    const storedLocale = typeof window !== 'undefined'
-      ? window.localStorage.getItem(LOCALE_STORAGE_KEY)
-      : null;
-
-    if (storedLocale === 'zh' || storedLocale === 'en') {
-      setLocale(storedLocale);
-    }
-  }, []);
-
-  const updateLocale = (nextLocale: DashboardLocale) => {
-    setLocale(nextLocale);
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, nextLocale);
-    }
-  };
 
   const clearFeedback = () => {
     setError('');
@@ -273,7 +255,7 @@ export default function DashboardPage() {
     clearFeedback();
 
     try {
-      await postJson('/api/data/provider', { providers: nextProviders });
+      await postJson('/api/data/provider', { providers: nextProviders }, copy.messages.saveProvidersFailed);
       setSuccess(successMessage);
       return true;
     } catch (persistError) {
@@ -292,7 +274,7 @@ export default function DashboardPage() {
     clearFeedback();
 
     try {
-      await postJson('/api/data/api', { apis: nextApis });
+      await postJson('/api/data/api', { apis: nextApis }, copy.messages.saveApisFailed);
       setSuccess(successMessage);
       return true;
     } catch (persistError) {
@@ -402,9 +384,11 @@ export default function DashboardPage() {
     clearFeedback();
 
     try {
-      const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/readme', {
-        content: readmeContent,
-      });
+      const payload = await postJson<{ repoSync?: { message?: string } }>(
+        '/api/data/docs/readme',
+        { content: readmeContent },
+        copy.messages.readmeSaveFailed,
+      );
       setSuccess(
         payload.repoSync?.message
           ? `${copy.messages.readmeSavedAndSynced} ${payload.repoSync.message}`
@@ -422,9 +406,11 @@ export default function DashboardPage() {
     setBusySection('docs-page');
 
     try {
-      const payload = await postJson<{ repoSync?: { message?: string } }>('/api/data/docs/api', {
-        content: docsPageContent,
-      });
+      const payload = await postJson<{ repoSync?: { message?: string } }>(
+        '/api/data/docs/api',
+        { content: docsPageContent },
+        copy.messages.docsSaveFailed,
+      );
       setSuccess(
         payload.repoSync?.message
           ? `${copy.messages.docsSavedAndSynced} ${payload.repoSync.message}`
@@ -442,15 +428,19 @@ export default function DashboardPage() {
     clearFeedback();
 
     try {
-      await postJson('/api/sys', {
-        apiManagement: { apis },
-        providerManagement: { providers },
-        configuration: {
-          githubProjectPath: sysConfig.project.github.trim(),
-          apiTimeout: Math.max(1, Number(sysConfig.api.timeout)) * 1000,
-          maxConcurrentRequests: Math.max(1, Number(sysConfig.api.maxConcurrentRequests)),
+      await postJson(
+        '/api/sys',
+        {
+          apiManagement: { apis },
+          providerManagement: { providers },
+          configuration: {
+            githubProjectPath: sysConfig.project.github.trim(),
+            apiTimeout: Math.max(1, Number(sysConfig.api.timeout)) * 1000,
+            maxConcurrentRequests: Math.max(1, Number(sysConfig.api.maxConcurrentRequests)),
+          },
         },
-      });
+        copy.messages.settingsSaveFailed,
+      );
       setSuccess(copy.messages.settingsSaved);
     } catch (persistError) {
       setError(persistError instanceof Error ? persistError.message : copy.messages.settingsSaveFailed);
@@ -595,15 +585,7 @@ export default function DashboardPage() {
                 <h1 className="mt-1 text-2xl font-black tracking-[-0.05em]">{currentMenuGroup?.description}</h1>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => updateLocale(locale === 'zh' ? 'en' : 'zh')}
-                  title={copy.switchTo}
-                >
-                  <Languages className="h-4 w-4" />
-                  {copy.localeLabel}
-                </Button>
+                <LocaleToggle variant="outline" />
                 <Badge variant="outline">
                   <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
                   {copy.sessionBadge}
@@ -632,6 +614,8 @@ export default function DashboardPage() {
                 apisCount={apis.length}
                 enabledApis={apis.filter((item) => item.status === 'enabled').length}
                 repository={sysConfig.project.github}
+                locale={locale}
+                copy={copy.overview}
               />
             ) : null}
 
@@ -647,6 +631,7 @@ export default function DashboardPage() {
                 onSave={() => void handleSaveProvider()}
                 onDelete={(providerId) => void handleDeleteProvider(providerId)}
                 onToggleStatus={(providerId) => void handleToggleProviderStatus(providerId)}
+                copy={copy.providers}
               />
             ) : null}
 
@@ -664,6 +649,7 @@ export default function DashboardPage() {
                 onDelete={(apiId) => void handleDeleteApi(apiId)}
                 onToggleStatus={(apiId) => void handleToggleApiStatus(apiId)}
                 providerNameById={providerNameById}
+                copy={copy.apis}
               />
             ) : null}
 
@@ -689,6 +675,7 @@ export default function DashboardPage() {
                 busy={busySection === 'settings'}
                 onChange={(config) => setSysConfig(config)}
                 onSave={() => void handleConfigSave()}
+                copy={copy.settings}
               />
             ) : null}
 

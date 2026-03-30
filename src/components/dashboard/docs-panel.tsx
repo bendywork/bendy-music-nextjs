@@ -2,7 +2,7 @@
 import MarkdownEditor from '@/components/MarkdownEditor';
 import { SectionIntro } from '@/components/dashboard/shared';
 import type { DocTabKey } from '@/components/dashboard/types';
-import type { dashboardCopy } from '@/lib/i18n/dashboard';
+import { dashboardCopy } from '@/lib/i18n/dashboard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
