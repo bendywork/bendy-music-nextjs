@@ -1,4 +1,4 @@
-import { Plus, Save, Trash2 } from 'lucide-react';
+﻿import { Plus, Save, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,14 @@ import { statusVariant, type ApiItem, type ProviderItem } from '@/components/das
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 
 type ApiCopy = (typeof dashboardCopy)['zh']['apis'];
+
+const getApiStatusLabel = (copy: ApiCopy, status: ApiItem['status']): string => {
+  if (status === 'maintenance') {
+    return 'Maintenance';
+  }
+
+  return (copy.statusLabels as Record<string, string>)[status] ?? status;
+};
 
 export function ApiPanel({
   apis,
@@ -85,15 +93,25 @@ export function ApiPanel({
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold">{copy.fields.path}</label>
-              <Input value={editingApi.path} onChange={(event) => onChange({ ...editingApi, path: event.target.value })} placeholder="/v1/parse" />
+              <Input
+                value={editingApi.path}
+                onChange={(event) => onChange({ ...editingApi, path: event.target.value })}
+                placeholder="/api"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-semibold">Request Type</label>
+              <Input
+                value={editingApi.requestType}
+                onChange={(event) => onChange({ ...editingApi, requestType: event.target.value })}
+                placeholder="info / search / playlist"
+              />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold">{copy.fields.pathType}</label>
               <select
                 value={editingApi.pathType}
-                onChange={(event) =>
-                  onChange({ ...editingApi, pathType: event.target.value as ApiItem['pathType'] })
-                }
+                onChange={(event) => onChange({ ...editingApi, pathType: event.target.value as ApiItem['pathType'] })}
                 className={controlClassName}
               >
                 <option value="relative">{copy.pathTypeLabels.relative}</option>
@@ -123,6 +141,7 @@ export function ApiPanel({
                 className={controlClassName}
               >
                 <option value="enabled">{copy.statusLabels.enabled}</option>
+                <option value="maintenance">Maintenance</option>
                 <option value="disabled">{copy.statusLabels.disabled}</option>
               </select>
             </div>
@@ -173,6 +192,7 @@ export function ApiPanel({
               copy.table.name,
               copy.table.method,
               copy.table.path,
+              'Request Type',
               copy.table.pathType,
               copy.table.provider,
               copy.table.status,
@@ -186,11 +206,12 @@ export function ApiPanel({
                   <td className="px-4 py-3 font-semibold">{api.name}</td>
                   <td className="px-4 py-3 font-mono text-xs">{api.method}</td>
                   <td className="max-w-[280px] px-4 py-3 font-mono text-xs">{api.path}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{api.requestType}</td>
                   <td className="px-4 py-3">{copy.pathTypeLabels[api.pathType]}</td>
                   <td className="px-4 py-3">{providerNameById(api.provider)}</td>
                   <td className="px-4 py-3">
                     <button type="button" onClick={() => onToggleStatus(api.id)}>
-                      <Badge variant={statusVariant(api.status)}>{copy.statusLabels[api.status]}</Badge>
+                      <Badge variant={statusVariant(api.status)}>{getApiStatusLabel(copy, api.status)}</Badge>
                     </button>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{api.remark || '-'}</td>
@@ -208,7 +229,7 @@ export function ApiPanel({
                 </tr>
               ))
             ) : (
-              <EmptyRow colSpan={8} message={copy.empty} />
+              <EmptyRow colSpan={9} message={copy.empty} />
             )}
           </TableShell>
         </CardContent>

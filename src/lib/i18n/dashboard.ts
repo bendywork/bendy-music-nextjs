@@ -1,4 +1,4 @@
-import type { Locale } from '@/lib/i18n/locale';
+﻿import type { Locale } from '@/lib/i18n/locale';
 
 export type DashboardLocale = Locale;
 
@@ -60,7 +60,7 @@ export const dashboardCopy = {
       providerDeleted: '服务商已删除。',
       providerStatusUpdated: '服务商状态已更新。',
       saveApisFailed: '保存接口失败。',
-      apiRequired: '接口名称、路径和方法不能为空。',
+      apiRequired: '接口名称、路径、方法和请求类型不能为空。',
       apiUpdated: '接口已更新。',
       apiCreated: '接口已创建。',
       deleteApiConfirm: '确认删除这个接口吗？',
@@ -118,7 +118,7 @@ export const dashboardCopy = {
     },
     providers: {
       sectionTitle: '服务商管理',
-      sectionDescription: '维护每个 Provider 的编码、来源类型、URL 与状态。',
+      sectionDescription: '维护每个 Provider 的编码、来源类型、BaseURL 与状态。',
       badgeUnit: '个服务商',
       editTitle: '编辑服务商',
       createTitle: '新增服务商',
@@ -152,10 +152,11 @@ export const dashboardCopy = {
       },
       statusLabels: {
         enabled: '启用',
+        maintenance: '维护中',
         disabled: '停用',
       },
       listTitle: '服务商列表',
-      listDescription: '统一维护名称、代码、来源类型、URL 与可用状态。',
+      listDescription: '统一维护名称、代码、来源类型、BaseURL 与可用状态。',
       add: '新增服务商',
       table: {
         name: '名称',
@@ -204,6 +205,7 @@ export const dashboardCopy = {
       },
       statusLabels: {
         enabled: '启用',
+        maintenance: '维护中',
         disabled: '停用',
       },
       unassignedOption: '未分配',
@@ -328,7 +330,7 @@ export const dashboardCopy = {
       providerDeleted: 'Provider deleted.',
       providerStatusUpdated: 'Provider status updated.',
       saveApisFailed: 'Failed to save APIs.',
-      apiRequired: 'API name, path, and method are required.',
+      apiRequired: 'API name, path, method, and request type are required.',
       apiUpdated: 'API updated.',
       apiCreated: 'API created.',
       deleteApiConfirm: 'Delete this API entry?',
@@ -386,7 +388,7 @@ export const dashboardCopy = {
     },
     providers: {
       sectionTitle: 'Provider Management',
-      sectionDescription: 'Maintain each provider code, source type, URL, and availability status.',
+      sectionDescription: 'Maintain each provider code, source type, BaseURL, and availability status.',
       badgeUnit: 'providers',
       editTitle: 'Edit Provider',
       createTitle: 'New Provider',
@@ -420,10 +422,11 @@ export const dashboardCopy = {
       },
       statusLabels: {
         enabled: 'Enabled',
+        maintenance: 'Maintenance',
         disabled: 'Disabled',
       },
       listTitle: 'Provider List',
-      listDescription: 'Manage names, codes, source types, URLs, and availability in one table.',
+      listDescription: 'Manage names, codes, source types, BaseURL, and availability in one table.',
       add: 'Add Provider',
       table: {
         name: 'Name',
@@ -441,7 +444,7 @@ export const dashboardCopy = {
     },
     apis: {
       sectionTitle: 'API Management',
-      sectionDescription: 'Maintain API paths, path types, request headers, and parameter templates, then map them to providers.',
+      sectionDescription: 'Maintain API paths, path types, request headers, parameter templates, and request types, then map them to providers.',
       badgeUnit: 'APIs',
       editTitle: 'Edit API',
       createTitle: 'New API',
@@ -472,6 +475,7 @@ export const dashboardCopy = {
       },
       statusLabels: {
         enabled: 'Enabled',
+        maintenance: 'Maintenance',
         disabled: 'Disabled',
       },
       unassignedOption: 'Unassigned',

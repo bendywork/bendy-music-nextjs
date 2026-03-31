@@ -26,3 +26,12 @@
 - [x] Add repository sync for doc updates via global repo auth config.
 - [x] Remove dashboard-side direct GitHub repo writes for non-doc configs.
 - [x] Update env examples and README for PostgreSQL/Redis/Upstash/repo-sync config.
+
+## 2026-03-31 (v0.1.12) Admin Config Structure Upgrade
+- [x] Fix README markdown editor height mismatch in the dashboard.
+- [x] Protect `/docs` with a password gate backed by config fallback and env override.
+- [x] Move system settings to a dedicated structured PostgreSQL table.
+- [x] Split provider config and API config into structured tables for CRUD management.
+- [x] Seed built-in Netease, Kuwo, and QQ API records into the managed API table.
+- [x] Gate `/api` access by managed status: enabled, disabled, maintenance.
+- [x] Rename provider field from URL to BaseURL in admin management and generated docs.

@@ -15,6 +15,10 @@ export interface AppConfig {
     name: string;
     repository: string;
   };
+  docsAccess: {
+    passwordEnvName: string;
+    defaultPassword: string;
+  };
   auth: {
     github: {
       admins: string[];
@@ -47,6 +51,12 @@ export interface GitHubAuthRuntimeConfig {
   scopes: string[];
 }
 
+export interface DocsAccessRuntimeConfig {
+  passwordEnvName: string;
+  defaultPassword: string;
+  password: string;
+}
+
 export const DEFAULT_PROJECT_REPOSITORY = 'bendywork/bendy-music-nextjs';
 export const LEGACY_PROJECT_REPOSITORY = 'yokeay/ddmusic-nextjs';
 
@@ -63,6 +73,10 @@ const DEFAULT_APP_CONFIG: AppConfig = {
   project: {
     name: 'ddmusic-nextjs',
     repository: DEFAULT_PROJECT_REPOSITORY,
+  },
+  docsAccess: {
+    passwordEnvName: 'DOCS_ACCESS_PASSWORD',
+    defaultPassword: 'fntp@polofox.com',
   },
   auth: {
     github: {
@@ -202,6 +216,10 @@ export const getAppConfig = (): AppConfig => {
       ...DEFAULT_APP_CONFIG.project,
       ...(fileConfig.project ?? {}),
     },
+    docsAccess: {
+      ...DEFAULT_APP_CONFIG.docsAccess,
+      ...(fileConfig.docsAccess ?? {}),
+    },
     auth: {
       ...DEFAULT_APP_CONFIG.auth,
       ...(fileConfig.auth ?? {}),
@@ -298,5 +316,17 @@ export const getGitHubAuthRuntimeConfig = (origin: string): GitHubAuthRuntimeCon
     redirectUri,
     adminUsers: appConfig.auth.github.admins.map((user) => user.toLowerCase()),
     scopes: appConfig.auth.github.scopes,
+  };
+};
+
+export const getDocsAccessRuntimeConfig = (): DocsAccessRuntimeConfig => {
+  const appConfig = getAppConfig();
+  const passwordEnvName = appConfig.docsAccess.passwordEnvName.trim() || DEFAULT_APP_CONFIG.docsAccess.passwordEnvName;
+  const configuredPassword = process.env[passwordEnvName]?.trim();
+
+  return {
+    passwordEnvName,
+    defaultPassword: appConfig.docsAccess.defaultPassword,
+    password: configuredPassword || appConfig.docsAccess.defaultPassword || DEFAULT_APP_CONFIG.docsAccess.defaultPassword,
   };
 };

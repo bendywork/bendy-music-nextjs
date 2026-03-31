@@ -33,29 +33,29 @@ export default function MarkdownEditor({
   const deferredValue = useDeferredValue(value);
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
-      <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
+    <div className="grid items-stretch gap-4 xl:grid-cols-2">
+      <section className="flex min-h-[620px] flex-col overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
         <div className="border-b border-border/80 px-4 py-3">
           <p className="text-sm font-semibold">{editorTitle}</p>
           <p className="text-xs text-muted-foreground">{editorDescription}</p>
         </div>
-        <div className="p-4">
+        <div className="flex flex-1 p-4">
           <Textarea
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
-            className="min-h-[520px] resize-y border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0"
+            className="h-full min-h-[560px] resize-y border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0"
           />
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
+      <section className="flex min-h-[620px] flex-col overflow-hidden rounded-[1.6rem] border border-border bg-card/80 shadow-sm">
         <div className="border-b border-border/80 px-4 py-3">
           <p className="text-sm font-semibold">{previewTitle}</p>
           <p className="text-xs text-muted-foreground">{previewDescription}</p>
         </div>
         <div
-          className="markdown-preview min-h-[520px] overflow-auto p-6"
+          className="markdown-preview min-h-[560px] flex-1 overflow-auto p-6"
           dangerouslySetInnerHTML={{ __html: mdParser.render(deferredValue || '') }}
         />
       </section>

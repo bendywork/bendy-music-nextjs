@@ -1,40 +1,9 @@
 import packageJson from '../../../package.json';
-import { STORE_KEYS, getStoredValue, readJsonFile } from '@/lib/server/data-store';
+import type { ApiItem as ApiConfigItem, ProviderItem as ProviderConfigItem } from '@/lib/admin-config';
+import { loadApiConfig, loadProviderConfig } from '@/lib/server/admin-config-store';
 import { Platform, Provider } from '@/modules/music/types';
 
 export const GENERATED_API_DOC_MARKER = 'bendy-music-nextjs-generated-api-doc';
-
-interface ProviderConfigItem {
-  id: string;
-  name: string;
-  code: string;
-  category?: string;
-  nature?: string;
-  url?: string;
-  status?: string;
-  remark?: string;
-}
-
-interface ProviderConfigShape {
-  providers?: ProviderConfigItem[];
-}
-
-interface ApiConfigItem {
-  id: string;
-  name: string;
-  path: string;
-  pathType?: string;
-  method: string;
-  provider?: string;
-  params?: string;
-  headers?: string;
-  status?: string;
-  remark?: string;
-}
-
-interface ApiConfigShape {
-  apis?: ApiConfigItem[];
-}
 
 interface EndpointParameter {
   name: string;
@@ -54,8 +23,6 @@ interface EndpointDefinition {
   responseExample?: unknown;
 }
 
-const DEFAULT_PROVIDER_CONFIG: ProviderConfigShape = { providers: [] };
-const DEFAULT_API_CONFIG: ApiConfigShape = { apis: [] };
 const PUBLIC_API_TITLE = '顶点音乐API文档';
 const HTML_FILE_PATH = 'doc/doc.html';
 const README_FILE_PATH = 'README.md';
@@ -73,6 +40,7 @@ const providerNatureLabels: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   enabled: '启用',
+  maintenance: '维护中',
   disabled: '停用',
 };
 
@@ -528,8 +496,8 @@ const renderProviderCards = (providers: ProviderConfigItem[]): string => {
             <dd>${escapeHtml(formatProviderNature(provider.nature))}</dd>
           </div>
           <div>
-            <dt>地址</dt>
-            <dd>${escapeHtml(provider.url?.trim() || '未配置')}</dd>
+            <dt>BaseURL</dt>
+            <dd>${escapeHtml(provider.baseUrl?.trim() || '未配置')}</dd>
           </div>
           <div>
             <dt>备注</dt>
@@ -554,6 +522,7 @@ const renderApiTemplateTable = (apis: ApiConfigItem[], providerMap: Map<string, 
           <td>${escapeHtml(api.name)}</td>
           <td><span class="inline-chip">${escapeHtml(api.method || 'GET')}</span></td>
           <td><code>${escapeHtml(api.path || '-')}</code></td>
+          <td><code>${escapeHtml(api.requestType?.trim() || 'custom')}</code></td>
           <td>${escapeHtml(providerName)}</td>
           <td>${escapeHtml(formatStatus(api.status))}</td>
           <td>${toCodeBlock(maskSensitiveMultilineText(api.headers))}</td>
@@ -571,6 +540,7 @@ const renderApiTemplateTable = (apis: ApiConfigItem[], providerMap: Map<string, 
           <th>名称</th>
           <th>方法</th>
           <th>上游路径</th>
+          <th>请求类型</th>
           <th>绑定 Provider</th>
           <th>状态</th>
           <th>请求头</th>
@@ -608,19 +578,10 @@ const renderPendingEndpointTable = (): string => {
   `;
 };
 
-const loadStoredConfig = async <T>(key: string, filePath: string, fallback: T): Promise<T> => {
-  try {
-    return await getStoredValue<T>(key, () => readJsonFile(filePath, fallback));
-  } catch (error) {
-    console.warn(`Failed to load ${key} from store, fallback to ${filePath}:`, error);
-    return readJsonFile(filePath, fallback);
-  }
-};
-
 export async function generateProjectApiDocHtml(): Promise<string> {
   const [{ providers }, { apis }] = await Promise.all([
-    loadStoredConfig<ProviderConfigShape>(STORE_KEYS.PROVIDER_CONFIG, 'data/provider.json', DEFAULT_PROVIDER_CONFIG),
-    loadStoredConfig<ApiConfigShape>(STORE_KEYS.API_CONFIG, 'data/api.json', DEFAULT_API_CONFIG),
+    loadProviderConfig(),
+    loadApiConfig(),
   ]);
 
   const providerList = providers ?? [];

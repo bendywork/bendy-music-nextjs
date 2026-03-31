@@ -1,4 +1,4 @@
-import { Plus, Save, Trash2 } from 'lucide-react';
+﻿import { Plus, Save, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,14 @@ import { statusVariant, type ProviderItem } from '@/components/dashboard/types';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 
 type ProviderCopy = (typeof dashboardCopy)['zh']['providers'];
+
+const getProviderStatusLabel = (copy: ProviderCopy, status: ProviderItem['status']): string => {
+  if (status === 'maintenance') {
+    return 'Maintenance';
+  }
+
+  return (copy.statusLabels as Record<string, string>)[status] ?? status;
+};
 
 export function ProviderPanel({
   providers,
@@ -110,11 +118,11 @@ export function ProviderPanel({
               </select>
             </div>
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold">{copy.fields.url}</label>
+              <label className="text-sm font-semibold">BaseURL</label>
               <Input
-                value={editingProvider.url || ''}
-                onChange={(event) => onChange({ ...editingProvider, url: event.target.value })}
-                placeholder={copy.placeholders.url}
+                value={editingProvider.baseUrl || ''}
+                onChange={(event) => onChange({ ...editingProvider, baseUrl: event.target.value })}
+                placeholder="https://example.com"
               />
             </div>
             <div className="space-y-2">
@@ -130,6 +138,7 @@ export function ProviderPanel({
                 className={controlClassName}
               >
                 <option value="enabled">{copy.statusLabels.enabled}</option>
+                <option value="maintenance">Maintenance</option>
                 <option value="disabled">{copy.statusLabels.disabled}</option>
               </select>
             </div>
@@ -163,7 +172,7 @@ export function ProviderPanel({
               copy.table.code,
               copy.table.category,
               copy.table.nature,
-              copy.table.url,
+              'BaseURL',
               copy.table.status,
               copy.table.remark,
               copy.table.actions,
@@ -176,10 +185,10 @@ export function ProviderPanel({
                   <td className="px-4 py-3 font-mono text-xs">{provider.code}</td>
                   <td className="px-4 py-3">{copy.categoryLabels[provider.category || 'official']}</td>
                   <td className="px-4 py-3">{copy.natureLabels[provider.nature || 'openSource']}</td>
-                  <td className="max-w-[280px] px-4 py-3 font-mono text-xs">{provider.url || '-'}</td>
+                  <td className="max-w-[280px] px-4 py-3 font-mono text-xs">{provider.baseUrl || '-'}</td>
                   <td className="px-4 py-3">
                     <button type="button" onClick={() => onToggleStatus(provider.id)}>
-                      <Badge variant={statusVariant(provider.status)}>{copy.statusLabels[provider.status]}</Badge>
+                      <Badge variant={statusVariant(provider.status)}>{getProviderStatusLabel(copy, provider.status)}</Badge>
                     </button>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{provider.remark || '-'}</td>
