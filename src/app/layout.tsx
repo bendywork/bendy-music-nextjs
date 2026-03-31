@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import './globals.css';
 import { LocaleProvider } from '@/components/locale-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { ToastProvider } from '@/components/ui/toast-provider';
 
 export const metadata: Metadata = {
   title: 'bendy-music-nextjs',
@@ -24,7 +25,9 @@ export default function RootLayout({
     <html lang="zh-CN" suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider>
-          <LocaleProvider>{children}</LocaleProvider>
+          <ToastProvider>
+            <LocaleProvider>{children}</LocaleProvider>
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

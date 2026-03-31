@@ -1,22 +1,16 @@
-﻿import { Plus, Save, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Bug, Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { EmptyRow, SectionIntro, TableShell, controlClassName } from '@/components/dashboard/shared';
-import { statusVariant, type ApiItem, type ProviderItem } from '@/components/dashboard/types';
+import type { ApiItem, ProviderItem } from '@/components/dashboard/types';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 
 type ApiCopy = (typeof dashboardCopy)['zh']['apis'];
 
-const getApiStatusLabel = (copy: ApiCopy, status: ApiItem['status']): string => {
-  if (status === 'maintenance') {
-    return 'Maintenance';
-  }
-
-  return (copy.statusLabels as Record<string, string>)[status] ?? status;
-};
+const rowSelectClassName =
+  'h-10 min-w-[112px] rounded-xl border border-input bg-background/90 px-3 py-1 text-xs font-semibold outline-none transition-colors focus-visible:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring/30';
 
 export function ApiPanel({
   apis,
@@ -29,7 +23,8 @@ export function ApiPanel({
   onChange,
   onSave,
   onDelete,
-  onToggleStatus,
+  onStatusChange,
+  onDebug,
   providerNameById,
   copy,
 }: {
@@ -43,7 +38,8 @@ export function ApiPanel({
   onChange: (api: ApiItem) => void;
   onSave: () => void;
   onDelete: (apiId: string) => void;
-  onToggleStatus: (apiId: string) => void;
+  onStatusChange: (apiId: string, status: ApiItem['status']) => void;
+  onDebug: (apiId: string) => void;
   providerNameById: (providerId: string) => string;
   copy: ApiCopy;
 }) {
@@ -141,7 +137,7 @@ export function ApiPanel({
                 className={controlClassName}
               >
                 <option value="enabled">{copy.statusLabels.enabled}</option>
-                <option value="maintenance">Maintenance</option>
+                <option value="maintenance">{copy.statusLabels.maintenance}</option>
                 <option value="disabled">{copy.statusLabels.disabled}</option>
               </select>
             </div>
@@ -210,13 +206,23 @@ export function ApiPanel({
                   <td className="px-4 py-3">{copy.pathTypeLabels[api.pathType]}</td>
                   <td className="px-4 py-3">{providerNameById(api.provider)}</td>
                   <td className="px-4 py-3">
-                    <button type="button" onClick={() => onToggleStatus(api.id)}>
-                      <Badge variant={statusVariant(api.status)}>{getApiStatusLabel(copy, api.status)}</Badge>
-                    </button>
+                    <select
+                      value={api.status}
+                      onChange={(event) => onStatusChange(api.id, event.target.value as ApiItem['status'])}
+                      className={rowSelectClassName}
+                    >
+                      <option value="enabled">{copy.statusLabels.enabled}</option>
+                      <option value="maintenance">{copy.statusLabels.maintenance}</option>
+                      <option value="disabled">{copy.statusLabels.disabled}</option>
+                    </select>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{api.remark || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => onDebug(api.id)}>
+                        <Bug className="h-4 w-4" />
+                        {copy.debug}
+                      </Button>
                       <Button type="button" variant="ghost" size="sm" onClick={() => onEdit(api)}>
                         {copy.edit}
                       </Button>

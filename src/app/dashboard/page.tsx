@@ -25,6 +25,7 @@ import { SettingsPanel } from '@/components/dashboard/settings-panel';
 import { LocaleToggle } from '@/components/locale-toggle';
 import { useLocale } from '@/components/locale-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { useToast } from '@/components/ui/toast-provider';
 import type { ApiItem, DashboardMenuKey, ProviderItem } from '@/components/dashboard/types';
 import {
   createEmptyApi,
@@ -40,7 +41,6 @@ import {
   type SystemConfigState,
   type UserInfo,
 } from '@/components/dashboard/types';
-import { getNextManagedStatus } from '@/lib/admin-config';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,13 +53,12 @@ const appVersion = packageJson.version;
 export default function DashboardPage() {
   const router = useRouter();
   const { locale } = useLocale();
+  const { toast } = useToast();
   const [activeMenu, setActiveMenu] = useState<DashboardMenuKey>('dashboard');
   const [activeDocTab, setActiveDocTab] = useState<DocTabKey>('readme');
   const [authenticated, setAuthenticated] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [busySection, setBusySection] = useState<string | null>(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [readmeContent, setReadmeContent] = useState(DEFAULT_README);
   const [docsPageContent, setDocsPageContent] = useState(DEFAULT_DOCS_PAGE);
   const [providers, setProviders] = useState<ProviderItem[]>([]);
@@ -73,9 +72,12 @@ export default function DashboardPage() {
   const copy = dashboardCopy[locale] as (typeof dashboardCopy)['zh'];
   const currentMenuGroup = copy.menuGroups.flatMap((group) => [...group.items]).find((item) => item.id === activeMenu);
 
-  const clearFeedback = () => {
-    setError('');
-    setSuccess('');
+  const notifySuccess = (title: string, description?: string) => {
+    toast({ title, description, variant: 'success' });
+  };
+
+  const notifyError = (title: string, description?: string) => {
+    toast({ title, description, variant: 'error' });
   };
 
   const loadDashboardData = async () => {
@@ -253,15 +255,14 @@ export default function DashboardPage() {
     const previous = providers;
     setProviders(nextProviders);
     setBusySection('providers');
-    clearFeedback();
 
     try {
       await postJson('/api/data/provider', { providers: nextProviders }, copy.messages.saveProvidersFailed);
-      setSuccess(successMessage);
+      notifySuccess(successMessage);
       return true;
     } catch (persistError) {
       setProviders(previous);
-      setError(persistError instanceof Error ? persistError.message : copy.messages.saveProvidersFailed);
+      notifyError(copy.messages.saveProvidersFailed, persistError instanceof Error ? persistError.message : undefined);
       return false;
     } finally {
       setBusySection(null);
@@ -272,15 +273,14 @@ export default function DashboardPage() {
     const previous = apis;
     setApis(nextApis);
     setBusySection('apis');
-    clearFeedback();
 
     try {
       await postJson('/api/data/api', { apis: nextApis }, copy.messages.saveApisFailed);
-      setSuccess(successMessage);
+      notifySuccess(successMessage);
       return true;
     } catch (persistError) {
       setApis(previous);
-      setError(persistError instanceof Error ? persistError.message : copy.messages.saveApisFailed);
+      notifyError(copy.messages.saveApisFailed, persistError instanceof Error ? persistError.message : undefined);
       return false;
     } finally {
       setBusySection(null);
@@ -293,8 +293,7 @@ export default function DashboardPage() {
     }
 
     if (!editingProvider.name.trim() || !editingProvider.code.trim()) {
-      setError(copy.messages.providerNameRequired);
-      setSuccess('');
+      notifyError(copy.messages.providerNameRequired);
       return;
     }
 
@@ -322,17 +321,25 @@ export default function DashboardPage() {
     }
   };
 
-  const handleToggleProviderStatus = async (providerId: string) => {
+  const handleProviderStatusChange = async (providerId: string, status: ProviderItem['status']) => {
+    const currentProvider = providers.find((item) => item.id === providerId);
+    if (!currentProvider || currentProvider.status === status) {
+      return;
+    }
+
     const nextProviders = providers.map((item) =>
       item.id === providerId
         ? {
             ...item,
-            status: getNextManagedStatus(item.status),
+            status,
           }
         : item,
     );
 
-    await persistProviders(nextProviders, copy.messages.providerStatusUpdated);
+    const saved = await persistProviders(nextProviders, copy.messages.providerStatusUpdated);
+    if (saved && editingProvider?.id === providerId) {
+      setEditingProvider((current) => (current ? { ...current, status } : current));
+    }
   };
 
   const handleSaveApi = async () => {
@@ -346,8 +353,7 @@ export default function DashboardPage() {
       || !editingApi.method.trim()
       || !editingApi.requestType.trim()
     ) {
-      setError(copy.messages.apiRequired);
-      setSuccess('');
+      notifyError(copy.messages.apiRequired);
       return;
     }
 
@@ -372,22 +378,29 @@ export default function DashboardPage() {
     }
   };
 
-  const handleToggleApiStatus = async (apiId: string) => {
+  const handleApiStatusChange = async (apiId: string, status: ApiItem['status']) => {
+    const currentApi = apis.find((item) => item.id === apiId);
+    if (!currentApi || currentApi.status === status) {
+      return;
+    }
+
     const nextApis = apis.map((item) =>
       item.id === apiId
         ? {
             ...item,
-            status: getNextManagedStatus(item.status),
+            status,
           }
         : item,
     );
 
-    await persistApis(nextApis, copy.messages.apiStatusUpdated);
+    const saved = await persistApis(nextApis, copy.messages.apiStatusUpdated);
+    if (saved && editingApi?.id === apiId) {
+      setEditingApi((current) => (current ? { ...current, status } : current));
+    }
   };
 
   const handleReadmeSave = async () => {
     setBusySection('readme');
-    clearFeedback();
 
     try {
       const payload = await postJson<{ repoSync?: { ok?: boolean; committed?: boolean; message?: string } }>(
@@ -397,25 +410,24 @@ export default function DashboardPage() {
       );
 
       if (payload.repoSync?.ok === false) {
-        setSuccess(copy.messages.readmeSaved);
-        setError(payload.repoSync.message || copy.messages.readmeSaveFailed);
+        notifySuccess(copy.messages.readmeSaved);
+        notifyError(copy.messages.readmeSaveFailed, payload.repoSync.message || undefined);
         return;
       }
 
-      setSuccess(
+      notifySuccess(
         payload.repoSync?.committed && payload.repoSync.message
           ? `${copy.messages.readmeSavedAndSynced} ${payload.repoSync.message}`
           : copy.messages.readmeSaved,
       );
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : copy.messages.readmeSaveFailed);
+      notifyError(copy.messages.readmeSaveFailed, persistError instanceof Error ? persistError.message : undefined);
     } finally {
       setBusySection(null);
     }
   };
 
   const handleDocsPageSave = async () => {
-    clearFeedback();
     setBusySection('docs-page');
 
     try {
@@ -426,18 +438,18 @@ export default function DashboardPage() {
       );
 
       if (payload.repoSync?.ok === false) {
-        setSuccess(copy.messages.docsSaved);
-        setError(payload.repoSync.message || copy.messages.docsSaveFailed);
+        notifySuccess(copy.messages.docsSaved);
+        notifyError(copy.messages.docsSaveFailed, payload.repoSync.message || undefined);
         return;
       }
 
-      setSuccess(
+      notifySuccess(
         payload.repoSync?.committed && payload.repoSync.message
           ? `${copy.messages.docsSavedAndSynced} ${payload.repoSync.message}`
           : copy.messages.docsSaved,
       );
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : copy.messages.docsSaveFailed);
+      notifyError(copy.messages.docsSaveFailed, persistError instanceof Error ? persistError.message : undefined);
     } finally {
       setBusySection(null);
     }
@@ -445,7 +457,6 @@ export default function DashboardPage() {
 
   const handleConfigSave = async () => {
     setBusySection('settings');
-    clearFeedback();
 
     try {
       await postJson(
@@ -462,12 +473,16 @@ export default function DashboardPage() {
         copy.messages.settingsSaveFailed,
       );
       await loadSysConfig();
-      setSuccess(copy.messages.settingsSaved);
+      notifySuccess(copy.messages.settingsSaved);
     } catch (persistError) {
-      setError(persistError instanceof Error ? persistError.message : copy.messages.settingsSaveFailed);
+      notifyError(copy.messages.settingsSaveFailed, persistError instanceof Error ? persistError.message : undefined);
     } finally {
       setBusySection(null);
     }
+  };
+
+  const handleDebugApi = (apiId: string) => {
+    router.push(`/dashboard/api-debug/${encodeURIComponent(apiId)}`);
   };
 
   const providerNameById = (providerId: string): string =>
@@ -617,16 +632,6 @@ export default function DashboardPage() {
           </header>
 
           <div className="space-y-5 px-4 py-5 sm:px-5 lg:px-6 lg:py-6">
-            {error ? (
-              <div className="rounded-[1.5rem] border border-zinc-400/60 bg-zinc-200/55 px-4 py-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-100">
-                {error}
-              </div>
-            ) : null}
-
-            {success ? (
-              <div className="rounded-[1.5rem] border border-border bg-card/90 px-4 py-3 text-sm">{success}</div>
-            ) : null}
-
             {activeMenu === 'dashboard' ? (
               <OverviewPanel
                 dashboardData={dashboardData}
@@ -651,7 +656,7 @@ export default function DashboardPage() {
                 onChange={(provider) => setEditingProvider(provider)}
                 onSave={() => void handleSaveProvider()}
                 onDelete={(providerId) => void handleDeleteProvider(providerId)}
-                onToggleStatus={(providerId) => void handleToggleProviderStatus(providerId)}
+                onStatusChange={(providerId, status) => void handleProviderStatusChange(providerId, status)}
                 copy={copy.providers}
               />
             ) : null}
@@ -668,7 +673,8 @@ export default function DashboardPage() {
                 onChange={(api) => setEditingApi(api)}
                 onSave={() => void handleSaveApi()}
                 onDelete={(apiId) => void handleDeleteApi(apiId)}
-                onToggleStatus={(apiId) => void handleToggleApiStatus(apiId)}
+                onStatusChange={(apiId, status) => void handleApiStatusChange(apiId, status)}
+                onDebug={handleDebugApi}
                 providerNameById={providerNameById}
                 copy={copy.apis}
               />
