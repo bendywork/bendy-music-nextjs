@@ -1,6 +1,6 @@
 # bendy-music-nextjs
 
-Next.js-based music API gateway and admin dashboard.
+DdMusic, Next.js-based music API gateway and admin dashboard.
 
 ## Features
 
