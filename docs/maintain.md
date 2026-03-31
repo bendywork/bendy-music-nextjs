@@ -385,3 +385,32 @@
   - 风险：若后续继续使用会写入 BOM 的编辑器直接改 JSON 文件，部署错误可能再次出现。
   - 回滚：可回退 `package.json`、`config/release.config.json` 与 `package-lock.json` 到上一个稳定提交。
 - 备注：本次发布同时覆盖并完成了 `v0.1.12` 记录中待执行的分支发布流程。
+
+## [v0.1.14] - 2026-03-31
+- 迭代类型：fix（首页概览与运行时长修复）
+- 需求来源：首页概览中的运行时长在刷新后归零；最近同步信息需要改为版本更新记录；顶部 UTF-8 文案需要精简。
+- 变更摘要：将运行时长改为基于 PostgreSQL 持久化基准时间计算并按 10 分钟同步快照，首页概览新增最近一次 commit 时间与 message 摘要展示，并补充构建时 git 元数据生成脚本。
+- 具体修改：
+  - 修改文件：`src/lib/dashboard.ts`、`src/lib/server/data-store.ts`、`src/app/api/data/dashboard/route.ts`、`data/dashboard.json`
+  - 修改方式：新增 `dashboard-runtime` 持久化 key，后台服务启动后从 PostgreSQL 恢复运行基准时间，运行中按 10 分钟同步 runtime/dashboard 快照。
+  - 关键实现：前端刷新后会继续基于数据库中的 `systemStartedAt` 和服务端快照动态计时，不再从 0 开始。
+  - 修改文件：`scripts/generate-build-metadata.mjs`、`src/lib/server/build-metadata.ts`、`.gitignore`
+  - 修改方式：新增构建前 git 元数据生成脚本，输出最后一次 commit 的时间、message 和短 SHA 到运行时可读文件。
+  - 关键实现：Vercel 和本地构建都会在 dashboard 概览中展示最近一次版本更新记录，无需运行时依赖 `.git` 目录。
+  - 修改文件：`src/components/dashboard/overview-panel.tsx`、`src/components/dashboard/types.ts`、`src/lib/i18n/dashboard.ts`、`package.json`
+  - 修改方式：将“最近同步”替换为“版本更新记录”，顶部 badge 精简为 `UTF-8`，并把 uptime 前端计算改为基于服务端快照时间递增展示。
+  - 关键实现：首页顶部卡片同时展示 commit 时间、message 摘要和短 SHA，运行时长文案改为基于数据库持久化基准刷新。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，12 warning，为历史未使用变量 warning）。
+  - test：已执行 `npm test`，失败（仓库未定义 `test` script）。
+  - build：已执行 `npm run build`，通过。
+  - audit：已执行 `npm audit --audit-level=high`，存在 2 条 moderate 漏洞，无 high/critical。
+- 发布动作：
+  - 分支：`dev -> main -> push -> checkout dev`
+  - commit：`chore(release): v0.1.14 迭代完成`
+  - tag：未执行
+  - push：已执行到 `origin/dev` 与 `origin/main`
+- 风险与回滚：
+  - 风险：若部署环境的 `DATABASE_URL` 不可用，dashboard 仍会回退到文件默认值，运行时长将无法跨实例持久化。
+  - 回滚：可回退 dashboard 持久化逻辑和构建元数据脚本，恢复原有前端本地计时与最近同步展示。
+- 备注：本次未新增数据库结构迁移，沿用现有 `app_data_store` 表承载 runtime 持久化数据。

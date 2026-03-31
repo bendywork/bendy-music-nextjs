@@ -1,8 +1,11 @@
 {
   "name": "ddmusic-nextjs",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "private": true,
   "scripts": {
+    "build:metadata": "node scripts/generate-build-metadata.mjs",
+    "predev": "npm run build:metadata",
+    "prebuild": "npm run build:metadata",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
