@@ -21,6 +21,7 @@ export const STORE_KEYS = {
   PROVIDER_CONFIG: 'provider-config',
   SYS_CONFIG: 'sys-config',
   DASHBOARD: 'dashboard',
+  DASHBOARD_RUNTIME: 'dashboard-runtime',
   DOC_README: 'doc-readme',
   DOC_API: 'doc-api',
   DOC_PAGE: 'doc-page',

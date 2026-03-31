@@ -7,23 +7,26 @@
   "serviceStatus": [
     {
       "name": "kuwo",
-      "displayName": "酷我音乐",
+      "displayName": "Kuwo Music",
       "errorCount": 0,
       "status": "Normal"
     },
     {
       "name": "qq",
-      "displayName": "QQ音乐",
+      "displayName": "QQ Music",
       "errorCount": 0,
       "status": "Normal"
     },
     {
-      "name": "Netease",
-      "displayName": "网易云音乐",
+      "name": "netease",
+      "displayName": "Netease Music",
       "errorCount": 0,
       "status": "Normal"
     }
   ],
-  "lastSyncTime": 0
+  "lastSyncTime": 0,
+  "latestCommitMessage": "",
+  "latestCommitTimestamp": 0,
+  "latestCommitShortHash": ""
 }
 

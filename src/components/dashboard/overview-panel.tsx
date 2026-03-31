@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Activity, Cable, Clock3, ExternalLink, GitBranch, Sparkles } from 'lucide-react';
+import { Activity, Cable, Clock3, ExternalLink, GitBranch, GitCommitHorizontal, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DashboardData, RecentRequest, ServiceStatus } from '@/lib/dashboard';
@@ -29,6 +29,15 @@ const getRepositoryDisplayText = (repositoryUrl: string): string => {
   return repositoryUrl.replace(/^https?:\/\/github\.com\//i, '');
 };
 
+const summarizeCommitMessage = (message: string, fallback: string): string => {
+  const normalized = message.replace(/\s+/g, ' ').trim();
+  if (!normalized) {
+    return fallback;
+  }
+
+  return normalized.length > 96 ? `${normalized.slice(0, 93)}...` : normalized;
+};
+
 export function OverviewPanel({
   dashboardData,
   providersCount,
@@ -52,10 +61,10 @@ export function OverviewPanel({
 
   useEffect(() => {
     const baseUptime = dashboardData.systemUptime;
-    const fetchedAt = Date.now();
+    const snapshotAt = dashboardData.uptimeSnapshotAt || Date.now();
 
     const updateDisplayedUptime = () => {
-      setDisplayedUptime(Math.max(0, baseUptime + (Date.now() - fetchedAt)));
+      setDisplayedUptime(Math.max(0, baseUptime + (Date.now() - snapshotAt)));
     };
 
     updateDisplayedUptime();
@@ -66,6 +75,7 @@ export function OverviewPanel({
 
   const repositoryUrl = normalizeRepositoryUrl(repository);
   const repositoryDisplayText = repositoryUrl ? getRepositoryDisplayText(repositoryUrl) : repository;
+  const latestCommitMessage = summarizeCommitMessage(dashboardData.latestCommitMessage, copy.versionUpdateFallback);
 
   return (
     <div className="space-y-5">
@@ -119,8 +129,19 @@ export function OverviewPanel({
             )}
 
             <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{copy.lastSyncLabel}</p>
-              <p className="mt-2 text-sm font-semibold">{formatTimestamp(dashboardData.lastSyncTime, locale)}</p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {copy.versionUpdateLabel}
+                </p>
+                <GitCommitHorizontal className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="mt-3 text-sm font-semibold">{formatTimestamp(dashboardData.latestCommitTimestamp, locale)}</p>
+              <p className="mt-1 line-clamp-2 text-xs leading-6 text-muted-foreground">{latestCommitMessage}</p>
+              {dashboardData.latestCommitShortHash ? (
+                <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  {dashboardData.latestCommitShortHash}
+                </p>
+              ) : null}
             </div>
           </div>
         </CardContent>

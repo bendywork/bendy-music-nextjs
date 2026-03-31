@@ -58,11 +58,14 @@ export const DEFAULT_DASHBOARD_DATA: DashboardData = {
   uptimeSnapshotAt: 0,
   recentRequests: [],
   serviceStatus: [
-    { name: 'kuwo', displayName: '酷我音乐', errorCount: 0, status: 'Normal' },
-    { name: 'qq', displayName: 'QQ 音乐', errorCount: 0, status: 'Normal' },
-    { name: 'netease', displayName: '网易云音乐', errorCount: 0, status: 'Normal' },
+    { name: 'kuwo', displayName: 'Kuwo Music', errorCount: 0, status: 'Normal' },
+    { name: 'qq', displayName: 'QQ Music', errorCount: 0, status: 'Normal' },
+    { name: 'netease', displayName: 'Netease Music', errorCount: 0, status: 'Normal' },
   ],
   lastSyncTime: 0,
+  latestCommitMessage: '',
+  latestCommitTimestamp: 0,
+  latestCommitShortHash: '',
 };
 
 export const formatUptime = (uptimeMs: number, locale: Locale = 'zh'): string => {
@@ -74,13 +77,13 @@ export const formatUptime = (uptimeMs: number, locale: Locale = 'zh'): string =>
 
   if (locale === 'zh') {
     if (days > 0) {
-      return `${days}天 ${hours}小时 ${minutes}分`;
+      return `${days}天 ${hours}小时 ${minutes}分钟`;
     }
     if (hours > 0) {
-      return `${hours}小时 ${minutes}分`;
+      return `${hours}小时 ${minutes}分钟`;
     }
     if (minutes > 0) {
-      return `${minutes}分 ${seconds}秒`;
+      return `${minutes}分钟 ${seconds}秒`;
     }
 
     return `${seconds}秒`;
