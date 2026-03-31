@@ -7,6 +7,7 @@ import { getQQToplist, getQQToplistSongs, createQQMusicService } from '@/modules
 import { createKuwoMusicService } from '@/modules/music/services/providers/kuwo';
 import { KuwoPublicService } from '@/modules/music/services/providers/kuwo/KuwoPublicService';
 import { dashboardService } from '@/lib/dashboard';
+import { checkManagedApiAccess } from '@/lib/server/admin-config-store';
 
 // 注册所有音乐服务商
 registerMusicProviders();
@@ -21,6 +22,17 @@ function recordRequest(provider: string, path: string, statusCode: number, durat
 
 function recordError(provider: string) {
   dashboardService.incrementErrorCount(provider);
+}
+
+function createManagedApiBlockedResponse(message: string, status: number): NextResponse {
+  return NextResponse.json(
+    {
+      code: status,
+      message,
+      data: null,
+    },
+    { status },
+  );
 }
 
 function createSearchService(source: string | null): MusicService | null {
@@ -56,6 +68,19 @@ export async function GET(request: NextRequest) {
     const rawLimit = Number.parseInt(searchParams.get('limit') || '20', 10);
     const limit = Number.isNaN(rawLimit) || rawLimit <= 0 ? 20 : rawLimit;
     const br = searchParams.get('br') || Quality.HIGH;
+
+    const accessResult = await checkManagedApiAccess({
+      method: request.method,
+      path,
+      requestType: type,
+      source,
+    });
+    if (accessResult && !accessResult.allowed) {
+      const response = createManagedApiBlockedResponse(accessResult.message, accessResult.httpStatus);
+      const duration = Date.now() - startTime;
+      recordRequest(source, path, response.status, duration);
+      return response;
+    }
 
     let response: NextResponse;
 

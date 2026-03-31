@@ -1,5 +1,5 @@
 import { getAppConfig, getRepositoryOverrideFromEnv, resolveProjectRepository } from '@/lib/server/global-config';
-import { STORE_KEYS, getStoredValue, readJsonFile } from '@/lib/server/data-store';
+import { loadSystemConfig } from '@/lib/server/admin-config-store';
 
 interface ParsedRepository {
   owner: string;
@@ -12,18 +12,6 @@ export interface RepoSyncResult {
   message: string;
   branch?: string;
 }
-
-interface SystemConfigShape {
-  configuration?: {
-    githubProjectPath?: string;
-  };
-}
-
-const DEFAULT_SYSTEM_CONFIG: SystemConfigShape = {
-  configuration: {
-    githubProjectPath: '',
-  },
-};
 
 const parseRepository = (repository: string): ParsedRepository | null => {
   const raw = repository.trim();
@@ -221,11 +209,7 @@ const upsertFileToGitHub = async (
 
 const getRepositoryFromSystemConfig = async (): Promise<string | null> => {
   try {
-    const sysConfig = await getStoredValue<SystemConfigShape>(
-      STORE_KEYS.SYS_CONFIG,
-      () => readJsonFile('sys.json', DEFAULT_SYSTEM_CONFIG),
-    );
-
+    const sysConfig = await loadSystemConfig();
     const repository = sysConfig.configuration?.githubProjectPath?.trim();
     return repository || null;
   } catch (error) {

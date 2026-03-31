@@ -1,5 +1,17 @@
 import type { DashboardData } from '@/lib/dashboard';
+import {
+  DEFAULT_SYSTEM_CONFIG_STATE,
+  createEmptyApi,
+  createEmptyProvider,
+  type ApiItem,
+  type ManagedStatus,
+  type ProviderItem,
+  type SystemConfigState,
+} from '@/lib/admin-config';
 import { getIntlLocale, type Locale } from '@/lib/i18n/locale';
+
+export type { ApiItem, ProviderItem, SystemConfigState };
+export { createEmptyApi, createEmptyProvider };
 
 export type DashboardMenuKey =
   | 'dashboard'
@@ -9,46 +21,12 @@ export type DashboardMenuKey =
   | 'config-management';
 
 export type DocTabKey = 'readme' | 'docs';
-export type ToggleStatus = 'enabled' | 'disabled';
+export type ToggleStatus = ManagedStatus;
 
 export interface UserInfo {
   login: string;
   avatar_url: string;
   name?: string;
-}
-
-export interface ProviderItem {
-  id: string;
-  name: string;
-  code: string;
-  category?: 'official' | 'personal';
-  nature?: 'openSource' | 'nonProfit' | 'paid';
-  url?: string;
-  status: ToggleStatus;
-  remark?: string;
-}
-
-export interface ApiItem {
-  id: string;
-  name: string;
-  path: string;
-  pathType: 'relative' | 'absolute';
-  method: string;
-  provider: string;
-  params: string;
-  headers: string;
-  status: ToggleStatus;
-  remark: string;
-}
-
-export interface SystemConfigState {
-  project: {
-    github: string;
-  };
-  api: {
-    timeout: number;
-    maxConcurrentRequests: number;
-  };
 }
 
 export interface SessionResponse {
@@ -66,15 +44,7 @@ export interface SessionResponse {
 export const DEFAULT_README = '# bendy-music-nextjs\n';
 export const DEFAULT_DOCS_PAGE = '';
 
-export const DEFAULT_SYSTEM_CONFIG: SystemConfigState = {
-  project: {
-    github: 'https://github.com/bendywork/bendy-music-nextjs',
-  },
-  api: {
-    timeout: 30,
-    maxConcurrentRequests: 100,
-  },
-};
+export const DEFAULT_SYSTEM_CONFIG: SystemConfigState = DEFAULT_SYSTEM_CONFIG_STATE;
 
 export const DEFAULT_USER: UserInfo = {
   login: 'admin',
@@ -94,30 +64,6 @@ export const DEFAULT_DASHBOARD_DATA: DashboardData = {
   ],
   lastSyncTime: 0,
 };
-
-export const createEmptyProvider = (): ProviderItem => ({
-  id: `provider-${Date.now()}`,
-  name: '',
-  code: '',
-  category: 'official',
-  nature: 'openSource',
-  url: '',
-  status: 'enabled',
-  remark: '',
-});
-
-export const createEmptyApi = (): ApiItem => ({
-  id: `api-${Date.now()}`,
-  name: '',
-  path: '',
-  pathType: 'relative',
-  method: 'GET',
-  provider: '',
-  params: '',
-  headers: '',
-  status: 'enabled',
-  remark: '',
-});
 
 export const formatUptime = (uptimeMs: number, locale: Locale = 'zh'): string => {
   const totalSeconds = Math.max(0, Math.floor(uptimeMs / 1000));
@@ -171,7 +117,7 @@ export const statusVariant = (status: string): 'success' | 'warning' | 'danger' 
   if (status === 'Normal' || status === 'enabled') {
     return 'success';
   }
-  if (status === 'Warning') {
+  if (status === 'Warning' || status === 'maintenance') {
     return 'warning';
   }
   return 'danger';

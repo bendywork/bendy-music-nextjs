@@ -40,6 +40,7 @@ import {
   type SystemConfigState,
   type UserInfo,
 } from '@/components/dashboard/types';
+import { getNextManagedStatus } from '@/lib/admin-config';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -160,7 +161,7 @@ export default function DashboardPage() {
         };
       };
 
-      const timeoutMs = Number(payload.configuration?.apiTimeout ?? 30000);
+      const timeoutMs = Number(payload.configuration?.apiTimeout ?? 300000);
       setSysConfig({
         project: {
           github: payload.configuration?.githubProjectPath || DEFAULT_SYSTEM_CONFIG.project.github,
@@ -326,7 +327,7 @@ export default function DashboardPage() {
       item.id === providerId
         ? {
             ...item,
-            status: (item.status === 'enabled' ? 'disabled' : 'enabled') as ProviderItem['status'],
+            status: getNextManagedStatus(item.status),
           }
         : item,
     );
@@ -339,7 +340,12 @@ export default function DashboardPage() {
       return;
     }
 
-    if (!editingApi.name.trim() || !editingApi.path.trim() || !editingApi.method.trim()) {
+    if (
+      !editingApi.name.trim()
+      || !editingApi.path.trim()
+      || !editingApi.method.trim()
+      || !editingApi.requestType.trim()
+    ) {
       setError(copy.messages.apiRequired);
       setSuccess('');
       return;
@@ -371,7 +377,7 @@ export default function DashboardPage() {
       item.id === apiId
         ? {
             ...item,
-            status: (item.status === 'enabled' ? 'disabled' : 'enabled') as ApiItem['status'],
+            status: getNextManagedStatus(item.status),
           }
         : item,
     );

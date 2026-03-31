@@ -3,6 +3,10 @@
     "name": "ddmusic-nextjs",
     "repository": "bendywork/bendy-music-nextjs"
   },
+  "docsAccess": {
+    "passwordEnvName": "DOCS_ACCESS_PASSWORD",
+    "defaultPassword": "fntp@polofox.com"
+  },
   "auth": {
     "github": {
       "admins": [

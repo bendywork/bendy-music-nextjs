@@ -1,17 +1,103 @@
 'use client';
 
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { FileText } from 'lucide-react';
 import { LocaleToggle } from '@/components/locale-toggle';
 import { useLocale } from '@/components/locale-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { siteCopy } from '@/lib/i18n/site';
 
-export function DocsPageShell({ docContent, hasError }: { docContent: string; hasError: boolean }) {
+export function DocsPageShell({
+  docContent,
+  hasError,
+  requiresPassword = false,
+}: {
+  docContent: string;
+  hasError: boolean;
+  requiresPassword?: boolean;
+}) {
+  const router = useRouter();
   const { locale } = useLocale();
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [isPending, startTransition] = useTransition();
   const copy = siteCopy[locale].docsPage;
-  const docsHeading = locale === 'zh' ? '顶点音乐API文档' : copy.description;
-  const docsFrameTitle = locale === 'zh' ? '顶点音乐API文档' : copy.frameTitle;
+  const docsHeading = locale === 'zh' ? '顶点音乐 API 文档' : copy.description;
+  const docsFrameTitle = locale === 'zh' ? '顶点音乐 API 文档' : copy.frameTitle;
+
+  const handleUnlock = () => {
+    setAuthError('');
+
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/docs/auth', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password }),
+        });
+
+        const payload = (await response.json().catch(() => ({}))) as { message?: string };
+        if (!response.ok) {
+          throw new Error(payload.message || '密码错误');
+        }
+
+        router.refresh();
+      } catch (error) {
+        setAuthError(error instanceof Error ? error.message : '密码错误');
+      }
+    });
+  };
+
+  if (requiresPassword) {
+    return (
+      <div className="min-h-screen bg-background px-4 py-6 text-foreground">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-2">
+          <LocaleToggle variant="outline" />
+          <ThemeToggle />
+        </div>
+        <div className="flex min-h-[calc(100vh-6rem)] items-center justify-center">
+          <Card className="w-full max-w-lg rounded-[2rem]">
+            <CardContent className="space-y-5 p-8">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-border bg-background/70">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div className="space-y-2 text-center">
+                <h1 className="text-2xl font-black tracking-[-0.04em]">
+                  {locale === 'zh' ? '文档访问受限' : 'Protected docs'}
+                </h1>
+                <p className="text-sm leading-7 text-muted-foreground">
+                  {locale === 'zh' ? '请输入访问密码后查看 /docs 内容。' : 'Enter the password to view the docs page.'}
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  placeholder={locale === 'zh' ? '请输入访问密码' : 'Enter password'}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') {
+                      handleUnlock();
+                    }
+                  }}
+                />
+                {authError ? <p className="text-sm text-destructive">{authError}</p> : null}
+                <Button type="button" className="w-full" disabled={isPending} onClick={handleUnlock}>
+                  {isPending ? (locale === 'zh' ? '验证中...' : 'Checking...') : (locale === 'zh' ? '进入文档' : 'Unlock docs')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   if (hasError || !docContent) {
     return (

@@ -327,3 +327,35 @@
   - 风险：历史数据中若存在无法自动恢复的个别字符串，仍可能需要人工二次校正。
   - 回滚：可回退本次页面文案与 `mojibake` 工具改动。
 - 备注：本次重点修复用户可见页面与文档编辑体验，注释内残留乱码不影响运行。
+
+## [v0.1.12] - 2026-03-31
+- 迭代类型：feat（结构化后台配置与文档访问控制）
+- 需求来源：修复 README 编辑器高度问题，为 `/docs` 增加密码访问，并将系统设置、服务商、接口配置升级为结构化数据库管理。
+- 变更摘要：完成 README 编辑器布局修复、`/docs` 密码门禁、系统配置独立表、服务商表/API 主表结构化存储与内置接口种子化，后台支持读取编辑修改删除并按状态控制接口放行。
+- 具体修改：
+  - 修改文件：`src/components/MarkdownEditor.tsx`、`src/components/docs-page-shell.tsx`、`src/app/docs/page.tsx`、`src/app/api/docs/auth/route.ts`
+  - 修改方式：修复 Markdown 编辑器高度问题，新增 `/docs` 密码校验接口与访问门禁页面。
+  - 关键实现：`DOCS_ACCESS_PASSWORD` 优先走环境变量，未配置时回退 `config/app.config.json` 默认值 `fntp@polofox.com`。
+  - 修改文件：`src/lib/admin-config.ts`、`src/lib/server/admin-config-store.ts`、`src/app/api/sys/route.ts`、`src/app/api/data/provider/route.ts`、`src/app/api/data/api/route.ts`、`db/migrations/20260331_structured_admin_config.sql`
+  - 修改方式：新增结构化后台配置模型与 PostgreSQL 持久化层，拆分系统配置表、服务商表、接口表。
+  - 关键实现：首次读取自动从 `sys.json`、`data/provider.json`、`data/api.json` 和旧存储回填数据，并内置网易云、酷我、QQ 三个平台接口记录。
+  - 修改文件：`src/app/api/route.ts`、`src/components/dashboard/provider-panel.tsx`、`src/components/dashboard/api-panel.tsx`、`src/components/dashboard/types.ts`
+  - 修改方式：后台界面改为三态管理（启用/维护中/禁用），服务商字段由 `URL` 改为 `BaseURL`，接口新增 `requestType` 字段。
+  - 关键实现：当接口或服务商状态为 `disabled` 时统一返回“该接口已下架”，为 `maintenance` 时返回“该接口维护中暂不可用”。
+  - 修改文件：`src/lib/server/global-config.ts`、`config/app.config.json`、`.env.example`、`.env.development.example`、`.env.staging.example`、`.env.production.example`、`README.md`、`src/lib/server/repo-sync.ts`、`src/lib/i18n/dashboard.ts`
+  - 修改方式：补充文档访问配置、部署说明、多语言文案与版本信息。
+  - 关键实现：README 明确新增迁移文件、`/docs` 密码规则、结构化表说明和状态放行规则。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，12 warning，为历史未使用变量 warning）。
+  - test：当前仓库暂无 `test` script，未执行。
+  - build：已执行 `npm run build`，通过。
+  - audit：本次未执行 `npm audit`。
+- 发布动作：
+  - 分支：待执行 `dev -> main -> push -> checkout dev`
+  - commit：待执行
+  - tag：未执行
+  - push：待执行
+- 风险与回滚：
+  - 风险：生产环境需补跑新迁移 `db/migrations/20260331_structured_admin_config.sql`，否则结构化配置接口无法正常落表。
+  - 回滚：可回退结构化存储层与新迁移，恢复旧 JSON/通用存储读取逻辑。
+- 备注：本次保留了旧 `app_data_store` 以兼容文档内容与历史回填，不影响新结构化表使用。

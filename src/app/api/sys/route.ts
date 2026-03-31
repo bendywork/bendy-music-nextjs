@@ -1,62 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { DEFAULT_SYSTEM_CONFIG_PAYLOAD, normalizeSystemConfigPayload, type SystemConfigPayload } from '@/lib/admin-config';
 import { getRepositoryOverrideFromEnv, toGitHubRepositoryUrl } from '@/lib/server/global-config';
-import { STORE_KEYS, getStoredValue, readJsonFile, setStoredValue, writeTextFile } from '@/lib/server/data-store';
+import { writeTextFile } from '@/lib/server/data-store';
+import { loadSystemConfig, saveSystemConfig } from '@/lib/server/admin-config-store';
 
-type SystemConfig = {
-  apiManagement: {
-    apis: unknown[];
-  };
-  providerManagement: {
-    providers: unknown[];
-  };
-  configuration: {
-    githubProjectPath: string;
-    apiTimeout: number;
-    maxConcurrentRequests: number;
-  };
-};
-
-const DEFAULT_SYS_CONFIG: SystemConfig = {
-  apiManagement: {
-    apis: [],
-  },
-  providerManagement: {
-    providers: [],
-  },
-  configuration: {
-    githubProjectPath: 'https://github.com/bendywork/bendy-music-nextjs',
-    apiTimeout: 300000,
-    maxConcurrentRequests: 100,
-  },
-};
-
-const normalizeSystemConfig = (value: Partial<SystemConfig>): SystemConfig => {
+const normalizeSystemConfig = (value: Partial<SystemConfigPayload>): SystemConfigPayload => {
+  const normalizedValue = normalizeSystemConfigPayload(value);
   const envRepositoryOverride = getRepositoryOverrideFromEnv();
   const repositoryUrl = envRepositoryOverride
     ? toGitHubRepositoryUrl(envRepositoryOverride)
     : toGitHubRepositoryUrl(value.configuration?.githubProjectPath);
 
   return {
-    ...DEFAULT_SYS_CONFIG,
-    ...value,
-    apiManagement: value.apiManagement ?? DEFAULT_SYS_CONFIG.apiManagement,
-    providerManagement: value.providerManagement ?? DEFAULT_SYS_CONFIG.providerManagement,
+    ...normalizedValue,
     configuration: {
-      ...DEFAULT_SYS_CONFIG.configuration,
-      ...(value.configuration ?? {}),
+      ...DEFAULT_SYSTEM_CONFIG_PAYLOAD.configuration,
+      ...normalizedValue.configuration,
       githubProjectPath: repositoryUrl,
     },
   };
 };
 
+const writeSysFileSafely = async (content: string): Promise<void> => {
+  try {
+    await writeTextFile('sys.json', content);
+  } catch (error) {
+    console.warn('Failed to write sys.json; keeping database value only:', error);
+  }
+};
+
 export async function GET() {
   try {
-    const sysConfig = await getStoredValue<SystemConfig>(
-      STORE_KEYS.SYS_CONFIG,
-      () => readJsonFile('sys.json', DEFAULT_SYS_CONFIG),
-    );
-
-    return NextResponse.json(normalizeSystemConfig(sysConfig));
+    return NextResponse.json(normalizeSystemConfig(await loadSystemConfig()));
   } catch (error) {
     console.error('Failed to read system config:', error);
     return NextResponse.json(
@@ -68,9 +43,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const sysConfig = normalizeSystemConfig((await request.json()) as Partial<SystemConfig>);
-    const stored = await setStoredValue(STORE_KEYS.SYS_CONFIG, sysConfig);
-    await writeTextFile('sys.json', `${JSON.stringify(stored, null, 2)}\n`);
+    const sysConfig = normalizeSystemConfig((await request.json()) as Partial<SystemConfigPayload>);
+    const stored = await saveSystemConfig(sysConfig);
+    await writeSysFileSafely(`${JSON.stringify(stored, null, 2)}\n`);
 
     return NextResponse.json({
       message: 'System config saved',
