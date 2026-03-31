@@ -384,13 +384,20 @@ export default function DashboardPage() {
     clearFeedback();
 
     try {
-      const payload = await postJson<{ repoSync?: { message?: string } }>(
+      const payload = await postJson<{ repoSync?: { ok?: boolean; committed?: boolean; message?: string } }>(
         '/api/data/docs/readme',
         { content: readmeContent },
         copy.messages.readmeSaveFailed,
       );
+
+      if (payload.repoSync?.ok === false) {
+        setSuccess(copy.messages.readmeSaved);
+        setError(payload.repoSync.message || copy.messages.readmeSaveFailed);
+        return;
+      }
+
       setSuccess(
-        payload.repoSync?.message
+        payload.repoSync?.committed && payload.repoSync.message
           ? `${copy.messages.readmeSavedAndSynced} ${payload.repoSync.message}`
           : copy.messages.readmeSaved,
       );
@@ -406,13 +413,20 @@ export default function DashboardPage() {
     setBusySection('docs-page');
 
     try {
-      const payload = await postJson<{ repoSync?: { message?: string } }>(
+      const payload = await postJson<{ repoSync?: { ok?: boolean; committed?: boolean; message?: string } }>(
         '/api/data/docs/api',
         { content: docsPageContent },
         copy.messages.docsSaveFailed,
       );
+
+      if (payload.repoSync?.ok === false) {
+        setSuccess(copy.messages.docsSaved);
+        setError(payload.repoSync.message || copy.messages.docsSaveFailed);
+        return;
+      }
+
       setSuccess(
-        payload.repoSync?.message
+        payload.repoSync?.committed && payload.repoSync.message
           ? `${copy.messages.docsSavedAndSynced} ${payload.repoSync.message}`
           : copy.messages.docsSaved,
       );

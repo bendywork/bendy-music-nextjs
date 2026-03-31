@@ -1,4 +1,7 @@
-import { Activity, Cable, Clock3, Sparkles } from 'lucide-react';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Activity, Cable, Clock3, ExternalLink, GitBranch, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { DashboardData, RecentRequest, ServiceStatus } from '@/lib/dashboard';
@@ -8,6 +11,23 @@ import { dashboardCopy, getServiceDisplayName } from '@/lib/i18n/dashboard';
 import type { Locale } from '@/lib/i18n/locale';
 
 type OverviewCopy = (typeof dashboardCopy)['zh']['overview'];
+
+const normalizeRepositoryUrl = (repository: string): string => {
+  const trimmed = repository.trim();
+  if (!trimmed) {
+    return '';
+  }
+
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return `https://github.com/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+};
+
+const getRepositoryDisplayText = (repositoryUrl: string): string => {
+  return repositoryUrl.replace(/^https?:\/\/github\.com\//i, '');
+};
 
 export function OverviewPanel({
   dashboardData,
@@ -28,6 +48,25 @@ export function OverviewPanel({
   locale: Locale;
   copy: OverviewCopy;
 }) {
+  const [displayedUptime, setDisplayedUptime] = useState(dashboardData.systemUptime);
+
+  useEffect(() => {
+    const baseUptime = dashboardData.systemUptime;
+    const fetchedAt = Date.now();
+
+    const updateDisplayedUptime = () => {
+      setDisplayedUptime(Math.max(0, baseUptime + (Date.now() - fetchedAt)));
+    };
+
+    updateDisplayedUptime();
+    const intervalId = window.setInterval(updateDisplayedUptime, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [dashboardData.systemStartedAt, dashboardData.systemUptime, dashboardData.uptimeSnapshotAt]);
+
+  const repositoryUrl = normalizeRepositoryUrl(repository);
+  const repositoryDisplayText = repositoryUrl ? getRepositoryDisplayText(repositoryUrl) : repository;
+
   return (
     <div className="space-y-5">
       <SectionIntro title={copy.sectionTitle} description={copy.sectionDescription} badge={copy.badge} />
@@ -46,10 +85,39 @@ export function OverviewPanel({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{copy.repositoryLabel}</p>
-              <p className="mt-2 break-all text-sm font-semibold">{repository}</p>
-            </div>
+            {repositoryUrl ? (
+              <a
+                href={repositoryUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${copy.repositoryLabel}: ${repositoryDisplayText}`}
+                className="group rounded-[1.5rem] border border-border bg-background/65 p-4 transition-colors hover:border-foreground/20 hover:bg-background/95"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {copy.repositoryLabel}
+                  </p>
+                  <GitBranch className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold">GitHub</p>
+                    <p className="mt-1 break-all text-xs text-muted-foreground">{repositoryDisplayText}</p>
+                  </div>
+                  <div className="rounded-xl border border-border bg-background/90 p-2 transition-colors group-hover:border-foreground/20">
+                    <ExternalLink className="h-4 w-4" />
+                  </div>
+                </div>
+              </a>
+            ) : (
+              <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  {copy.repositoryLabel}
+                </p>
+                <p className="mt-2 break-all text-sm font-semibold">{repository}</p>
+              </div>
+            )}
+
             <div className="rounded-[1.5rem] border border-border bg-background/65 p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{copy.lastSyncLabel}</p>
               <p className="mt-2 text-sm font-semibold">{formatTimestamp(dashboardData.lastSyncTime, locale)}</p>
@@ -79,7 +147,7 @@ export function OverviewPanel({
         />
         <MetricCard
           title={copy.uptimeTitle}
-          value={formatUptime(dashboardData.systemUptime, locale)}
+          value={formatUptime(displayedUptime, locale)}
           detail={copy.uptimeDetail}
           icon={Clock3}
         />

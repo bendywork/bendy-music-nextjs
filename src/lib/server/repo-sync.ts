@@ -10,6 +10,7 @@ export interface RepoSyncResult {
   ok: boolean;
   committed: boolean;
   message: string;
+  branch?: string;
 }
 
 interface SystemConfigShape {
@@ -57,6 +58,104 @@ const encodePath = (filePath: string): string => {
     .join('/');
 };
 
+const createGitHubHeaders = (token: string, includeJsonContentType = false): HeadersInit => {
+  return {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28',
+    ...(includeJsonContentType ? { 'Content-Type': 'application/json' } : {}),
+  };
+};
+
+const readRepositoryDefaultBranch = async (
+  owner: string,
+  repo: string,
+  token: string,
+): Promise<string | null> => {
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+    method: 'GET',
+    headers: createGitHubHeaders(token),
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to read repository metadata: ${errorText}`);
+  }
+
+  const payload = (await response.json()) as { default_branch?: string };
+  return payload.default_branch?.trim() || null;
+};
+
+const branchExists = async (
+  owner: string,
+  repo: string,
+  branch: string,
+  token: string,
+): Promise<boolean> => {
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/branches/${encodeURIComponent(branch)}`,
+    {
+      method: 'GET',
+      headers: createGitHubHeaders(token),
+      cache: 'no-store',
+    },
+  );
+
+  if (response.status === 404) {
+    return false;
+  }
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to read branch ${branch}: ${errorText}`);
+  }
+
+  return true;
+};
+
+const resolveTargetBranch = async (
+  owner: string,
+  repo: string,
+  preferredBranch: string,
+  token: string,
+): Promise<string> => {
+  const normalizedPreferredBranch = preferredBranch.trim();
+  let defaultBranch: string | null = null;
+
+  try {
+    defaultBranch = await readRepositoryDefaultBranch(owner, repo, token);
+  } catch (error) {
+    console.warn('Failed to resolve repository default branch:', error);
+  }
+
+  if (!normalizedPreferredBranch) {
+    return defaultBranch || 'main';
+  }
+
+  if (defaultBranch && normalizedPreferredBranch === defaultBranch) {
+    return normalizedPreferredBranch;
+  }
+
+  try {
+    if (await branchExists(owner, repo, normalizedPreferredBranch, token)) {
+      return normalizedPreferredBranch;
+    }
+  } catch (error) {
+    console.warn(`Failed to validate configured branch "${normalizedPreferredBranch}":`, error);
+    return normalizedPreferredBranch;
+  }
+
+  if (defaultBranch) {
+    console.warn(
+      `Configured branch "${normalizedPreferredBranch}" not found for ${owner}/${repo}, falling back to "${defaultBranch}"`,
+    );
+    return defaultBranch;
+  }
+
+  return normalizedPreferredBranch;
+};
+
 const readExistingSha = async (
   owner: string,
   repo: string,
@@ -67,11 +166,7 @@ const readExistingSha = async (
   const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodePath(filePath)}?ref=${encodeURIComponent(branch)}`;
   const response = await fetch(url, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
+    headers: createGitHubHeaders(token),
     cache: 'no-store',
   });
 
@@ -104,12 +199,7 @@ const upsertFileToGitHub = async (
 
   const response = await fetch(url, {
     method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'Content-Type': 'application/json',
-    },
+    headers: createGitHubHeaders(token, true),
     body: JSON.stringify({
       message: commitMessage,
       branch,
@@ -184,10 +274,17 @@ export const syncDocToRepository = async (
   const commitMessage = `${docsSyncConfig.commit.messagePrefix}: update ${targetPath}`;
 
   try {
-    await upsertFileToGitHub(
+    const targetBranch = await resolveTargetBranch(
       parsedRepo.owner,
       parsedRepo.name,
       docsSyncConfig.branch,
+      token,
+    );
+
+    await upsertFileToGitHub(
+      parsedRepo.owner,
+      parsedRepo.name,
+      targetBranch,
       targetPath,
       content,
       commitMessage,
@@ -199,7 +296,8 @@ export const syncDocToRepository = async (
     return {
       ok: true,
       committed: true,
-      message: `Committed ${targetPath} to ${parsedRepo.owner}/${parsedRepo.name}@${docsSyncConfig.branch}`,
+      message: `Committed ${targetPath} to ${parsedRepo.owner}/${parsedRepo.name}@${targetBranch}`,
+      branch: targetBranch,
     };
   } catch (error) {
     return {

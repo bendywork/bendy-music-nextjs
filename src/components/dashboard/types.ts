@@ -84,6 +84,8 @@ export const DEFAULT_USER: UserInfo = {
 export const DEFAULT_DASHBOARD_DATA: DashboardData = {
   proxyRequestCount: 0,
   systemUptime: 0,
+  systemStartedAt: 0,
+  uptimeSnapshotAt: 0,
   recentRequests: [],
   serviceStatus: [
     { name: 'kuwo', displayName: '酷我音乐', errorCount: 0, status: 'Normal' },

@@ -1,6 +1,8 @@
-﻿export interface DashboardData {
+export interface DashboardData {
   proxyRequestCount: number;
   systemUptime: number;
+  systemStartedAt: number;
+  uptimeSnapshotAt: number;
   recentRequests: RecentRequest[];
   serviceStatus: ServiceStatus[];
   lastSyncTime: number;
@@ -22,52 +24,83 @@ export interface ServiceStatus {
   status: 'Normal' | 'Warning' | 'Error';
 }
 
+const MAX_RECENT_REQUESTS = 100;
+const HOURLY_SYNC_INTERVAL_MS = 60 * 60 * 1000;
+
+const getProcessStartedAt = (): number => {
+  return Math.max(0, Date.now() - Math.floor(process.uptime() * 1000));
+};
+
+const createDefaultDashboardData = (startedAt: number): DashboardData => {
+  const now = Date.now();
+
+  return {
+    proxyRequestCount: 0,
+    systemUptime: Math.max(0, now - startedAt),
+    systemStartedAt: startedAt,
+    uptimeSnapshotAt: now,
+    recentRequests: [],
+    serviceStatus: [
+      { name: 'kuwo', displayName: '酷我音乐', errorCount: 0, status: 'Normal' },
+      { name: 'qq', displayName: 'QQ音乐', errorCount: 0, status: 'Normal' },
+      { name: 'netease', displayName: '网易云音乐', errorCount: 0, status: 'Normal' },
+    ],
+    lastSyncTime: 0,
+  };
+};
+
 class DashboardService {
   private data: DashboardData;
   private syncTimer: NodeJS.Timeout | null = null;
-  private startTime: number;
+  private readonly startedAt: number;
+  private initialized = false;
 
   constructor() {
-    this.startTime = Date.now();
-    this.data = {
-      proxyRequestCount: 0,
-      systemUptime: 0,
-      recentRequests: [],
-      serviceStatus: [
-        { name: 'kuwo', displayName: '酷我音乐', errorCount: 0, status: 'Normal' },
-        { name: 'qq', displayName: 'QQ音乐', errorCount: 0, status: 'Normal' },
-        { name: 'Netease', displayName: '网易云音乐', errorCount: 0, status: 'Normal' }
-      ],
-      lastSyncTime: Date.now()
-    };
+    this.startedAt = getProcessStartedAt();
+    this.data = createDefaultDashboardData(this.startedAt);
   }
 
-  initialize() {
-    if (this.syncTimer) {
-      clearInterval(this.syncTimer);
+  private refreshUptime(): void {
+    const now = Date.now();
+    this.data.systemStartedAt = this.startedAt;
+    this.data.systemUptime = Math.max(0, now - this.startedAt);
+    this.data.uptimeSnapshotAt = now;
+  }
+
+  initialize(): void {
+    if (this.initialized) {
+      return;
     }
+
+    this.initialized = true;
+    this.refreshUptime();
     this.syncTimer = setInterval(() => {
-      this.syncToFile();
-    }, 60 * 60 * 1000);
-    console.log('Dashboard服务已启动，每小时自动同步到GitHub');
+      void this.syncToFile();
+    }, HOURLY_SYNC_INTERVAL_MS);
+    console.log('Dashboard service initialized with hourly persistence sync');
   }
 
-  incrementRequestCount(provider: string = '-', path: string = '/', statusCode: number = 200, duration: number = 0) {
-    this.data.proxyRequestCount++;
-    this.data.systemUptime = Date.now() - this.startTime;
+  incrementRequestCount(
+    provider: string = '-',
+    path: string = '/',
+    statusCode: number = 200,
+    duration: number = 0,
+  ): void {
+    this.refreshUptime();
+    this.data.proxyRequestCount += 1;
 
     const recentRequest: RecentRequest = {
       timestamp: Date.now(),
-      path: path,
-      provider: provider,
-      statusCode: statusCode,
-      duration: duration,
-      success: statusCode >= 200 && statusCode < 400
+      path,
+      provider,
+      statusCode,
+      duration,
+      success: statusCode >= 200 && statusCode < 400,
     };
 
     this.data.recentRequests.unshift(recentRequest);
-    if (this.data.recentRequests.length > 100) {
-      this.data.recentRequests = this.data.recentRequests.slice(0, 100);
+    if (this.data.recentRequests.length > MAX_RECENT_REQUESTS) {
+      this.data.recentRequests = this.data.recentRequests.slice(0, MAX_RECENT_REQUESTS);
     }
 
     if (!recentRequest.success && provider !== '-') {
@@ -75,46 +108,41 @@ class DashboardService {
     }
   }
 
-  incrementErrorCount(provider: string) {
-    const service = this.data.serviceStatus.find(s => s.name.toLowerCase() === provider.toLowerCase());
-    if (service) {
-      service.errorCount++;
-      this.updateServiceStatus(service);
+  incrementErrorCount(provider: string): void {
+    const service = this.data.serviceStatus.find((item) => item.name.toLowerCase() === provider.toLowerCase());
+    if (!service) {
+      return;
     }
+
+    service.errorCount += 1;
+    this.updateServiceStatus(service);
   }
 
-  private updateServiceStatus(service: ServiceStatus) {
+  private updateServiceStatus(service: ServiceStatus): void {
     if (service.errorCount >= 1000) {
       service.status = 'Error';
-    } else if (service.errorCount >= 100) {
-      service.status = 'Warning';
-    } else {
-      service.status = 'Normal';
+      return;
     }
+
+    if (service.errorCount >= 100) {
+      service.status = 'Warning';
+      return;
+    }
+
+    service.status = 'Normal';
   }
 
   getData(): DashboardData {
-    this.data.systemUptime = Date.now() - this.startTime;
-    return { ...this.data };
+    this.refreshUptime();
+
+    return {
+      ...this.data,
+      recentRequests: [...this.data.recentRequests],
+      serviceStatus: this.data.serviceStatus.map((service) => ({ ...service })),
+    };
   }
 
-  getServiceStatus(): ServiceStatus[] {
-    return [...this.data.serviceStatus];
-  }
-
-  getRecentRequests(): RecentRequest[] {
-    return [...this.data.recentRequests];
-  }
-
-  getProxyRequestCount(): number {
-    return this.data.proxyRequestCount;
-  }
-
-  getSystemUptime(): number {
-    return this.data.systemUptime;
-  }
-
-  async syncToFile() {
+  async syncToFile(): Promise<void> {
     try {
       const baseUrl = process.env.APP_BASE_URL?.replace(/\/$/, '')
         || process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
@@ -127,19 +155,20 @@ class DashboardService {
       const response = await fetch(`${baseUrl}/api/data/dashboard`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(this.data)
+        body: JSON.stringify(this.getData()),
       });
 
-      if (response.ok) {
-        this.data.lastSyncTime = Date.now();
-        console.log('Dashboard数据已同步到GitHub');
-      } else {
-        console.warn('Dashboard数据同步到GitHub失败');
+      if (!response.ok) {
+        console.warn('Dashboard data persistence sync failed');
+        return;
       }
+
+      this.data.lastSyncTime = Date.now();
+      console.log('Dashboard data persisted successfully');
     } catch (error) {
-      console.error('Dashboard数据同步失败:', error);
+      console.error('Dashboard data sync failed:', error);
     }
   }
 
@@ -151,13 +180,17 @@ class DashboardService {
 
     if (days > 0) {
       return `${days}d ${hours % 24}h ${minutes % 60}m`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
     }
+
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    }
+
+    if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    }
+
+    return `${seconds}s`;
   }
 }
 

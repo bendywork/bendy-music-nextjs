@@ -1,6 +1,8 @@
 ﻿{
   "proxyRequestCount": 0,
   "systemUptime": 0,
+  "systemStartedAt": 0,
+  "uptimeSnapshotAt": 0,
   "recentRequests": [],
   "serviceStatus": [
     {
