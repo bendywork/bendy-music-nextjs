@@ -1,21 +1,15 @@
-﻿import { Plus, Save, Trash2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Plus, Save, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { EmptyRow, SectionIntro, TableShell, controlClassName } from '@/components/dashboard/shared';
-import { statusVariant, type ProviderItem } from '@/components/dashboard/types';
+import type { ProviderItem } from '@/components/dashboard/types';
 import { dashboardCopy } from '@/lib/i18n/dashboard';
 
 type ProviderCopy = (typeof dashboardCopy)['zh']['providers'];
 
-const getProviderStatusLabel = (copy: ProviderCopy, status: ProviderItem['status']): string => {
-  if (status === 'maintenance') {
-    return 'Maintenance';
-  }
-
-  return (copy.statusLabels as Record<string, string>)[status] ?? status;
-};
+const rowSelectClassName =
+  'h-10 min-w-[112px] rounded-xl border border-input bg-background/90 px-3 py-1 text-xs font-semibold outline-none transition-colors focus-visible:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring/30';
 
 export function ProviderPanel({
   providers,
@@ -27,7 +21,7 @@ export function ProviderPanel({
   onChange,
   onSave,
   onDelete,
-  onToggleStatus,
+  onStatusChange,
   copy,
 }: {
   providers: ProviderItem[];
@@ -39,7 +33,7 @@ export function ProviderPanel({
   onChange: (provider: ProviderItem) => void;
   onSave: () => void;
   onDelete: (providerId: string) => void;
-  onToggleStatus: (providerId: string) => void;
+  onStatusChange: (providerId: string, status: ProviderItem['status']) => void;
   copy: ProviderCopy;
 }) {
   return (
@@ -138,7 +132,7 @@ export function ProviderPanel({
                 className={controlClassName}
               >
                 <option value="enabled">{copy.statusLabels.enabled}</option>
-                <option value="maintenance">Maintenance</option>
+                <option value="maintenance">{copy.statusLabels.maintenance}</option>
                 <option value="disabled">{copy.statusLabels.disabled}</option>
               </select>
             </div>
@@ -187,9 +181,15 @@ export function ProviderPanel({
                   <td className="px-4 py-3">{copy.natureLabels[provider.nature || 'openSource']}</td>
                   <td className="max-w-[280px] px-4 py-3 font-mono text-xs">{provider.baseUrl || '-'}</td>
                   <td className="px-4 py-3">
-                    <button type="button" onClick={() => onToggleStatus(provider.id)}>
-                      <Badge variant={statusVariant(provider.status)}>{getProviderStatusLabel(copy, provider.status)}</Badge>
-                    </button>
+                    <select
+                      value={provider.status}
+                      onChange={(event) => onStatusChange(provider.id, event.target.value as ProviderItem['status'])}
+                      className={rowSelectClassName}
+                    >
+                      <option value="enabled">{copy.statusLabels.enabled}</option>
+                      <option value="maintenance">{copy.statusLabels.maintenance}</option>
+                      <option value="disabled">{copy.statusLabels.disabled}</option>
+                    </select>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground">{provider.remark || '-'}</td>
                   <td className="px-4 py-3">

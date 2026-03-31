@@ -414,3 +414,32 @@
   - 风险：若部署环境的 `DATABASE_URL` 不可用，dashboard 仍会回退到文件默认值，运行时长将无法跨实例持久化。
   - 回滚：可回退 dashboard 持久化逻辑和构建元数据脚本，恢复原有前端本地计时与最近同步展示。
 - 备注：本次未新增数据库结构迁移，沿用现有 `app_data_store` 表承载 runtime 持久化数据。
+
+## [v0.1.15] - 2026-03-31
+- 迭代类型：feat（后台状态交互与接口调试页）
+- 需求来源：服务商/接口状态切换交互不直观；接口列表缺少调试入口；页面内成功提示不自动消失且不够醒目。
+- 变更摘要：将服务商与接口状态切换改为下拉选择，新增接口调试详情页和服务端调试请求路由，并将后台所有保存/失败提示统一替换为 1.9 秒自动消失的全局 toast。
+- 具体修改：
+  - 修改文件：`src/components/dashboard/provider-panel.tsx`、`src/components/dashboard/api-panel.tsx`、`src/app/dashboard/page.tsx`、`src/lib/i18n/dashboard.ts`
+  - 修改方式：把表格中的状态 badge 切换改为下拉状态选择，维护状态统一使用中文文案，并在接口操作列新增“调试”按钮。
+  - 关键实现：状态切换不再按点击轮转，避免误操作和样式抖动；接口列表可直接跳转到对应调试页。
+  - 修改文件：`src/components/ui/toast-provider.tsx`、`src/app/layout.tsx`、`src/app/globals.css`
+  - 修改方式：新增全局 toast provider，并接入根布局和进入动画样式。
+  - 关键实现：后台保存成功、校验失败、同步失败等提示统一使用 toast 展示，1.9 秒后自动消失。
+  - 修改文件：`src/app/dashboard/api-debug/[apiId]/page.tsx`、`src/app/api/debug/request/route.ts`
+  - 修改方式：新增接口调试详情页和服务端调试请求路由，支持加载当前接口配置、编辑参数/请求头/Body 后发起调试请求并查看响应。
+  - 关键实现：调试页会自动带入接口配置和 `requestType`，服务端负责解析目标地址、拼接查询参数、代理请求并返回状态码、耗时、响应头和响应体。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，12 warning，为历史未使用变量 warning）。
+  - test：已执行 `npm test`，失败（仓库未定义 `test` script）。
+  - build：已执行 `npm run build`，通过。
+  - audit：已执行 `npm audit --audit-level=high`，存在 2 条 moderate 漏洞，无 high/critical。
+- 发布动作：
+  - 分支：`dev -> main -> push -> checkout dev`
+  - commit：`chore(release): v0.1.15 迭代完成`
+  - tag：未执行
+  - push：已执行到 `origin/dev` 与 `origin/main`
+- 风险与回滚：
+  - 风险：调试页请求外部绝对地址时仍受目标站点可达性和超时配置影响，非 2xx 会作为调试结果展示。
+  - 回滚：可回退 toast provider、状态下拉交互和调试路由，恢复原有页面内提示与列表操作。
+- 备注：调试路由目前要求管理员会话 cookie 才能调用，避免被外部直接当作开放代理使用。
