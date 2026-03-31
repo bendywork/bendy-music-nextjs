@@ -47,6 +47,9 @@ export interface GitHubAuthRuntimeConfig {
   scopes: string[];
 }
 
+export const DEFAULT_PROJECT_REPOSITORY = 'bendywork/bendy-music-nextjs';
+export const LEGACY_PROJECT_REPOSITORY = 'yokeay/ddmusic-nextjs';
+
 const DEFAULT_RELEASE_CONFIG: ReleaseConfig = {
   version: '0.1.0',
   major: 0,
@@ -59,7 +62,7 @@ const DEFAULT_RELEASE_CONFIG: ReleaseConfig = {
 const DEFAULT_APP_CONFIG: AppConfig = {
   project: {
     name: 'ddmusic-nextjs',
-    repository: 'yokeay/ddmusic-nextjs',
+    repository: DEFAULT_PROJECT_REPOSITORY,
   },
   auth: {
     github: {
@@ -88,6 +91,49 @@ const DEFAULT_APP_CONFIG: AppConfig = {
 const RELEASE_CONFIG_PATH = path.join(process.cwd(), 'config', 'release.config.json');
 const APP_CONFIG_PATH = path.join(process.cwd(), 'config', 'app.config.json');
 const stripBom = (value: string): string => value.replace(/^\uFEFF/, '');
+
+export const normalizeGitHubRepository = (value?: string | null): string => {
+  const raw = value?.trim();
+  if (!raw) {
+    return '';
+  }
+
+  const match = raw.match(/github\.com\/([^/]+)\/([^/]+)/i);
+  if (match) {
+    return `${match[1]}/${match[2].replace(/\.git$/i, '')}`;
+  }
+
+  const [owner, name] = raw.replace(/^\/+|\/+$/g, '').split('/');
+  if (!owner || !name) {
+    return '';
+  }
+
+  return `${owner}/${name.replace(/\.git$/i, '')}`;
+};
+
+export const isLegacyProjectRepository = (value?: string | null): boolean => {
+  return normalizeGitHubRepository(value) === LEGACY_PROJECT_REPOSITORY;
+};
+
+export const resolveProjectRepository = (value?: string | null): string => {
+  const normalized = normalizeGitHubRepository(value);
+  if (!normalized || isLegacyProjectRepository(normalized)) {
+    return DEFAULT_PROJECT_REPOSITORY;
+  }
+
+  return normalized;
+};
+
+export const toGitHubRepositoryUrl = (value?: string | null): string => {
+  const repository = resolveProjectRepository(value);
+  return `https://github.com/${repository}`;
+};
+
+export const getRepositoryOverrideFromEnv = (): string | null => {
+  const envRepository = process.env.GITHUB_REPO?.trim() || process.env.PROJECT_REPOSITORY?.trim();
+  const normalized = normalizeGitHubRepository(envRepository);
+  return normalized || null;
+};
 
 const parseCsv = (value?: string): string[] => {
   if (!value) {
@@ -139,7 +185,7 @@ export const getAppConfig = (): AppConfig => {
   const fileConfig = readJsonWithFallback<Partial<AppConfig>>(APP_CONFIG_PATH, DEFAULT_APP_CONFIG);
   const envAdmins = parseCsv(process.env.GITHUB_ADMIN_USERS);
   const envScopes = parseCsv(process.env.GITHUB_OAUTH_SCOPES);
-  const envRepository = process.env.GITHUB_REPO?.trim() || process.env.PROJECT_REPOSITORY?.trim();
+  const envRepository = getRepositoryOverrideFromEnv();
   const envSyncEnabled = parseBoolean(process.env.DOCS_REPO_SYNC_ENABLED);
   const envSyncBranch = process.env.DOCS_REPO_SYNC_BRANCH?.trim();
   const envTokenEnvName = process.env.DOCS_REPO_TOKEN_ENV?.trim();
@@ -186,7 +232,7 @@ export const getAppConfig = (): AppConfig => {
     ...mergedConfig,
     project: {
       ...mergedConfig.project,
-      repository: envRepository || mergedConfig.project.repository,
+      repository: envRepository || resolveProjectRepository(mergedConfig.project.repository),
     },
     auth: {
       ...mergedConfig.auth,

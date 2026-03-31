@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "ddmusic-nextjs",
-    "repository": "yokeay/ddmusic-nextjs"
+    "repository": "bendywork/bendy-music-nextjs"
   },
   "auth": {
     "github": {

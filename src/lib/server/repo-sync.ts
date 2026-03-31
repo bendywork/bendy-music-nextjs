@@ -1,4 +1,4 @@
-import { getAppConfig } from '@/lib/server/global-config';
+import { getAppConfig, getRepositoryOverrideFromEnv, resolveProjectRepository } from '@/lib/server/global-config';
 import { STORE_KEYS, getStoredValue, readJsonFile } from '@/lib/server/data-store';
 
 interface ParsedRepository {
@@ -249,7 +249,8 @@ export const syncDocToRepository = async (
     };
   }
 
-  const configuredRepository = await getRepositoryFromSystemConfig() ?? appConfig.project.repository;
+  const configuredRepository = getRepositoryOverrideFromEnv()
+    ?? resolveProjectRepository(await getRepositoryFromSystemConfig() ?? appConfig.project.repository);
   const parsedRepo = parseRepository(configuredRepository);
   if (!parsedRepo) {
     return {

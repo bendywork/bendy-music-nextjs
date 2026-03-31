@@ -68,7 +68,7 @@ export const DEFAULT_DOCS_PAGE = '';
 
 export const DEFAULT_SYSTEM_CONFIG: SystemConfigState = {
   project: {
-    github: 'https://github.com/yokeay/ddmusic-nextjs',
+    github: 'https://github.com/bendywork/bendy-music-nextjs',
   },
   api: {
     timeout: 30,

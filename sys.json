@@ -6,7 +6,7 @@
     "providers": []
   },
   "configuration": {
-    "githubProjectPath": "https://github.com/yokeay/ddmusic-nextjs",
+    "githubProjectPath": "https://github.com/bendywork/bendy-music-nextjs",
     "apiTimeout": 300000,
     "maxConcurrentRequests": 100
   }

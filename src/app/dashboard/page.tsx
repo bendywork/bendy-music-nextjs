@@ -455,6 +455,7 @@ export default function DashboardPage() {
         },
         copy.messages.settingsSaveFailed,
       );
+      await loadSysConfig();
       setSuccess(copy.messages.settingsSaved);
     } catch (persistError) {
       setError(persistError instanceof Error ? persistError.message : copy.messages.settingsSaveFailed);
