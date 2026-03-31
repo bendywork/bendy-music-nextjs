@@ -359,3 +359,29 @@
   - 风险：生产环境需补跑新迁移 `db/migrations/20260331_structured_admin_config.sql`，否则结构化配置接口无法正常落表。
   - 回滚：可回退结构化存储层与新迁移，恢复旧 JSON/通用存储读取逻辑。
 - 备注：本次保留了旧 `app_data_store` 以兼容文档内容与历史回填，不影响新结构化表使用。
+
+## [v0.1.13] - 2026-03-31
+- 迭代类型：fix（Vercel 部署配置修复）
+- 需求来源：Vercel 构建阶段读取 `/vercel/path0/package.json` 失败，提示 UTF-8 BOM 导致 JSON 非法。
+- 变更摘要：移除 `package.json` 与版本配置文件的 UTF-8 BOM，保证 Vercel/Node 可直接解析；同步补丁版本号并修正文档记录。
+- 具体修改：
+  - 修改文件：`package.json`
+  - 修改方式：重写为无 BOM 的标准 UTF-8 JSON，并同步版本到 `0.1.13`。
+  - 关键实现：消除开头 `EF BB BF` 字节，修复 Vercel `Unexpected token '﻿'` 报错。
+  - 修改文件：`config/release.config.json`、`package-lock.json`
+  - 修改方式：同步统一版本源到 `v0.1.13`，并移除版本配置文件中的 BOM。
+  - 关键实现：仓库内主版本源与锁文件版本保持一致，避免后续发布记录错位。
+- 测试与验证：
+  - lint：已执行 `npm run lint`，通过（0 error，12 warning，为历史未使用变量 warning）。
+  - test：已执行 `npm test`，失败（仓库未定义 `test` script）。
+  - build：已执行 `npm run build`，通过。
+  - audit：已执行 `npm audit --audit-level=high`，存在 2 条 moderate 漏洞，无 high/critical。
+- 发布动作：
+  - 分支：`dev -> main -> push -> checkout dev`
+  - commit：`chore(release): v0.1.13 迭代完成`
+  - tag：未执行
+  - push：已执行到 `origin/dev` 与 `origin/main`
+- 风险与回滚：
+  - 风险：若后续继续使用会写入 BOM 的编辑器直接改 JSON 文件，部署错误可能再次出现。
+  - 回滚：可回退 `package.json`、`config/release.config.json` 与 `package-lock.json` 到上一个稳定提交。
+- 备注：本次发布同时覆盖并完成了 `v0.1.12` 记录中待执行的分支发布流程。
