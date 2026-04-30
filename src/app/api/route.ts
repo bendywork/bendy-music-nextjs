@@ -6,6 +6,7 @@ import { getNeteaseToplist, getNeteaseToplistSongs, createNeteaseMusicService } 
 import { getQQToplist, getQQToplistSongs, createQQMusicService } from '@/modules/music/services/providers/qq';
 import { createKuwoMusicService } from '@/modules/music/services/providers/kuwo';
 import { KuwoPublicService } from '@/modules/music/services/providers/kuwo/KuwoPublicService';
+import { getBilibiliToplist, getBilibiliToplistSongs, getBilibiliPlaylistDetail, createBilibiliMusicService, BilibiliMusicService } from '@/modules/music/services/providers/bilibili';
 import { dashboardService } from '@/lib/dashboard';
 import { checkManagedApiAccess } from '@/lib/server/admin-config-store';
 
@@ -43,6 +44,8 @@ function createSearchService(source: string | null): MusicService | null {
       return createQQMusicService(Provider.TUNEHUB);
     case Platform.KUWO:
       return createKuwoMusicService(Provider.TUNEHUB);
+    case Platform.BILIBILI:
+      return createBilibiliMusicService(Provider.TUNEHUB);
     default:
       return null;
   }
@@ -90,7 +93,7 @@ export async function GET(request: NextRequest) {
         response = await handleGetSongInfo(provider, source, id);
         break;
       case 'url':
-        response = NextResponse.json({ code: 404, message: 'Music url endpoint not implemented' }, { status: 404 });
+        response = await handleGetAudioUrl(source, id, br);
         break;
       case 'pic':
         response = NextResponse.json({ code: 404, message: 'Album cover endpoint not implemented' }, { status: 404 });
@@ -215,7 +218,18 @@ async function handleGetPlaylistDetail(provider: string, source: string | null, 
     if (source === 'kuwo') {
       const kuwoPublicService = new KuwoPublicService();
       const playlistDetail = await kuwoPublicService.getPlaylistDetail(id);
-      
+
+      return NextResponse.json({
+        code: 200,
+        message: 'success',
+        data: playlistDetail,
+      });
+    }
+
+    // 对于Bilibili，使用独立服务
+    if (source === 'bilibili') {
+      const playlistDetail = await getBilibiliPlaylistDetail(id);
+
       return NextResponse.json({
         code: 200,
         message: 'success',
@@ -269,6 +283,9 @@ async function handleGetToplists(source: string | null): Promise<NextResponse> {
         const kuwoPublicService = new KuwoPublicService();
         toplist = await kuwoPublicService.getToplist();
         break;
+      case 'bilibili':
+        toplist = await getBilibiliToplist();
+        break;
       default:
         return NextResponse.json({ code: 400, message: 'Unsupported platform' }, { status: 400 });
     }
@@ -316,8 +333,11 @@ async function handleGetToplistSongs(source: string | null, id: string | null): 
         toplistSongs = await getQQToplistSongs(id);
         break;
       case 'kuwo':
-        const kuwoPublicService = new KuwoPublicService();
-        toplistSongs = await kuwoPublicService.getToplistSongs(id);
+        const kuwoPublicService2 = new KuwoPublicService();
+        toplistSongs = await kuwoPublicService2.getToplistSongs(id);
+        break;
+      case 'bilibili':
+        toplistSongs = await getBilibiliToplistSongs(id);
         break;
       default:
         return NextResponse.json({ code: 400, message: 'Unsupported platform' }, { status: 400 });
@@ -339,6 +359,41 @@ async function handleGetToplistSongs(source: string | null, id: string | null): 
       data: {},
       error: error instanceof Error ? error.message : String(error)
     });
+  }
+}
+
+/**
+ * 处理获取音频播放URL请求
+ * @param source 平台类型
+ * @param id 歌曲ID
+ * @param br 音质
+ * @returns 音频URL
+ */
+async function handleGetAudioUrl(source: string | null, id: string | null, br: string): Promise<NextResponse> {
+  if (!source || !id) {
+    return NextResponse.json({ code: 400, message: 'Missing source or id parameter' }, { status: 400 });
+  }
+
+  try {
+    if (source === 'bilibili') {
+      const bilibiliService = new BilibiliMusicService();
+      const url = await bilibiliService.getAudioUrl(id);
+      return NextResponse.json({
+        code: 200,
+        message: 'success',
+        data: { url, platform: 'bilibili' },
+      });
+    }
+
+    return NextResponse.json({ code: 404, message: 'Audio URL not supported for this platform' }, { status: 404 });
+  } catch (error) {
+    console.error('Error in handleGetAudioUrl:', error);
+    recordError(source);
+    return NextResponse.json({
+      code: 500,
+      message: 'Internal server error',
+      error: error instanceof Error ? error.message : String(error),
+    }, { status: 500 });
   }
 }
 

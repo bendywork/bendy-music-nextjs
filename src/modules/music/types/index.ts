@@ -8,6 +8,7 @@ export enum Platform {
   NETEASE = 'netease',
   KUWO = 'kuwo',
   QQ = 'qq',
+  BILIBILI = 'bilibili',
 }
 
 // 音质参数
