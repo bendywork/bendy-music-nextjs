@@ -3,6 +3,7 @@ import { Platform, Provider } from '../../types';
 import { createNeteaseMusicService } from './netease';
 import { createKuwoMusicService } from './kuwo';
 import { createQQMusicService } from './qq';
+import { createBilibiliMusicService } from './bilibili';
 
 /**
  * 注册所有音乐服务商
@@ -30,6 +31,13 @@ export function registerMusicProviders(): void {
       provider,
       Platform.QQ,
       createQQMusicService(provider)
+    );
+
+    // 注册Bilibili音乐服务
+    MusicServiceFactory.registerService(
+      provider,
+      Platform.BILIBILI,
+      createBilibiliMusicService(provider)
     );
   });
 }
