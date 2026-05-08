@@ -1,5 +1,5 @@
 import { MusicService } from '../../MusicService';
-import { Provider, Platform, SongInfo, SearchResult, PlaylistDetail, ToplistSongs, ToplistItem } from '../../../types';
+import { PlaylistDetail, ToplistSongs, ToplistItem } from '../../../types';
 import { NetEaseMusicService } from './NetEaseMusicService';
 
 /**
@@ -12,9 +12,8 @@ export function createNeteasePublicService(): MusicService {
 
 /**
  * 网易云音乐服务工厂
- * 现在只返回公共接口实现，因为tunehub已删除
  */
-export function createNeteaseMusicService(provider: Provider): MusicService {
+export function createNeteaseMusicService(): MusicService {
   return new NetEaseMusicService();
 }
 

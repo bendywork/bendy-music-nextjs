@@ -1,7 +1,7 @@
 import packageJson from '../../../package.json';
 import type { ApiItem as ApiConfigItem, ProviderItem as ProviderConfigItem } from '@/lib/admin-config';
 import { loadApiConfig, loadProviderConfig } from '@/lib/server/admin-config-store';
-import { Platform, Provider } from '@/modules/music/types';
+import { Platform } from '@/modules/music/types';
 
 export const GENERATED_API_DOC_MARKER = 'bendy-music-nextjs-generated-api-doc';
 
@@ -52,15 +52,14 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
     summary: '根据 provider、source 和 id 返回歌曲基础信息。',
     params: [
       { name: 'type', required: true, description: '固定为 info。' },
-      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo。' },
+      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo、bilibili。' },
       { name: 'id', required: true, description: '歌曲 ID。' },
-      { name: 'provider', required: false, description: '服务商标识。当前默认使用 tunehub。', defaultValue: Provider.TUNEHUB },
     ],
     notes: [
       '缺少 source 或 id 时会返回 400。',
       '成功时返回统一的 { code, message, data } 结构。',
     ],
-    example: 'GET /api?type=info&source=netease&id=2608813264&provider=tunehub',
+    example: 'GET /api?type=info&source=netease&id=2608813264',
     responseExample: {
       code: 200,
       message: 'success',
@@ -83,7 +82,7 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
     summary: '按平台搜索歌曲，当前由平台适配器直接处理，provider 参数不会参与分发。',
     params: [
       { name: 'type', required: true, description: '固定为 search。' },
-      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo。' },
+      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo、bilibili。' },
       { name: 'keyword', required: true, description: '搜索关键词。' },
       { name: 'limit', required: false, description: '返回数量上限。', defaultValue: '20' },
     ],
@@ -118,9 +117,8 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
     summary: '根据 source 和 id 返回歌单详情。kuwo 平台会走公开服务，其他平台走已注册的音乐服务。',
     params: [
       { name: 'type', required: true, description: '固定为 playlist。' },
-      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo。' },
+      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo、bilibili。' },
       { name: 'id', required: true, description: '歌单 ID。' },
-      { name: 'provider', required: false, description: '服务商标识。当前默认使用 tunehub。', defaultValue: Provider.TUNEHUB },
     ],
     notes: [
       '缺少 source 或 id 时会返回 400。',
@@ -146,11 +144,11 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
     summary: '根据平台返回榜单列表。',
     params: [
       { name: 'type', required: true, description: '固定为 toplists。' },
-      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo。' },
+      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo、bilibili。' },
     ],
     notes: [
       '缺少 source 时会返回 400。',
-      '当前代码对 netease、qq、kuwo 都有显式实现。',
+      '当前代码对 netease、qq、kuwo、bilibili 都有显式实现。',
     ],
     example: 'GET /api?type=toplists&source=netease',
     responseExample: {
@@ -174,7 +172,7 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
     summary: '根据榜单 ID 返回榜单歌曲。',
     params: [
       { name: 'type', required: true, description: '固定为 toplist。' },
-      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo。' },
+      { name: 'source', required: true, description: '平台标识，目前支持 netease、qq、kuwo、bilibili。' },
       { name: 'id', required: true, description: '榜单 ID。' },
     ],
     notes: [
@@ -194,10 +192,34 @@ const implementedPublicEndpoints: EndpointDefinition[] = [
       },
     },
   },
+  {
+    method: 'GET',
+    route: '/api',
+    title: '获取音频播放 URL',
+    summary: '根据 source 和 id 返回可直接播放的音频 URL。当前仅 bilibili 平台已实现。',
+    params: [
+      { name: 'type', required: true, description: '固定为 url。' },
+      { name: 'source', required: true, description: '平台标识，当前仅 bilibili 已实现。' },
+      { name: 'id', required: true, description: '歌曲/视频 ID。bilibili 使用 BV 号或 aid。' },
+      { name: 'br', required: false, description: '音质参数，可选 128k / 320k / flac / flac24bit。', defaultValue: '320k' },
+    ],
+    notes: [
+      '缺少 source 或 id 时会返回 400。',
+      '非 bilibili 平台当前会返回 404 Audio URL not supported for this platform。',
+    ],
+    example: 'GET /api?type=url&source=bilibili&id=BV1xx411c7mD',
+    responseExample: {
+      code: 200,
+      message: 'success',
+      data: {
+        url: 'https://example.com/audio.m4a',
+        platform: 'bilibili',
+      },
+    },
+  },
 ];
 
 const pendingPublicEndpoints = [
-  { type: 'url', statusCode: 404, behavior: 'Music url endpoint not implemented' },
   { type: 'pic', statusCode: 404, behavior: 'Album cover endpoint not implemented' },
   { type: 'lrc', statusCode: 404, behavior: 'Lyrics endpoint not implemented' },
   { type: 'aggregateSearch', statusCode: 404, behavior: 'Aggregate search endpoint not implemented' },
@@ -1092,7 +1114,7 @@ export async function generateProjectApiDocHtml(): Promise<string> {
 
       <section class="panel">
         <h2>项目概览</h2>
-        <p>公开音乐接口当前全部聚合在同一个 <code>/api</code> 路由中，通过 <code>type</code> 区分能力。默认 provider 为 <code>${Provider.TUNEHUB}</code>，当前支持的平台枚举来自源码：${supportedPlatforms.map((platform) => `<code>${escapeHtml(platform)}</code>`).join('、')}。</p>
+        <p>公开音乐接口当前全部聚合在同一个 <code>/api</code> 路由中，通过 <code>type</code> 区分能力。当前支持的平台枚举来自源码：${supportedPlatforms.map((platform) => `<code>${escapeHtml(platform)}</code>`).join('、')}。</p>
         <div class="stat-grid">
           <div class="note-card">
             <strong>公开入口</strong>

@@ -1,5 +1,5 @@
 import { MusicService } from '../../MusicService';
-import { Provider, PlaylistDetail, ToplistSongs, ToplistItem } from '../../../types';
+import { PlaylistDetail, ToplistSongs } from '../../../types';
 import { QQMusicService } from './QQMusicService';
 
 /**
@@ -12,9 +12,8 @@ export function createQQPublicService(): MusicService {
 
 /**
  * QQ音乐服务工厂
- * 现在只返回公共接口实现，因为tunehub已删除
  */
-export function createQQMusicService(provider: Provider): MusicService {
+export function createQQMusicService(): MusicService {
   return new QQMusicService();
 }
 
