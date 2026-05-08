@@ -1,8 +1,8 @@
 import { MusicService } from '../../MusicService';
-import { Provider, PlaylistDetail, ToplistItem, ToplistSongs } from '../../../types';
+import { PlaylistDetail, ToplistItem, ToplistSongs } from '../../../types';
 import { BilibiliMusicService } from './BilibiliMusicService';
 
-export function createBilibiliMusicService(_provider?: Provider): MusicService {
+export function createBilibiliMusicService(): MusicService {
   return new BilibiliMusicService();
 }
 
