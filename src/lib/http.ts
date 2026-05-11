@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { tunehubConfig } from '@/config/tunehub';
+
+const DEFAULT_TIMEOUT = 30000;
 
 /**
  * HTTP客户端配置
@@ -24,12 +25,10 @@ export class HttpClient {
   constructor(config: HttpClientConfig = {}) {
     this.axiosInstance = axios.create({
       baseURL: config.baseURL || '',
-      timeout: config.timeout || tunehubConfig.TIMEOUT,
+      timeout: config.timeout || DEFAULT_TIMEOUT,
       headers: {
         'Content-Type': 'application/json',
         ...config.headers,
-        // 添加TuneHub V3 API认证头
-        'X-API-KEY': tunehubConfig.API_KEY,
       },
     });
 

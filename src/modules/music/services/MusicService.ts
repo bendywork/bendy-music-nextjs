@@ -1,4 +1,4 @@
-import { Platform, Quality, SongInfo, SearchResult, PlaylistDetail, ToplistItem, ToplistSongs, Provider } from '../types';
+import { Platform, SongInfo, SearchResult, PlaylistDetail, ToplistItem, ToplistSongs } from '../types';
 
 /**
  * 音乐服务接口
@@ -43,44 +43,33 @@ export interface MusicService {
 
 /**
  * 音乐服务工厂
- * 根据服务商和平台类型创建对应的音乐服务实例
+ * 根据平台类型创建对应的音乐服务实例
  */
 export class MusicServiceFactory {
-  // 服务映射：provider -> platform -> MusicService
-  private static services: Map<string, Map<Platform, MusicService>> = new Map();
+  private static services: Map<Platform, MusicService> = new Map();
 
   /**
    * 注册音乐服务
-   * @param provider 服务商类型
    * @param platform 平台类型
    * @param service 音乐服务实例
    */
-  public static registerService(provider: Provider, platform: Platform, service: MusicService): void {
-    if (!this.services.has(provider)) {
-      this.services.set(provider, new Map());
-    }
-    this.services.get(provider)!.set(platform, service);
+  public static registerService(platform: Platform, service: MusicService): void {
+    this.services.set(platform, service);
   }
 
   /**
    * 获取音乐服务
-   * @param provider 服务商类型
    * @param platform 平台类型
    * @returns 音乐服务实例
-   * @throws Error 当服务商或平台未注册时抛出错误
+   * @throws Error 当平台未注册时抛出错误
    */
-  public static getService(provider: Provider, platform: Platform): MusicService {
-    if (!this.services.has(provider)) {
-      throw new Error(`Music service provider ${provider} is not registered`);
-    }
-    
-    const platformServices = this.services.get(provider)!;
-    const service = platformServices.get(platform);
-    
+  public static getService(platform: Platform): MusicService {
+    const service = this.services.get(platform);
+
     if (!service) {
-      throw new Error(`Music service for platform ${platform} under provider ${provider} is not registered`);
+      throw new Error(`Music service for platform ${platform} is not registered`);
     }
-    
+
     return service;
   }
 }

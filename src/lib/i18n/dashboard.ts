@@ -137,8 +137,8 @@ export const dashboardCopy = {
         remark: '备注',
       },
       placeholders: {
-        name: '例如 TuneHub',
-        code: '例如 TH',
+        name: '例如 网易云音乐',
+        code: '例如 NE',
         url: 'https://example.com/api',
         remark: '例如 LinuxDO 公益 API',
       },
@@ -447,8 +447,8 @@ export const dashboardCopy = {
         remark: 'Notes',
       },
       placeholders: {
-        name: 'For example TuneHub',
-        code: 'For example TH',
+        name: 'For example NetEase',
+        code: 'For example NE',
         url: 'https://example.com/api',
         remark: 'For example LinuxDO community API',
       },

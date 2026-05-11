@@ -1,13 +1,9 @@
-// 服务商类型
-export enum Provider {
-  TUNEHUB = 'tunehub',
-}
-
 // 平台类型
 export enum Platform {
   NETEASE = 'netease',
   KUWO = 'kuwo',
   QQ = 'qq',
+  BILIBILI = 'bilibili',
 }
 
 // 音质参数
