@@ -212,6 +212,16 @@ const hasRows = async (tableName: string): Promise<boolean> => {
   return Number(result.rows[0]?.count ?? 0) > 0;
 };
 
+const readProviderCodes = async (): Promise<Set<string>> => {
+  const result = await getPostgresPool().query<{ code: string }>(`SELECT code FROM ${PROVIDER_TABLE_NAME}`);
+  return new Set(result.rows.map((row) => row.code.trim().toLowerCase()));
+};
+
+const readApiIds = async (): Promise<Set<string>> => {
+  const result = await getPostgresPool().query<{ id: string }>(`SELECT id FROM ${API_TABLE_NAME}`);
+  return new Set(result.rows.map((row) => row.id));
+};
+
 const readLegacySystemConfig = async (): Promise<SystemConfigPayload> => {
   const legacyConfig = await tryReadLegacyStoredValue<SystemConfigPayload>(
     STORE_KEYS.SYS_CONFIG,
@@ -422,22 +432,64 @@ const saveApisInternal = async (apis: ApiItem[]): Promise<void> => {
 };
 
 const seedProviderConfigIfNeeded = async (): Promise<void> => {
-  if (await hasRows(PROVIDER_TABLE_NAME)) {
+  if (!(await hasRows(PROVIDER_TABLE_NAME))) {
+    const providers = mergeProviders(await readLegacyProviders());
+    await saveProvidersInternal(providers);
     return;
   }
 
-  const providers = mergeProviders(await readLegacyProviders());
-  await saveProvidersInternal(providers);
+  // Table already has data — upsert any builtin providers that are missing
+  const existingCodes = await readProviderCodes();
+  const missing = BUILTIN_PROVIDER_ITEMS.filter(
+    (builtin) => !existingCodes.has(builtin.code.trim().toLowerCase()),
+  );
+  if (missing.length === 0) {
+    return;
+  }
+
+  const client = await getPostgresPool().connect();
+  try {
+    await client.query('BEGIN');
+    for (const provider of missing) {
+      await upsertProviderRecord(client, provider);
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 const seedApiConfigIfNeeded = async (): Promise<void> => {
-  if (await hasRows(API_TABLE_NAME)) {
+  if (!(await hasRows(API_TABLE_NAME))) {
+    const providers = await readProviderItems();
+    const apis = mergeApis(await readLegacyApis(), providers);
+    await saveApisInternal(apis);
     return;
   }
 
-  const providers = await readProviderItems();
-  const apis = mergeApis(await readLegacyApis(), providers);
-  await saveApisInternal(apis);
+  // Table already has data — upsert any builtin APIs that are missing
+  const existingApiIds = await readApiIds();
+  const missing = BUILTIN_API_ITEMS.filter((builtin) => !existingApiIds.has(builtin.id));
+  if (missing.length === 0) {
+    return;
+  }
+
+  const client = await getPostgresPool().connect();
+  try {
+    await client.query('BEGIN');
+    for (const api of missing) {
+      await upsertApiRecord(client, api);
+    }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 const ensureStructuredConfigStore = async (): Promise<void> => {
@@ -495,7 +547,7 @@ const readProviderItems = async (): Promise<ProviderItem[]> => {
     `
       SELECT id, name, code, category, nature, base_url, status, remark
       FROM ${PROVIDER_TABLE_NAME}
-      ORDER BY CASE WHEN LOWER(code) IN ('netease', 'kuwo', 'qq') THEN 0 ELSE 1 END, name ASC
+      ORDER BY CASE WHEN LOWER(code) IN ('netease', 'kuwo', 'qq', 'bilibili') THEN 0 ELSE 1 END, name ASC
     `,
   );
 

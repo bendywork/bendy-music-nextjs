@@ -41,6 +41,7 @@ const DEFAULT_SERVICES: ServiceStatus[] = [
   { name: 'kuwo', displayName: 'Kuwo Music', errorCount: 0, status: 'Normal' },
   { name: 'qq', displayName: 'QQ Music', errorCount: 0, status: 'Normal' },
   { name: 'netease', displayName: 'Netease Music', errorCount: 0, status: 'Normal' },
+  { name: 'bilibili', displayName: 'Bilibili', errorCount: 0, status: 'Normal' },
 ];
 
 const getProcessStartedAt = (): number => Math.max(0, Date.now() - Math.floor(process.uptime() * 1000));

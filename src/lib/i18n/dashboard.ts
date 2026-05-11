@@ -638,6 +638,10 @@ const serviceNameMap = {
     zh: '网易云音乐',
     en: 'Netease Music',
   },
+  bilibili: {
+    zh: '哔哩哔哩',
+    en: 'Bilibili',
+  },
 } as const;
 
 export function getServiceDisplayName(locale: Locale, serviceName: string, fallback?: string) {
